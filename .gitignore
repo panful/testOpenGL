@@ -1,1 +1,4 @@
-/build
+﻿/build
+/target
+/.vs
+/out
