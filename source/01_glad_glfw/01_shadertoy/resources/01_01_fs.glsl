@@ -138,38 +138,38 @@ void main() {
 
 uniform vec2 iResolution;
 vec3 rgb(float r, float g, float b) {
-	return vec3(r / 255.0, g / 255.0, b / 255.0);
+    return vec3(r / 255.0, g / 255.0, b / 255.0);
 }
 
 vec4 circle(vec2 uv, vec2 pos, float rad, vec3 color) {
-	float d = length(pos - uv) - rad;
-	float t = clamp(d, 0.0, 1.0);
-	return vec4(color, 1.0 - t);
+    float d = length(pos - uv) - rad;
+    float t = clamp(d, 0.0, 1.0);
+    return vec4(color, 1.0 - t);
 }
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 
-	vec2 uv = fragCoord.xy;
-	vec2 center = iResolution.xy * 0.5;
-	float radius = 0.25 * iResolution.y;
+    vec2 uv = fragCoord.xy;
+    vec2 center = iResolution.xy * 0.5;
+    float radius = 0.25 * iResolution.y;
 
     // Background layer
-	vec4 layer1 = vec4(rgb(210.0, 222.0, 228.0), 1.0);
-	
-	// Circle
-	vec3 red = rgb(225.0, 95.0, 60.0);
-	vec4 layer2 = circle(uv, center, radius, red);
-	
-	// Blend the two
+    vec4 layer1 = vec4(rgb(210.0, 222.0, 228.0), 1.0);
+    
+    // Circle
+    vec3 red = rgb(225.0, 95.0, 60.0);
+    vec4 layer2 = circle(uv, center, radius, red);
+    
+    // Blend the two
     // mix返回线性混合的x和y  mix(x,y,a){x*(1-a) + y*a}
-	fragColor = mix(layer1, layer2, layer2.a);
+    fragColor = mix(layer1, layer2, layer2.a);
 }
 
 void main(void)
 {
-	vec4 fColor;
-	mainImage(fColor,gl_FragCoord.xy);
-	gl_FragColor = fColor;
+    vec4 fColor;
+    mainImage(fColor,gl_FragCoord.xy);
+    gl_FragColor = fColor;
 }
 
 #endif // TEST5
@@ -240,33 +240,33 @@ out vec4          outFragColor;
 
 float genR(float i,float j)
 {
-	float s = 3. / (j + 60.0f);
-	float y = (j + sin((i * i + pow((j - 420.0f),2.0f) * 5.0f) / 60.0f / 1204.0f) * 20.0f) * s;
+    float s = 3. / (j + 60.0f);
+    float y = (j + sin((i * i + pow((j - 420.0f),2.0f) * 5.0f) / 60.0f / 1204.0f) * 20.0f) * s;
 
-	float a = mod(int((i+1024.0f)*s+y),2);
-	float b = mod(int((1024.0f * 2 - i) * s + y),2);
+    float a = mod(int((i+1024.0f)*s+y),2);
+    float b = mod(int((1024.0f * 2 - i) * s + y),2);
 
     return (a+b) * 0.5f;
 }
 
 float genG(float i,float j)
 {
-	float s = 3. / (j + 60.0f);
-	float y = (j + sin((i * i + pow((j - 420.0f),2.0f) * 5.0f) / 60.0f / 1204.0f) * 20.0f) * s;
+    float s = 3. / (j + 60.0f);
+    float y = (j + sin((i * i + pow((j - 420.0f),2.0f) * 5.0f) / 60.0f / 1204.0f) * 20.0f) * s;
 
-	float a = mod(int(5 * ((i + 1024.0f) * s + y)), 2);
-	float b = mod(int(5 * ((1024.0f * 2 - i) * s + y)), 2);
+    float a = mod(int(5 * ((i + 1024.0f) * s + y)), 2);
+    float b = mod(int(5 * ((1024.0f * 2 - i) * s + y)), 2);
 
     return (a+b) * 0.5f;
 }
 
 float genB(float i,float j)
 {
-	float s = 3. / (j + 60.0f);
-	float y = (j + sin((i * i + pow((j - 420.0f),2.0f) * 5.0f) / 60.0f / 1204.0f) * 20.0f) * s;
+    float s = 3. / (j + 60.0f);
+    float y = (j + sin((i * i + pow((j - 420.0f),2.0f) * 5.0f) / 60.0f / 1204.0f) * 20.0f) * s;
 
-	float a = mod(int(29.0f * ((i + 1024.0f) * s + y)), 2);
-	float b = mod(int(29.0f * ((1024.0f * 2.0f - i) * s + y)), 2);
+    float a = mod(int(29.0f * ((i + 1024.0f) * s + y)), 2);
+    float b = mod(int(29.0f * ((1024.0f * 2.0f - i) * s + y)), 2);
 
     return (a+b) * 0.5f;
 }

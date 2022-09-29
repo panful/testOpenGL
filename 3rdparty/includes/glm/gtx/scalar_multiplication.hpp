@@ -1,4 +1,4 @@
-/// @ref gtx
+﻿/// @ref gtx
 /// @file glm/gtx/scalar_multiplication.hpp
 /// @author Joshua Moerman
 ///
@@ -17,11 +17,11 @@
 #include "../detail/setup.hpp"
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
-#	error "GLM: GLM_GTX_scalar_multiplication is an experimental extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
+#    error "GLM: GLM_GTX_scalar_multiplication is an experimental extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
 #endif
 
 #if !GLM_HAS_TEMPLATE_ALIASES && !(GLM_COMPILER & GLM_COMPILER_GCC)
-#	error "GLM_GTX_scalar_multiplication requires C++11 support or alias templates and if not support for GCC"
+#    error "GLM_GTX_scalar_multiplication requires C++11 support or alias templates and if not support for GCC"
 #endif
 
 #include "../vec2.hpp"
@@ -32,30 +32,30 @@
 
 namespace glm
 {
-	template<typename T, typename Vec>
-	using return_type_scalar_multiplication = typename std::enable_if<
-		!std::is_same<T, float>::value       // T may not be a float
-		&& std::is_arithmetic<T>::value, Vec // But it may be an int or double (no vec3 or mat3, ...)
-	>::type;
+    template<typename T, typename Vec>
+    using return_type_scalar_multiplication = typename std::enable_if<
+        !std::is_same<T, float>::value       // T may not be a float
+        && std::is_arithmetic<T>::value, Vec // But it may be an int or double (no vec3 or mat3, ...)
+    >::type;
 
 #define GLM_IMPLEMENT_SCAL_MULT(Vec) \
-	template<typename T> \
-	return_type_scalar_multiplication<T, Vec> \
-	operator*(T const& s, Vec rh){ \
-		return rh *= static_cast<float>(s); \
-	} \
-	 \
-	template<typename T> \
-	return_type_scalar_multiplication<T, Vec> \
-	operator*(Vec lh, T const& s){ \
-		return lh *= static_cast<float>(s); \
-	} \
-	 \
-	template<typename T> \
-	return_type_scalar_multiplication<T, Vec> \
-	operator/(Vec lh, T const& s){ \
-		return lh *= 1.0f / s; \
-	}
+    template<typename T> \
+    return_type_scalar_multiplication<T, Vec> \
+    operator*(T const& s, Vec rh){ \
+        return rh *= static_cast<float>(s); \
+    } \
+     \
+    template<typename T> \
+    return_type_scalar_multiplication<T, Vec> \
+    operator*(Vec lh, T const& s){ \
+        return lh *= static_cast<float>(s); \
+    } \
+     \
+    template<typename T> \
+    return_type_scalar_multiplication<T, Vec> \
+    operator/(Vec lh, T const& s){ \
+        return lh *= 1.0f / s; \
+    }
 
 GLM_IMPLEMENT_SCAL_MULT(vec2)
 GLM_IMPLEMENT_SCAL_MULT(vec3)

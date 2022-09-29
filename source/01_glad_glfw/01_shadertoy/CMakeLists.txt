@@ -10,26 +10,22 @@ target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..
 target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/includes)
 # 链接glad glfw
 if(WIN32)
-	target_link_directories(${target_name} PRIVATE 
-		${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/libs/$<IF:$<CONFIG:Debug>,Debug,Release>/Windows) 
+    target_link_directories(${target_name} PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/libs/$<IF:$<CONFIG:Debug>,Debug,Release>/Windows) 
 elseif(UNIX)
-	target_link_directories(${target_name} PRIVATE 
-		${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/libs/$<IF:$<CONFIG:Debug>,Debug,Release>/Linux) 
+    target_link_directories(${target_name} PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/libs/$<IF:$<CONFIG:Debug>,Debug,Release>/Linux) 
 endif()
 target_link_libraries(${target_name} PRIVATE glad glfw3)
 
 add_custom_command(TARGET ${target_name}
-	PRE_BUILD
-		COMMAND ${CMAKE_COMMAND} -E
-	copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources $<TARGET_FILE_DIR:${target_name}>/resources
+    PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E
+    copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources $<TARGET_FILE_DIR:${target_name}>/resources
 )
 
 install(TARGETS ${target_name}
         RUNTIME DESTINATION ./
 )
 
-install(FILES 
-        ${CMAKE_CURRENT_SOURCE_DIR}/resources/01fs.glsl
-        ${CMAKE_CURRENT_SOURCE_DIR}/resources/01vs.glsl
-    DESTINATION ./resources
-)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION .)

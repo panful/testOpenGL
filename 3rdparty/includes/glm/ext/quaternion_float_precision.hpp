@@ -1,4 +1,4 @@
-/// @ref ext_quaternion_float_precision
+﻿/// @ref ext_quaternion_float_precision
 /// @file glm/ext/quaternion_float_precision.hpp
 ///
 /// @defgroup ext_quaternion_float_precision GLM_EXT_quaternion_float_precision
@@ -14,23 +14,23 @@
 #include "../detail/type_quat.hpp"
 
 #if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
-#	pragma message("GLM: GLM_EXT_quaternion_float_precision extension included")
+#    pragma message("GLM: GLM_EXT_quaternion_float_precision extension included")
 #endif
 
 namespace glm
 {
-	/// @addtogroup ext_quaternion_float_precision
-	/// @{
+    /// @addtogroup ext_quaternion_float_precision
+    /// @{
 
-	/// Quaternion of single-precision floating-point numbers using high precision arithmetic in term of ULPs.
-	typedef qua<float, lowp>		lowp_quat;
+    /// Quaternion of single-precision floating-point numbers using high precision arithmetic in term of ULPs.
+    typedef qua<float, lowp>        lowp_quat;
 
-	/// Quaternion of single-precision floating-point numbers using high precision arithmetic in term of ULPs.
-	typedef qua<float, mediump>		mediump_quat;
+    /// Quaternion of single-precision floating-point numbers using high precision arithmetic in term of ULPs.
+    typedef qua<float, mediump>        mediump_quat;
 
-	/// Quaternion of single-precision floating-point numbers using high precision arithmetic in term of ULPs.
-	typedef qua<float, highp>		highp_quat;
+    /// Quaternion of single-precision floating-point numbers using high precision arithmetic in term of ULPs.
+    typedef qua<float, highp>        highp_quat;
 
-	/// @}
+    /// @}
 } //namespace glm
 

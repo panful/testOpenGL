@@ -1,4 +1,4 @@
-/// @ref ext_vector_double1
+﻿/// @ref ext_vector_double1
 /// @file glm/ext/vector_double1.hpp
 ///
 /// @defgroup ext_vector_double1 GLM_EXT_vector_double1
@@ -16,16 +16,16 @@
 #include "../detail/type_vec1.hpp"
 
 #if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
-#	pragma message("GLM: GLM_EXT_vector_dvec1 extension included")
+#    pragma message("GLM: GLM_EXT_vector_dvec1 extension included")
 #endif
 
 namespace glm
 {
-	/// @addtogroup ext_vector_double1
-	/// @{
+    /// @addtogroup ext_vector_double1
+    /// @{
 
-	/// 1 components vector of double-precision floating-point numbers.
-	typedef vec<1, double, defaultp>		dvec1;
+    /// 1 components vector of double-precision floating-point numbers.
+    typedef vec<1, double, defaultp>        dvec1;
 
-	/// @}
+    /// @}
 }//namespace glm

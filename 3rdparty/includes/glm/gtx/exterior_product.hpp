@@ -1,4 +1,4 @@
-/// @ref gtx_exterior_product
+﻿/// @ref gtx_exterior_product
 /// @file glm/gtx/exterior_product.hpp
 ///
 /// @see core (dependence)
@@ -18,24 +18,24 @@
 #include "../detail/qualifier.hpp"
 
 #if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
-#	pragma message("GLM: GLM_GTX_exterior_product extension included")
+#    pragma message("GLM: GLM_GTX_exterior_product extension included")
 #endif
 
 namespace glm
 {
-	/// @addtogroup gtx_exterior_product
-	/// @{
+    /// @addtogroup gtx_exterior_product
+    /// @{
 
-	/// Returns the cross product of x and y.
-	///
-	/// @tparam T Floating-point scalar types
-	/// @tparam Q Value from qualifier enum
-	///
-	/// @see <a href="https://en.wikipedia.org/wiki/Exterior_algebra#Cross_and_triple_products">Exterior product</a>
-	template<typename T, qualifier Q>
-	GLM_FUNC_DECL T cross(vec<2, T, Q> const& v, vec<2, T, Q> const& u);
+    /// Returns the cross product of x and y.
+    ///
+    /// @tparam T Floating-point scalar types
+    /// @tparam Q Value from qualifier enum
+    ///
+    /// @see <a href="https://en.wikipedia.org/wiki/Exterior_algebra#Cross_and_triple_products">Exterior product</a>
+    template<typename T, qualifier Q>
+    GLM_FUNC_DECL T cross(vec<2, T, Q> const& v, vec<2, T, Q> const& u);
 
-	/// @}
+    /// @}
 } //namespace glm
 
 #include "exterior_product.inl"

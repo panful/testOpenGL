@@ -19,27 +19,27 @@ private:
     };
 
 public:
-	Shader(const std::string& vsPath, const std::string& fsPath, const std::string& gsPath = std::string());
-	~Shader() = default;
+    Shader(const std::string& vsPath, const std::string& fsPath, const std::string& gsPath = std::string());
+    ~Shader() = default;
 
 public:
-	uint32_t GetProgram();
+    uint32_t GetProgram();
 
 private:
     void CheckCompileErrors(uint32_t shader, ShaderType type);
 
 private:
-	uint32_t m_vertexShader;
-	uint32_t m_fragmentShader;
-	uint32_t m_geometryShader;
+    uint32_t m_vertexShader;
+    uint32_t m_fragmentShader;
+    uint32_t m_geometryShader;
 
-	uint32_t m_shaderProgram;
+    uint32_t m_shaderProgram;
 };
 
 Shader::Shader(const std::string& vsPath, const std::string& fsPath, const std::string& gsPath):
-	m_vertexShader(0),
-	m_fragmentShader(0),
-	m_geometryShader(0)
+    m_vertexShader(0),
+    m_fragmentShader(0),
+    m_geometryShader(0)
 {
     std::string vertexCode;
     std::string fragmentCode;
@@ -131,7 +131,7 @@ Shader::Shader(const std::string& vsPath, const std::string& fsPath, const std::
 
 uint32_t Shader::GetProgram()
 {
-	return m_shaderProgram;
+    return m_shaderProgram;
 }
 
 void Shader::CheckCompileErrors(uint32_t shader, ShaderType type)
