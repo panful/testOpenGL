@@ -1,6 +1,7 @@
 ﻿
 
 // 20 21 23 共享上下文，多线程
+// 可以查看02_glew_glfw多线程渲染
 #ifdef TEST20
 
 #include <glad/glad.h>
