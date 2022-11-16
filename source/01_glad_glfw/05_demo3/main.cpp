@@ -223,11 +223,9 @@ const char* fs_FBO = "#version 330 core\n"
 "{\n"
 "   FragColor = texture(ourTexture,TexCoord);\n"
 "}\n\0";
-#include <direct.h>
+
 int main()
 {
-
-	auto ret = _getcwd(NULL, 0);
 	// glfw: initialize and configure
 	// ------------------------------
 	glfwInit();
