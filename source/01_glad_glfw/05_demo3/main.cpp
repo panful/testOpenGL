@@ -25,7 +25,7 @@
 23.使用fbo渲染输出颜色
 */
 
-#define TEST2
+#define TEST1
 
 #ifdef TEST1
 

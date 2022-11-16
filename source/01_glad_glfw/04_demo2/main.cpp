@@ -24,9 +24,7 @@
 23.
 */
 
-#define TEST22
-
-
+#define TEST8
 
 #ifdef TEST2
 
@@ -1556,6 +1554,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <array>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -1732,18 +1731,20 @@ void processInput(GLFWwindow* window)
 
         //std::vector< unsigned char > pixels(1 * 1 * 4);
 
-        unsigned char* pixels = new unsigned char[4];
-        glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);  //y坐标需要转换
+        //unsigned char* pixels = new unsigned char[4];
+        std::array<unsigned char, 4> arrPixels;
+        //glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);  //y坐标需要转换
+        glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, arrPixels.data());  //y坐标需要转换
 
-        std::cout << "r:" << (int)pixels[0] << std::endl;  //一定要在此处将pixels转为int
-        std::cout << "g:" << (int)pixels[1] << std::endl;
-        std::cout << "b:" << (int)pixels[2] << std::endl;
-        std::cout << "a:" << (int)pixels[3] << std::endl;
+        std::cout << "r:" << (int)arrPixels[0] << std::endl;  //一定要在此处将pixels转为int
+        std::cout << "g:" << (int)arrPixels[1] << std::endl;
+        std::cout << "b:" << (int)arrPixels[2] << std::endl;
+        std::cout << "a:" << (int)arrPixels[3] << std::endl;
 
         std::cout << std::endl;
 
-        delete[] pixels;
-        pixels = nullptr;
+        //delete[] pixels;
+        //pixels = nullptr;
     }
 }
 
