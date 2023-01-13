@@ -1,4 +1,4 @@
-﻿# testOpenGL
+# testOpenGL
 OpenGL测试代码
 
 ## 1. 目录说明
@@ -38,6 +38,9 @@ OpenGL测试代码
 
 [ShaderToy基础教程-SDF运算](https://zhuanlan.zhihu.com/p/491686813)
 
+[详细介绍光栅化渲染管线（目录篇） - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/496529552)
+
+[光栅化渲染器的实现 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/121543313)
 
 
 
