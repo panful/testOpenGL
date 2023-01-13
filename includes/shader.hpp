@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <filesystem>
 
 class Shader
 {
@@ -82,8 +83,11 @@ Shader::Shader(const std::string& vsPath, const std::string& fsPath, const std::
     }
     catch (std::ifstream::failure& e)
     {
-        std::cout << "*** Load shader source failed! ***" << std::endl;
-        std::cout << e.what() << std::endl;
+        std::cout << "---------------------------------------\n";
+        std::cout << "       Load shader source failed!      \n";
+        std::cout << std::filesystem::current_path() << '\n';
+        std::cout << e.what() << '\n';
+        std::cout << "---------------------------------------\n\n";
     }
 
     const char* vShaderCode = vertexCode.c_str();
@@ -148,7 +152,9 @@ void Shader::CheckCompileErrors(uint32_t shader, ShaderType type)
         if (!success)
         {
             glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
-            std::cout << "*** Shader Error ***\n" << infoLog << "\n ====== " << std::endl;
+            std::cout << "------------ Shader Error  ------------\n";
+            std::cout << infoLog << '\n';
+            std::cout << "------------ Shader Error  ------------\n\n";
         }
         break;
     case Shader::ShaderType::Program:
@@ -156,13 +162,14 @@ void Shader::CheckCompileErrors(uint32_t shader, ShaderType type)
         if (!success)
         {
             glGetProgramInfoLog(shader, 1024, nullptr, infoLog);
-            std::cout << "*** Program Error ***\n" << infoLog << "\n ====== " << std::endl;
+            std::cout << "------------ Program Error ------------\n";
+            std::cout << infoLog << '\n';
+            std::cout << "------------ Program Error ------------\n\n";
         }
         break;
     default:
         break;
     }
 }
-
 
 #endif // !_SHADER_HPP_

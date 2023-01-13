@@ -1,0 +1,4 @@
+﻿add_subdirectory("01_template")
+add_subdirectory("03_shader")
+add_subdirectory("04_extend")
+add_subdirectory("05_softwareRender")

@@ -1,0 +1,4 @@
+﻿add_subdirectory("01_glad_glfw")
+add_subdirectory("02_glew_glfw")
+add_subdirectory("04_glm")
+add_subdirectory("05_eigen")
