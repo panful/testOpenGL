@@ -1,4 +1,4 @@
-// This file is part of Eigen, a lightweight C++ template library
+﻿// This file is part of Eigen, a lightweight C++ template library
 // for linear algebra.
 //
 // Copyright (C) 2011 Benoit Jacob <jacob.benoit.1@gmail.com>
@@ -251,7 +251,7 @@ struct evaluator<PlainObjectBase<Derived> >
   {
     if (IsRowMajor)
       return pstoret<Scalar, PacketType, StoreMode>
-	            (const_cast<Scalar*>(m_d.data) + row * m_d.outerStride() + col, x);
+                (const_cast<Scalar*>(m_d.data) + row * m_d.outerStride() + col, x);
     else
       return pstoret<Scalar, PacketType, StoreMode>
                     (const_cast<Scalar*>(m_d.data) + row + col * m_d.outerStride(), x);

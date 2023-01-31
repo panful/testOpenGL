@@ -8,7 +8,7 @@ qt官方的例子：可以用鼠标拖动的"QT"图标
 
 
 #include <QApplication>
-#include <QDesktopWidget>
+//#include <QDesktopWidget>
 #include <QSurfaceFormat>
 #include <QCommandLineParser>
 #include <QCommandLineOption>

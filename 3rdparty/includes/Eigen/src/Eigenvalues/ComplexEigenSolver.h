@@ -1,4 +1,4 @@
-// This file is part of Eigen, a lightweight C++ template library
+﻿// This file is part of Eigen, a lightweight C++ template library
 // for linear algebra.
 //
 // Copyright (C) 2009 Claire Maurice
@@ -336,7 +336,7 @@ void ComplexEigenSolver<MatrixType>::sortEigenvalues(bool computeEigenvectors)
       k += i;
       std::swap(m_eivalues[k],m_eivalues[i]);
       if(computeEigenvectors)
-	m_eivec.col(i).swap(m_eivec.col(k));
+    m_eivec.col(i).swap(m_eivec.col(k));
     }
   }
 }

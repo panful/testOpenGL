@@ -51,10 +51,10 @@ glm::mat4 genMatrix(glm::vec3 v0, glm::vec3 v1)
         //glm::vec3 t(fabs(r.y * s.z - r.z * s.y), fabs(r.z * s.x - r.x * s.z), fabs(r.x * s.y - r.y * s.x));
 
         //return glm::mat4(
-        //	r.x, s.x, t.x, 0.0,
-        //	r.y, s.y, t.y, 0.0,
-        //	r.z, s.z, t.z, 0.0,
-        //	v0.x, v0.y, v0.z, 1.0f);
+        //    r.x, s.x, t.x, 0.0,
+        //    r.y, s.y, t.y, 0.0,
+        //    r.z, s.z, t.z, 0.0,
+        //    v0.x, v0.y, v0.z, 1.0f);
     //![1]
 }
 

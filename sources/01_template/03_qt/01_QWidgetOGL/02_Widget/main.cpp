@@ -1,16 +1,12 @@
-#include <QApplication>
-//#include <QWidget>
+﻿#include <QApplication>
 #include "MyOglWidget.h"
 
 int main(int argc, char** argv)
 {
-	QApplication app(argc, argv);
+    QApplication app(argc, argv);
 
-	MyOglWidget w;
-	w.show();
+    MyOglWidget w;
+    w.show();
 
-	//QWidget* w = new QWidget();
-	//w->show();
-
-	app.exec();
+    return app.exec();
 }

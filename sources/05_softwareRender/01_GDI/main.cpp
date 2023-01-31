@@ -252,7 +252,7 @@ typedef struct {
     matrix_t projection;    // 投影变换
     matrix_t transform;     // transform = world * view * projection
     float w, h;             // 屏幕大小
-}	transform_t;
+}    transform_t;
 
 
 // 矩阵更新，计算 transform = world * view * projection
@@ -372,7 +372,7 @@ int trapezoid_init_triangle(trapezoid_t* trap, const vertex_t* p1,
     if (p1->pos.y == p2->pos.y && p1->pos.y == p3->pos.y) return 0;
     if (p1->pos.x == p2->pos.x && p1->pos.x == p3->pos.x) return 0;
 
-    if (p1->pos.y == p2->pos.y) {	// triangle down
+    if (p1->pos.y == p2->pos.y) {    // triangle down
         if (p1->pos.x > p2->pos.x) p = p1, p1 = p2, p2 = p;
         trap[0].top = p1->pos.y;
         trap[0].bottom = p3->pos.y;
@@ -383,7 +383,7 @@ int trapezoid_init_triangle(trapezoid_t* trap, const vertex_t* p1,
         return (trap[0].top < trap[0].bottom) ? 1 : 0;
     }
 
-    if (p2->pos.y == p3->pos.y) {	// triangle up
+    if (p2->pos.y == p3->pos.y) {    // triangle up
         if (p2->pos.x > p3->pos.x) p = p2, p2 = p3, p3 = p;
         trap[0].top = p1->pos.y;
         trap[0].bottom = p3->pos.y;
@@ -402,7 +402,7 @@ int trapezoid_init_triangle(trapezoid_t* trap, const vertex_t* p1,
     k = (p3->pos.y - p1->pos.y) / (p2->pos.y - p1->pos.y);
     x = p1->pos.x + (p2->pos.x - p1->pos.x) * k;
 
-    if (x <= p3->pos.x) {		// triangle left
+    if (x <= p3->pos.x) {        // triangle left
         trap[0].left.v1 = *p1;
         trap[0].left.v2 = *p2;
         trap[0].right.v1 = *p1;
@@ -412,7 +412,7 @@ int trapezoid_init_triangle(trapezoid_t* trap, const vertex_t* p1,
         trap[1].right.v1 = *p1;
         trap[1].right.v2 = *p3;
     }
-    else {					// triangle right
+    else {                    // triangle right
         trap[0].left.v1 = *p1;
         trap[0].left.v2 = *p3;
         trap[0].right.v1 = *p1;
@@ -465,11 +465,11 @@ typedef struct {
     int render_state;           // 渲染状态
     IUINT32 background;         // 背景颜色
     IUINT32 foreground;         // 线框颜色
-}	device_t;
+}    device_t;
 
-#define RENDER_STATE_WIREFRAME      1		// 渲染线框
-#define RENDER_STATE_TEXTURE        2		// 渲染纹理
-#define RENDER_STATE_COLOR          4		// 渲染颜色
+#define RENDER_STATE_WIREFRAME      1        // 渲染线框
+#define RENDER_STATE_TEXTURE        2        // 渲染纹理
+#define RENDER_STATE_COLOR          4        // 渲染颜色
 
 // 设备初始化，fb为外部帧缓存，非 NULL 将引用外部帧缓存（每行 4字节对齐）
 void device_init(device_t* device, int width, int height, void* fb) {
@@ -520,7 +520,7 @@ void device_set_texture(device_t* device, void* bits, long pitch, int w, int h) 
     char* ptr = (char*)bits;
     int j;
     assert(w <= 1024 && h <= 1024);
-    for (j = 0; j < h; ptr += pitch, j++) 	// 重新计算每行纹理的指针
+    for (j = 0; j < h; ptr += pitch, j++)     // 重新计算每行纹理的指针
         device->texture[j] = (IUINT32*)ptr;
     device->tex_width = w;
     device->tex_height = h;
@@ -706,9 +706,9 @@ void device_draw_primitive(device_t* device, const vertex_t* v1,
         t2.pos.w = c2.w;
         t3.pos.w = c3.w;
 
-        vertex_rhw_init(&t1);	// 初始化 w
-        vertex_rhw_init(&t2);	// 初始化 w
-        vertex_rhw_init(&t3);	// 初始化 w
+        vertex_rhw_init(&t1);    // 初始化 w
+        vertex_rhw_init(&t2);    // 初始化 w
+        vertex_rhw_init(&t3);    // 初始化 w
 
         // 拆分三角形为0-2个梯形，并且返回可用梯形数量
         n = trapezoid_init_triangle(traps, &t1, &t2, &t3);
@@ -717,7 +717,7 @@ void device_draw_primitive(device_t* device, const vertex_t* v1,
         if (n >= 2) device_render_trap(device, &traps[1]);
     }
 
-    if (render_state & RENDER_STATE_WIREFRAME) {		// 线框绘制
+    if (render_state & RENDER_STATE_WIREFRAME) {        // 线框绘制
         device_draw_line(device, (int)p1.x, (int)p1.y, (int)p2.x, (int)p2.y, device->foreground);
         device_draw_line(device, (int)p1.x, (int)p1.y, (int)p3.x, (int)p3.y, device->foreground);
         device_draw_line(device, (int)p3.x, (int)p3.y, (int)p2.x, (int)p2.y, device->foreground);
@@ -730,18 +730,18 @@ void device_draw_primitive(device_t* device, const vertex_t* v1,
 //=====================================================================
 int screen_w, screen_h, screen_exit = 0;
 int screen_mx = 0, screen_my = 0, screen_mb = 0;
-int screen_keys[512];	// 当前键盘按下状态
-static HWND screen_handle = NULL;		// 主窗口 HWND
-static HDC screen_dc = NULL;			// 配套的 HDC
-static HBITMAP screen_hb = NULL;		// DIB
-static HBITMAP screen_ob = NULL;		// 老的 BITMAP
-unsigned char* screen_fb = NULL;		// frame buffer
+int screen_keys[512];    // 当前键盘按下状态
+static HWND screen_handle = NULL;        // 主窗口 HWND
+static HDC screen_dc = NULL;            // 配套的 HDC
+static HBITMAP screen_hb = NULL;        // DIB
+static HBITMAP screen_ob = NULL;        // 老的 BITMAP
+unsigned char* screen_fb = NULL;        // frame buffer
 long screen_pitch = 0;
 
-int screen_init(int w, int h, const TCHAR* title);	// 屏幕初始化
-int screen_close(void);								// 关闭屏幕
-void screen_dispatch(void);							// 处理消息
-void screen_update(void);							// 显示 FrameBuffer
+int screen_init(int w, int h, const TCHAR* title);    // 屏幕初始化
+int screen_close(void);                                // 关闭屏幕
+void screen_dispatch(void);                            // 处理消息
+void screen_update(void);                            // 显示 FrameBuffer
 
 // win32 event handler
 static LRESULT screen_events(HWND, UINT, WPARAM, LPARAM);

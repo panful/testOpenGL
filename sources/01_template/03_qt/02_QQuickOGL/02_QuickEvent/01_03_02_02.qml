@@ -55,7 +55,7 @@ Window {
         Connections{
          target: quit
          onClicked:{
-            Item.testFunc();
+            //Item.testFunc();
          }
         }
     }

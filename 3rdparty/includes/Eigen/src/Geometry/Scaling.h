@@ -1,4 +1,4 @@
-// This file is part of Eigen, a lightweight C++ template library
+﻿// This file is part of Eigen, a lightweight C++ template library
 // for linear algebra.
 //
 // Copyright (C) 2008 Gael Guennebaud <gael.guennebaud@inria.fr>
@@ -77,8 +77,8 @@ public:
   /** Concatenates a uniform scaling and an affine transformation */
   template<int Dim, int Mode, int Options>
   inline typename
-	internal::uniformscaling_times_affine_returntype<Scalar,Dim,Mode>::type
-	operator* (const Transform<Scalar, Dim, Mode, Options>& t) const
+    internal::uniformscaling_times_affine_returntype<Scalar,Dim,Mode>::type
+    operator* (const Transform<Scalar, Dim, Mode, Options>& t) const
   {
     typename internal::uniformscaling_times_affine_returntype<Scalar,Dim,Mode>::type res = t;
     res.prescale(factor());

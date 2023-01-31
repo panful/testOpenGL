@@ -1,4 +1,4 @@
-// This file is part of Eigen, a lightweight C++ template library
+﻿// This file is part of Eigen, a lightweight C++ template library
 // for linear algebra.
 //
 // Copyright (C) 2008-2016 Konstantinos Margaritis <markos@freevec.org>
@@ -1515,7 +1515,7 @@ template<typename Packet> EIGEN_STRONG_INLINE __UNPACK_TYPE__(Packet) predux_siz
   Packet4i fourth_quarter = pload<Packet4i>(fourth_loader);
 
   return static_cast<__UNPACK_TYPE__(Packet)>(predux(first_quarter) + predux(second_quarter)
-		                  + predux(third_quarter) + predux(fourth_quarter));
+                          + predux(third_quarter) + predux(fourth_quarter));
 }
 
 template<> EIGEN_STRONG_INLINE signed char predux<Packet16c>(const Packet16c& a)

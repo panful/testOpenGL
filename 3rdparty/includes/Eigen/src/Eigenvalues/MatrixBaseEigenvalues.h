@@ -1,4 +1,4 @@
-// This file is part of Eigen, a lightweight C++ template library
+﻿// This file is part of Eigen, a lightweight C++ template library
 // for linear algebra.
 //
 // Copyright (C) 2008 Gael Guennebaud <gael.guennebaud@inria.fr>
@@ -125,10 +125,10 @@ MatrixBase<Derived>::operatorNorm() const
   // then we don't need to compute a maxCoeff() here, comparing the 1st and last ones is enough.
   return sqrt((m_eval*m_eval.adjoint())
                  .eval()
-		 .template selfadjointView<Lower>()
-		 .eigenvalues()
-		 .maxCoeff()
-		 );
+         .template selfadjointView<Lower>()
+         .eigenvalues()
+         .maxCoeff()
+         );
 }
 
 /** \brief Computes the L2 operator norm

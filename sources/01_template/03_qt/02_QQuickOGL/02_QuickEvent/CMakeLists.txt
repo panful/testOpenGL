@@ -1,23 +1,21 @@
-﻿cmake_minimum_required (VERSION 3.8)
-
-set(CMAKE_AUTOMOC ON) # Meta-Object Compiler
+﻿set(CMAKE_AUTOMOC ON) # Meta-Object Compiler
 set(CMAKE_AUTORCC OFF) # Resource Compiler
-set(CMAKE_AUTOUIC ON) # User Interface Compiler
+set(CMAKE_AUTOUIC OFF) # User Interface Compiler
 
-set(target_name "04_02_02_QQuickOGL")
+set(target_name "01_03_02_02_QQuickEvent")
 
 set(SRCS 
-    source/ViewerItem.cpp
-    source/FboRender.cpp
+    "ViewerItem.cpp"
+    "FboRender.cpp"
 )
 
 set(HEADERS
-    include/ViewerItem.h
-    include/FboRender.h
+    "ViewerItem.h"
+    "FboRender.h"
 )
 
 set(RSCS
-    resource/04_02_02.qml
+    "01_03_02_02.qml"
 )
 
 add_executable (${target_name} main.cpp ${SRCS} ${HEADERS} ${RSCS})
@@ -29,4 +27,4 @@ target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/in
 
 install(TARGETS ${target_name} RUNTIME DESTINATION .)
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/04_02_02.qml DESTINATION ./)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/01_03_02_02.qml DESTINATION ./)

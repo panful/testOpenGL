@@ -1,4 +1,4 @@
-// This file is part of Eigen, a lightweight C++ template library
+﻿// This file is part of Eigen, a lightweight C++ template library
 // for linear algebra.
 //
 // Copyright (C) 2008-2015 Gael Guennebaud <gael.guennebaud@inria.fr>
@@ -432,9 +432,9 @@
 // 5.7       10        0x570
 // 5.8       11        0x580
 // 5.9       12        0x590
-// 5.10	     12.1      0x5100
-// 5.11	     12.2      0x5110
-// 5.12	     12.3      0x5120
+// 5.10         12.1      0x5100
+// 5.11         12.2      0x5110
+// 5.12         12.3      0x5120
 #if (defined(sun) || defined(__sun)) && !(defined(__SVR4) || defined(__svr4__))
   #define EIGEN_OS_SUN __SUNPRO_C
 #else
