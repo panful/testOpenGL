@@ -1,5 +1,7 @@
 ﻿add_subdirectory("01_glad_glfw")
 add_subdirectory("02_glew_glfw")
-add_subdirectory("03_qt")
+if(Qt6_FOUND)
+    add_subdirectory("03_qt")
+endif()
 add_subdirectory("04_glm")
 add_subdirectory("05_eigen")
