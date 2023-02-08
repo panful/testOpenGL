@@ -2,7 +2,7 @@
 
 set(target_name "01_04_glm")
 
-add_executable (${target_name} "main.cpp")
+add_executable (${target_name} "main.cpp" "overloadGLM.h")
 
 target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/includes)
 
