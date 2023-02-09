@@ -49,6 +49,11 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    // 不依赖glfw窗口
+    //gladLoadGL();
+    // 依赖glfw窗口或其他类似库
+    //gladLoadGLLoader((GLADloadproc));
+
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
