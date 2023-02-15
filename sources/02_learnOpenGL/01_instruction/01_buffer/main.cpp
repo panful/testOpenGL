@@ -1,7 +1,6 @@
 ﻿
 /*
-* 0 OpenGL画一个最简单的三角形
-* 1 
+* 1 使用vao vbo绘制
 * 2 使用vao vbo ebo绘制
 * 3 只使用vbo绘制，不使用vao
 * 4.只使用vbo和ebo绘制，不使用vao
@@ -10,9 +9,9 @@
 * 7.一次性生成多个缓冲对象（vao vbo等）
 */
 
-#define TEST7
+#define TEST1
 
-#ifdef TEST0
+#ifdef TEST1
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -158,7 +157,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-#endif // TEST0
+#endif // TEST1
 
 #ifdef TEST2
 
@@ -1124,3 +1123,4 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif //TEST7
+
