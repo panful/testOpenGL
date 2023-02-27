@@ -4,7 +4,7 @@ set(target_name "03_02_shadertoy")
 
 add_executable (${target_name} "main.cpp")
 
-# shader.hpp
+# common.hpp
 target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/includes)
 # glad glfw
 target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/includes)

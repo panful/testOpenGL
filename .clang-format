@@ -18,7 +18,9 @@ BraceWrapping:
   AfterStruct:              true
   AfterEnum:                true
   BeforeCatch:              true  # catch新起一行
+  BeforeElse:               true  # else新起一行
 
 # 尾随的注释对齐
 AlignTrailingComments: true
 
+#AlignConsecutiveAssignments: true  # 对齐连续的多行赋值

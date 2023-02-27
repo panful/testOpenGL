@@ -1,17 +1,15 @@
 ﻿/*
-*  === 学习GLSL使用
-* 1. 设置分辨率，即窗口大小
-* 2. 设置分辨率 + 时间
-* 3. 
-*/
+ *  === 学习GLSL使用
+ * 1. 设置分辨率，即窗口大小
+ * 2. 设置分辨率 + 时间
+ * 3.
+ */
 
-#define TEST1
+#define TEST2
 
 #ifdef TEST1
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include "shader.hpp"
+#include <common.hpp>
 #include <iostream>
 #include <vector>
 
@@ -21,43 +19,25 @@ void processInput(GLFWwindow* window);
 float windowWidth = 800.0f;
 float windowHeight = 600.0f;
 
-Shader* myShader = nullptr;
-uint32_t myShaderProgram = 0;
-
 int main()
 {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("resources/03_01_vs.glsl", "resources/03_01_fs.glsl");
 
-    GLFWwindow* window = glfwCreateWindow((int)windowWidth, (int)windowHeight, "TestGLSL", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
-
-    myShader = new Shader("resources/03_01_vs.glsl", "resources/03_01_fs.glsl");
-    myShaderProgram = myShader->GetProgram();
-
-    std::vector<float> vertices{
-        -1.0f, -1.0f,  // 左下
-        -1.0f,  1.0f,
-         1.0f,  1.0f,
-         1.0f,  1.0f,  // 右上
-         1.0f, -1.0f,
-        -1.0f, -1.0f,
+    std::vector<float> vertices {
+        -1.0f,
+        -1.0f, // 左下
+        -1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f, // 右上
+        1.0f,
+        -1.0f,
+        -1.0f,
+        -1.0f,
     };
 
     // Buffer
@@ -76,7 +56,7 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -86,11 +66,11 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         // 开启透明
-        //glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        // glEnable(GL_BLEND);
+        // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        glUseProgram(myShaderProgram);
-        glUniform2f(glGetUniformLocation(myShaderProgram, "iResolution"), windowWidth, windowHeight);
+        program.Use();
+        program.SetUniform2f("iResolution", windowWidth, windowHeight);
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -101,7 +81,7 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteProgram(myShaderProgram);
+    program.DeleteProgram();
 
     glfwTerminate();
     return 0;
@@ -125,11 +105,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #ifdef TEST2
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include "shader.hpp"
-
+#include "common.hpp"
 #include <iostream>
 #include <vector>
 
@@ -139,43 +115,25 @@ void processInput(GLFWwindow* window);
 float windowWidth = 800.0f;
 float windowHeight = 600.0f;
 
-Shader* myShader = nullptr;
-uint32_t myShaderProgram = 0;
-
 int main()
 {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("resources/03_01_vs.glsl", "resources/03_01_fs.glsl");
 
-    GLFWwindow* window = glfwCreateWindow((int)windowWidth, (int)windowHeight, "TestGLSL", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
-
-    myShader = new Shader("resources/01_01.glsl", "resources/03_01.glsl");
-    myShaderProgram = myShader->GetProgram();
-
-    std::vector<float> vertices{
-        -1.0f, -1.0f,  // 左下
-        -1.0f,  1.0f,
-         1.0f,  1.0f,
-         1.0f,  1.0f,  // 右上
-         1.0f, -1.0f,
-        -1.0f, -1.0f,
+    std::vector<float> vertices {
+        -1.0f,
+        -1.0f, // 左下
+        -1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f, // 右上
+        1.0f,
+        -1.0f,
+        -1.0f,
+        -1.0f,
     };
 
     // Buffer
@@ -194,7 +152,7 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -203,9 +161,9 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(myShaderProgram);
-        glUniform2f(glGetUniformLocation(myShaderProgram, "iResolution"), windowWidth, windowHeight);
-        glUniform1f(glGetUniformLocation(myShaderProgram, "iTime"), (float)glfwGetTime());
+        program.Use();
+        program.SetUniform2f("iResolution", windowWidth, windowHeight);
+        program.SetUniform1f("iTime", (float)glfwGetTime());
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -216,7 +174,7 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteProgram(myShaderProgram);
+    program.DeleteProgram();
 
     glfwTerminate();
     return 0;
