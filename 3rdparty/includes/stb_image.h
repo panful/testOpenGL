@@ -1,3 +1,9 @@
+﻿
+#ifndef STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#endif // !STB_IMAGE_IMPLEMENTATION
+
+
 /* stb_image - v2.14 - public domain image loader - http://nothings.org/stb_image.h
 no warranty implied; use at your own risk
 
