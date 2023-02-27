@@ -3,20 +3,20 @@
 
 #include <glad/glad.h>
 
-#include <fstream>
-#include <sstream>
-#include <iostream>
 #include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 class Shader
 {
 private:
     enum class ShaderType
     {
-        Vertex   = 0,
+        Vertex = 0,
         Fragment = 1,
         Geometry = 2,
-        Program  = 3
+        Program = 3
     };
 
 public:
@@ -37,10 +37,10 @@ private:
     uint32_t m_shaderProgram;
 };
 
-Shader::Shader(const std::string& vsPath, const std::string& fsPath, const std::string& gsPath):
-    m_vertexShader(0),
-    m_fragmentShader(0),
-    m_geometryShader(0)
+Shader::Shader(const std::string& vsPath, const std::string& fsPath, const std::string& gsPath)
+    : m_vertexShader(0)
+    , m_fragmentShader(0)
+    , m_geometryShader(0)
 {
     std::string vertexCode;
     std::string fragmentCode;
@@ -92,7 +92,7 @@ Shader::Shader(const std::string& vsPath, const std::string& fsPath, const std::
 
     const char* vShaderCode = vertexCode.c_str();
     const char* fShaderCode = fragmentCode.c_str();
-    
+
     // 编译着色器源码
     uint32_t vertex = 0, fragment = 0, geometry = 0;
 
