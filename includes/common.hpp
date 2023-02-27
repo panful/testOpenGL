@@ -11,8 +11,11 @@
 #define _COMMOND_HPP_
 
 // glad需要在glfw之前包含
+
+// clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+// clang-format on
 
 #include <filesystem>
 #include <fstream>
@@ -36,6 +39,11 @@ public:
     GLFWwindow* GetWindow() const
     {
         return m_window;
+    }
+
+    void SetResizeCB(GLFWframebuffersizefun fun)
+    {
+        glfwSetFramebufferSizeCallback(m_window, fun);
     }
 
 private:
@@ -175,6 +183,8 @@ public:
 
     void Use() { glUseProgram(m_program); }
 
+    // GLfloat
+    //----------------------------------------------------------------------
     void SetUniform1f(const std::string_view& name, GLfloat v)
     {
         glUniform1f(glGetUniformLocation(m_program, name.data()), v);
@@ -193,6 +203,13 @@ public:
     void SetUniform4f(const std::string_view& name, GLfloat v1, GLfloat v2, GLfloat v3, GLfloat v4)
     {
         glUniform4f(glGetUniformLocation(m_program, name.data()), v1, v2, v3, v4);
+    }
+
+    // GLint
+    //----------------------------------------------------------------------
+    void SetUniform1i(const std::string_view& name, GLint v)
+    {
+        glUniform1i(glGetUniformLocation(m_program, name.data()), v);
     }
 
 private:
