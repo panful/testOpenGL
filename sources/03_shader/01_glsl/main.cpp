@@ -10,7 +10,6 @@
 #ifdef TEST1
 
 #include <common.hpp>
-#include <iostream>
 #include <vector>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -106,7 +105,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 #ifdef TEST2
 
 #include "common.hpp"
-#include <iostream>
 #include <vector>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);

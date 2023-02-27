@@ -10,6 +10,7 @@
 #ifndef _COMMOND_HPP_
 #define _COMMOND_HPP_
 
+// glad需要在glfw之前包含
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -50,14 +51,14 @@ private:
         if (!m_window)
         {
             glfwTerminate();
-            // throw std::runtime_error("Failed to create GLFW window");
+            throw std::runtime_error("Failed to create GLFW window");
         }
 
         glfwMakeContextCurrent(m_window);
 
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
-            // throw std::runtime_error("Failed to initialize GLAD");
+            throw std::runtime_error("Failed to initialize GLAD");
         }
     }
 

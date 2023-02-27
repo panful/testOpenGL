@@ -8,7 +8,7 @@
  * 4. 时间
  */
 
-#define TEST3
+#define TEST4
 
 #ifdef TEST1
 
