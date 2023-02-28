@@ -5,4 +5,3 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/target)
 
 add_subdirectory("sources")
-add_subdirectory("resources")

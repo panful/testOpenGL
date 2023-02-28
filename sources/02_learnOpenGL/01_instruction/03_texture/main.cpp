@@ -21,7 +21,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetResizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_03_TEST1_vs.glsl", "resources/02_01_03_TEST1_fs.glsl");
+    ShaderProgram program("resources/02_01_03_TEST1.vs", "resources/02_01_03_TEST1.fs");
 
     float vertices[] = {
         // clang-format off
@@ -140,7 +140,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetResizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_03_TEST1_vs.glsl", "resources/02_01_03_TEST1_fs.glsl");
+    ShaderProgram program("resources/02_01_03_TEST1.vs", "resources/02_01_03_TEST1.fs");
 
     float vertices[] = {
         // clang-format off
@@ -293,7 +293,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetResizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_03_TEST3_vs.glsl", "resources/02_01_03_TEST3_fs.glsl");
+    ShaderProgram program("resources/02_01_03_TEST3.vs", "resources/02_01_03_TEST3.fs");
 
     float vertices[] = {
         // clang-format off
@@ -451,7 +451,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetResizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_03_TEST4_vs.glsl", "resources/02_01_03_TEST4_fs.glsl");
+    ShaderProgram program("resources/02_01_03_TEST4.vs", "resources/02_01_03_TEST4.fs");
 
     // 图1 -> 四边形
     //-------------------------------------------------------------------------
