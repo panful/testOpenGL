@@ -1,8 +1,8 @@
-﻿set(target_name "02_01_02_shader")
+﻿set(target_name "02_01_04_transform")
 
 add_executable (${target_name} "main.cpp")
 
-# glad glfw 头文件
+# glad glfw glm头文件
 target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/includes)
 # glad glfw 库目录
 target_link_directories(${target_name} PRIVATE 

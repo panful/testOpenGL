@@ -2,8 +2,8 @@
 
 set(target_name "01_04_glm")
 
-add_executable (${target_name} "main.cpp" "overloadGLM.h")
+add_executable (${target_name} "main.cpp" "print_glm.h")
 
 target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/includes)
 
-install(TARGETS ${target_name} RUNTIME DESTINATION ./)
+install(TARGETS ${target_name} RUNTIME DESTINATION .)

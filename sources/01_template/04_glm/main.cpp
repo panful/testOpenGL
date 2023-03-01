@@ -10,7 +10,7 @@
 
 #ifdef TEST1
 
-#include "overloadGLM.h"
+#include "print_glm.h"
 
 // 两个点生成一个坐标系
 glm::mat4 genMatrix(glm::vec3 v0, glm::vec3 v1)
@@ -71,7 +71,7 @@ int main()
 
 #ifdef TEST2
 
-#include "overloadGLM.h"
+#include "print_glm.h"
 
 int main()
 {
@@ -159,7 +159,7 @@ int main()
 
 #ifdef TEST3
 
-#include "overloadGLM.h"
+#include "print_glm.h"
 
 // type为true则垂直向量在原向量右边，否则在左边
 glm::vec2 GenVec(glm::vec2 vec, int type)
@@ -190,7 +190,7 @@ int main()
 
 #ifdef TEST4
 
-#include "overloadGLM.h"
+#include "print_glm.h"
 
 int main()
 {
@@ -239,7 +239,7 @@ int main()
 
 #ifdef TEST5
 
-#include "overloadGLM.h"
+#include "print_glm.h"
 
 int main()
 {
