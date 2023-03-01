@@ -1,4 +1,4 @@
-# testOpenGL
+﻿# testOpenGL
 OpenGL测试代码
 
 ## 1. 目录说明
@@ -24,6 +24,13 @@ OpenGL测试代码
 
 
 ## 其他
+
+[OpenGL官方文档](https://www.khronos.org/opengl/wiki/)
+
+[OpenGL函数查询](https://registry.khronos.org/OpenGL-Refpages/gl4/index.php)
+
+[glfw函数查询](https://www.glfw.org/docs/latest/quick_guide.html)
+
 [图形学的三种拾取实现与比较](https://blog.csdn.net/chenweiyu11962/article/details/124433772)
 
 [openMesh一个处理网格的C++库](https://www.graphics.rwth-aachen.de/software/openmesh/)
