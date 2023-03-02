@@ -138,6 +138,7 @@ int main()
         glUseProgram(shaderProgram);
 
         // 一定注意平移，旋转，缩放三个矩阵的顺序
+        // 先缩放再旋转再平移
         glm::mat4 trans = glm::mat4(1.0f);
         // +x平移0.5个单位，-y平移0.5个单位
         trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
@@ -147,6 +148,12 @@ int main()
         trans = glm::scale(trans, glm::vec3(.5f, .5f, 0.f));
 
         // 设置着色器程序中的uniform
+        // glUniformMatrix4fv的参数：
+        // 1.uniform的位置值。
+        // 2.告诉OpenGL我们将要发送多少个矩阵(
+        // 3.是否对矩阵进行置换(Transpose)，也就是说交换矩阵的行和列。
+        //     OpenGL开发者通常使用一种内部矩阵布局，叫做列主序(Column - major Ordering)布局。GLM的默认布局就是列主序，所以并不需要置换矩阵，我们填GL_FALSE。
+        // 4.矩阵数据，但是GLM并不是把它们的矩阵储存为OpenGL所希望接受的那种，因此要先用GLM的自带的函数value_ptr来变换这些数据。
         auto transformLoc = glGetUniformLocation(shaderProgram, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 

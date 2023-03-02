@@ -4,9 +4,10 @@
 * 3. 2D空间向量的垂直向量 (就是2D向量绕原点旋转90°）
 * 4. 转置矩阵，逆矩阵
 * 5. 从矩阵中提取旋转、缩放、平移矩阵 https://blog.csdn.net/hunter_wwq/article/details/21473519/
+* 6. 变换矩阵：缩放、平移、旋转，投影矩阵：正交、透视，观察（视图）矩阵
 */
 
-#define TEST5
+#define TEST6
 
 #ifdef TEST1
 
@@ -58,6 +59,8 @@ glm::mat4 genMatrix(glm::vec3 v0, glm::vec3 v1)
 
 int main()
 {
+    // 两个正交向量的叉乘会产生一个与这两个向量都垂直的第三个向量，一起可以组成一个直角坐标系
+
     auto ret1 = genMatrix({ 1,0,0 }, { 0,1,0 });
     std::cout << ret1;
 
@@ -65,6 +68,8 @@ int main()
 
     auto ret2 = genMatrix({ 1,0,0 }, { 0,0,1 });
     std::cout << ret2;
+
+    return 0;
 }
 
 #endif // TEST1
@@ -317,3 +322,60 @@ int main()
 }
 
 #endif // TEST5
+
+#ifdef TEST6
+
+#include "print_glm.h"
+
+int main()
+{
+    glm::mat4 originMat = glm::mat4(1.0);
+
+    // 不会对originMat修改，结果是返回值
+    // 是对originMat右乘
+    // x缩放为原来的0.5，y缩放为原来的2.0，z不变
+    auto scaleMat = glm::scale(originMat, glm::vec3(0.5, 2.0, 1.0));
+
+    // 绕z轴顺时针旋转45°
+    auto rotateMat = glm::rotate(originMat, glm::radians(-45.0f), glm::vec3(0., 0., 1.));
+
+    // +x平移1个单位，+y平移3个单位，-z平移5个单位
+    auto translateMat = glm::translate(originMat, glm::vec3(1.0, 3.0, -5.0));
+
+    // 正交投影矩阵
+    // 这将创建一个正交投影矩阵，其左、右、下、上、近、远平面的位置分别为 (0, 800, 0, 600, -1, 1)。
+    // 这个矩阵可以用于渲染一个800x600像素的2D场景。
+    auto orthoMat = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);
+
+    // 透视投影矩阵
+    // 这将创建一个透视投影矩阵，其视角为45度，宽高比为800:600，近平面距离为0.1，远平面距离为100。
+    // 这个矩阵可以用于渲染一个视锥体场景，其中近处物体看起来比远处物体更大。
+    auto perspectiveMat = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
+    // 观察(视图）矩阵
+    // 创建一个视图矩阵，其中相机的位置为 (0, 0, 3)，相机朝向的目标位置为 (0, 0, 0)，相机的上方向为 (0, 1, 0)。
+    // 这个矩阵可以用于渲染一个相机观察的3D场景，将场景中的物体坐标转换为相机坐标。
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::mat4 viewMat = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+
+    std::cout << "--------------- origin mat\n"
+              << originMat
+              << "--------------- scale mat\n"
+              << scaleMat
+              << "--------------- translate mat\n"
+              << translateMat
+              << "--------------- rotate mat\n"
+              << rotateMat
+              << "--------------- ortho mat\n"
+              << orthoMat
+              << "--------------- perspective mat\n"
+              << perspectiveMat
+              << "--------------- view mat\n"
+              << viewMat;
+
+    return 0;
+}
+
+#endif // TEST6

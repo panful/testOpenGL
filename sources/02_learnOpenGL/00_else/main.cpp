@@ -136,6 +136,10 @@ int main()
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
     if (!success)
     {
+        // 获取信息日志的长度
+        GLint logLength;
+        glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logLength);
+
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
