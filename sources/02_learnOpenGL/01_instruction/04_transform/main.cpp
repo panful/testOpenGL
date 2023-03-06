@@ -1,9 +1,10 @@
 ﻿
 /*
  * 1. 使用glm对三角形做最简单的缩放，平移，旋转
+ * 2. 一个绕(1,1,0)旋转30°的立方体
  */
 
-#define TEST1
+#define TEST2
 
 #ifdef TEST1
 
@@ -184,3 +185,122 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST1
+
+#ifdef TEST2
+
+#include <array>
+#include <common.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <stb_image.h>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetResizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_01_04_TEST2.vs", "resources/02_01_04_TEST2.fs");
+
+    // clang-format off
+    // 8个顶点
+    std::array<GLfloat, 8 * 6> vertices{
+        // pos                  // color
+        -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f, // 前左下
+         0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f, // 前右下
+         0.5f,  0.5f, 0.0f,     1.0f, 0.0f, 0.0f, // 前右上
+        -0.5f,  0.5f, 0.0f,     1.0f, 0.0f, 0.0f, // 前左上
+
+        -0.5f, -0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后左下
+         0.5f, -0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后右下
+         0.5f,  0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后右上
+        -0.5f,  0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后左上
+    };
+
+    // 6个面，12个三角形
+    std::array<GLuint,6 * 2 * 3> indices{
+        0, 1, 3, // 前
+        1, 2, 3,
+
+        1, 5, 2, // 右
+        5, 6, 2,
+
+        5, 4, 6, // 后
+        4, 7, 6,
+
+        4, 0, 7, // 左
+        0, 3, 7,
+              
+        3, 2, 7, // 上
+        2, 6, 7,
+
+        0, 1, 4, // 下
+        1, 5, 4,
+    };
+    // clang-format on
+
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    //----------------------------------------------------------------------------------
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+        
+        // 绕（1,1,0）旋转30°
+        auto resultMat = glm::rotate(glm::mat4(1.0f), glm::radians(30.0f), glm::vec3(1, 1, 0));
+        program.SetUniformMat4("transform", resultMat);
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST2

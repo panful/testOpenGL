@@ -15,6 +15,9 @@
 // clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 // clang-format on
 
 #include <filesystem>
@@ -210,6 +213,13 @@ public:
     void SetUniform1i(const std::string_view& name, GLint v)
     {
         glUniform1i(glGetUniformLocation(m_program, name.data()), v);
+    }
+
+    // Matrix
+    //----------------------------------------------------------------------
+    void SetUniformMat4(const std::string_view& name, const glm::mat4& m)
+    {
+        glUniformMatrix4fv(glGetUniformLocation(m_program, name.data()), 1, GL_FALSE, glm::value_ptr(m));
     }
 
 private:
