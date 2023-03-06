@@ -250,4 +250,48 @@ private:
     uint32_t m_program;
 };
 
+static void CheckErrorImpl(const char* info, const char* file, int line, const char* func, const char* error)
+{
+    std::cout << "-----------------------------------------\n"
+              << "-- Infomation:\t" << info << '\n'
+              << "-- File:\t" << file << '\n'
+              << "-- Line:\t" << line << '\n'
+              << "-- Function:\t" << func << '\n'
+              << "-- Error:\t" << error << "\n\n";
+}
+
+#define _MACRO_INFO_ __FILE__, __LINE__, __FUNCTION__
+
+#define CheckErrorImplMacro(str)                                                \
+    do                                                                          \
+    {                                                                           \
+        switch (glGetError())                                                   \
+        {                                                                       \
+        case GL_NO_ERROR:                                                       \
+            CheckErrorImpl(str, _MACRO_INFO_, "NO_ERROR");                      \
+            break;                                                              \
+        case GL_INVALID_ENUM:                                                   \
+            CheckErrorImpl(str, _MACRO_INFO_, "INVALID_ENUM");                  \
+            break;                                                              \
+        case GL_INVALID_VALUE:                                                  \
+            CheckErrorImpl(str, _MACRO_INFO_, "INVALID_VALUE");                 \
+            break;                                                              \
+        case GL_INVALID_OPERATION:                                              \
+            CheckErrorImpl(str, _MACRO_INFO_, "INVALID_OPERATION");             \
+            break;                                                              \
+        case GL_INVALID_FRAMEBUFFER_OPERATION:                                  \
+            CheckErrorImpl(str, _MACRO_INFO_, "INVALID_FRAMEBUFFER_OPERATION"); \
+            break;                                                              \
+        case GL_OUT_OF_MEMORY:                                                  \
+            CheckErrorImpl(str, _MACRO_INFO_, "OUT_OF_MEMORY");                 \
+            break;                                                              \
+        default:                                                                \
+            CheckErrorImpl(str, _MACRO_INFO_, "SOMETHING_WRONG");               \
+            break;                                                              \
+        }                                                                       \
+    } while (false);
+
+#define CheckError() CheckErrorImplMacro("")
+#define CheckErrorWithInfo(str) CheckErrorImplMacro(str)
+
 #endif // !_COMMOND_HPP_
