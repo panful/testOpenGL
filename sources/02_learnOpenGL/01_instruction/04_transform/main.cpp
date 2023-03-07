@@ -2,9 +2,10 @@
 /*
  * 1. 使用glm对三角形做最简单的缩放，平移，旋转
  * 2. 一个绕(1,1,0)旋转30°的立方体
+ * 3. MVP矩阵
  */
 
-#define TEST2
+#define TEST3
 
 #ifdef TEST1
 
@@ -190,9 +191,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #include <array>
 #include <common.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -304,3 +302,109 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST2
+
+#ifdef TEST3
+
+#include <array>
+#include <common.hpp>
+#include <stb_image.h>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetResizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_01_04_TEST2.vs", "resources/02_01_04_TEST2.fs");
+
+    // clang-format off
+    std::array<GLfloat, 4 * 6> vertices{
+        -0.5f, -0.5f,  0.0f,    1.0f, 0.0f, 0.0f,  // bottom left
+         0.5f, -0.5f,  0.0f,    0.0f, 1.0f, 0.0f,  // bottom right
+         0.5f,  0.5f,  0.0f,    0.0f, 0.0f, 1.0f,  // top right
+        -0.5f,  0.5f,  0.0f,    1.0f, 1.0f, 1.0f,  // top left
+    };
+
+    std::array<GLuint, 6> indices{
+        0, 1, 3,
+        1, 2, 3
+    };
+    // clang-format on
+
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    //----------------------------------------------------------------------------------
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+
+        // 模型矩阵  模型坐标->世界坐标
+        // 观察矩阵  世界坐标->观察坐标
+        // 投影矩阵  观察坐标->裁剪坐标
+        // 透视除法  裁剪坐标->标准化设备坐标
+        // 视口变换  标准化设备坐标->屏幕坐标
+
+        // 模型矩阵，绕x轴顺时针旋转45°
+        auto model = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(-1, 0, 0));
+        // 观察矩阵，将场景向后移动3个单位，相当于将观察点向前移动3个单位
+        auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.f, 0.f, -3.f));
+        // 投影矩阵，透视投影
+        auto project = glm::perspective(glm::radians(45.0f), 8 / 6.f, 0.1f, 1000.0f);
+
+        auto resultMat = glm::mat4(1.0f);
+        resultMat = project * view * model;
+        program.SetUniformMat4("transform", resultMat);
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST3
