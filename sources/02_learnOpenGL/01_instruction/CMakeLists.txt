@@ -2,3 +2,4 @@
 add_subdirectory("02_shader")
 add_subdirectory("03_texture")
 add_subdirectory("04_transform")
+add_subdirectory("05_camera")
