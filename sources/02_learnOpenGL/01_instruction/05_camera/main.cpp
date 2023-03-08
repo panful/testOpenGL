@@ -19,7 +19,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    initOpenGL.SetResizeCB(framebuffer_size_callback);
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
     ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
 
     // clang-format off
@@ -145,7 +145,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    initOpenGL.SetResizeCB(framebuffer_size_callback);
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
     ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
 
     // clang-format off
@@ -281,7 +281,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    initOpenGL.SetResizeCB(framebuffer_size_callback);
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
     ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
 
     // clang-format off

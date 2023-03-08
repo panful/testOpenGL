@@ -44,7 +44,7 @@ public:
         return m_window;
     }
 
-    void SetResizeCB(GLFWframebuffersizefun fun)
+    void SetFramebufferSizeCB(GLFWframebuffersizefun fun)
     {
         glfwSetFramebufferSizeCallback(m_window, fun);
     }
