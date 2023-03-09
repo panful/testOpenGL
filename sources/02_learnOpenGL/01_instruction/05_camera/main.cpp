@@ -4,10 +4,12 @@
  * 3. 键盘控制相机平移，即对物体缩放，平移
  * 4. 键盘控制相机观察的方向，不修改相机位置（俯仰角pitch偏航角yaw）
  * 5. 键盘控制相机绕(0,0,0)旋转，本质是修改相机位置
- * 6. 鼠标控制相机绕(0,0,0)旋转
+ * 6. 鼠标控制相机绕(0,0,0)旋转，本质是修改相机位置
+ * 7. 鼠标控制相机观察的方向，俯仰角，偏航角
+ * 
  */
 
-#define TEST6
+#define TEST7
 
 #ifdef TEST1
 
@@ -568,7 +570,6 @@ void processInput(GLFWwindow* window)
     front.y = sin(glm::radians(pitch));
     front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 
-    std::cout << front.x << '\t' << front.y << '\t' << front.z << '\n';
     cameraFront = glm::normalize(front);
 }
 
@@ -891,4 +892,175 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 #endif // TEST6
 
+#ifdef TEST7
 
+#include <array>
+#include <common.hpp>
+#include <stb_image.h>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void processInput(GLFWwindow* window);
+
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+// 鼠标是否第一次进入窗口
+auto firstMouse = true;
+
+// 上一次鼠标的位置
+auto lastPosX = 0.0f;
+auto lastPosY = 0.0f;
+
+auto pitch = 0.0f;
+auto yaw = -90.0f;
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    initOpenGL.SetCursorPosCB(mouse_callback);
+    ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
+
+    // clang-format off
+    // 8个顶点
+    std::array<GLfloat, 8 * 6> vertices{
+        // pos                  // color
+        -0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左下
+         0.5f, -0.5f, 0.5f,     0.0f, 1.0f, 0.0f, // 前右下
+         0.5f,  0.5f, 0.5f,     0.0f, 0.0f, 1.0f, // 前右上
+        -0.5f,  0.5f, 0.5f,     1.0f, 1.0f, 1.0f, // 前左上
+
+        -0.5f, -0.5f, -.5f,     1.0f, 1.0f, 0.0f, // 后左下
+         0.5f, -0.5f, -.5f,     0.0f, 1.0f, 1.0f, // 后右下
+         0.5f,  0.5f, -.5f,     1.0f, 0.0f, 1.0f, // 后右上
+        -0.5f,  0.5f, -.5f,     0.0f, 0.0f, 0.0f, // 后左上
+    };
+
+    // 6个面，12个三角形
+    std::array<GLuint,6 * 2 * 3> indices{
+        0, 1, 3, // 前
+        1, 2, 3,
+
+        1, 5, 2, // 右
+        5, 6, 2,
+
+        5, 4, 6, // 后
+        4, 7, 6,
+
+        4, 0, 7, // 左
+        0, 3, 7,
+              
+        3, 2, 7, // 上
+        2, 6, 7,
+
+        0, 1, 4, // 下
+        1, 5, 4,
+    };
+    // clang-format on
+
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    //----------------------------------------------------------------------------------
+
+    // 开启深度测试，默认关闭
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        // 清除深度缓冲
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+
+        // 模型矩阵
+        auto m = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+        // 观察矩阵
+        // cameraFront是一个始终指向屏幕内的向量，摄像机位置向量 + 摄像机方向向量可以让摄像机始终注视着目标
+        auto v = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        // 投影矩阵
+        auto p = glm::perspective(glm::radians(45.0f), 8 / 6.f, 0.1f, 100.0f);
+
+        program.SetUniformMat4("transform", p * v * m);
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (firstMouse)
+    {
+        lastPosX = static_cast<float>(xpos);
+        lastPosY = static_cast<float>(ypos);
+        firstMouse = false;
+        return;
+    }
+
+    auto offsetX = static_cast<float>(xpos) - lastPosX;
+    auto offsetY = lastPosY - static_cast<float>(ypos);
+
+    lastPosX = static_cast<float>(xpos);
+    lastPosY = static_cast<float>(ypos);
+
+    auto sensitivity = 0.05f;
+
+    offsetX *= sensitivity;
+    offsetY *= sensitivity;
+
+    pitch += offsetY;
+    yaw += offsetX;
+
+    glm::vec3 front(1.0f);
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(front);
+}
+
+#endif // TEST7
