@@ -1,10 +1,12 @@
 ﻿/*
  * 1. 使用glm::lookAt设置观察矩阵
  * 2. 相机绕y轴随时间旋转
- * 3. 键盘控制相机位置方向，即对物体缩放，平移
+ * 3. 键盘控制相机位置，即对物体缩放，平移
+ * 4. 键盘控制相机方向，即对物体旋转（俯仰角pitch偏航角yaw）
+ * 5.
  */
 
-#define TEST3
+#define TEST4
 
 #ifdef TEST1
 
@@ -358,7 +360,8 @@ int main()
         // 模型矩阵
         auto m = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
         // 观察矩阵
-        // cameraFront是一个始终指向屏幕内的向量，摄像机位置向量 + 摄像机方向向量可以让摄像机始终注视着目标
+        // 如果照相机位置始终在z=3这个平面，照相机观察方向始终和y平行，那么照相机没有在z轴上时看到的就是物体的侧面
+        // 当照相机观察方向 = cameraPos + cameraFront时，因为cameraFront的z分量是-1，就可以保证照相机始终观察的是物体，且观察方向不会反向
         auto v = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         // 投影矩阵
         auto p = glm::perspective(glm::radians(45.0f), 8 / 6.f, 0.1f, 100.0f);
@@ -418,3 +421,160 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST3
+
+#ifdef TEST4
+
+#include <array>
+#include <common.hpp>
+#include <stb_image.h>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+auto pitch = 0.0f;
+auto yaw = -90.0f; // 保证cameraFront起始值是(0,0,-1)
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
+
+    // clang-format off
+    // 8个顶点
+    std::array<GLfloat, 8 * 6> vertices{
+        // pos                  // color
+        -0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左下
+         0.5f, -0.5f, 0.5f,     0.0f, 1.0f, 0.0f, // 前右下
+         0.5f,  0.5f, 0.5f,     0.0f, 0.0f, 1.0f, // 前右上
+        -0.5f,  0.5f, 0.5f,     1.0f, 1.0f, 1.0f, // 前左上
+
+        -0.5f, -0.5f, -.5f,     1.0f, 1.0f, 0.0f, // 后左下
+         0.5f, -0.5f, -.5f,     0.0f, 1.0f, 1.0f, // 后右下
+         0.5f,  0.5f, -.5f,     1.0f, 0.0f, 1.0f, // 后右上
+        -0.5f,  0.5f, -.5f,     0.0f, 0.0f, 0.0f, // 后左上
+    };
+
+    // 6个面，12个三角形
+    std::array<GLuint,6 * 2 * 3> indices{
+        0, 1, 3, // 前
+        1, 2, 3,
+
+        1, 5, 2, // 右
+        5, 6, 2,
+
+        5, 4, 6, // 后
+        4, 7, 6,
+
+        4, 0, 7, // 左
+        0, 3, 7,
+              
+        3, 2, 7, // 上
+        2, 6, 7,
+
+        0, 1, 4, // 下
+        1, 5, 4,
+    };
+    // clang-format on
+
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    //----------------------------------------------------------------------------------
+
+    // 开启深度测试，默认关闭
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        // 清除深度缓冲
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+
+        // 模型矩阵
+        auto m = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+        // 观察矩阵
+        // cameraFront是摄像机的方向，摄像机位置向量 + 摄像机方向向量可以让摄像机始终注视着目标
+        auto v = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        // 投影矩阵
+        auto p = glm::perspective(glm::radians(45.0f), 8 / 6.f, 0.1f, 100.0f);
+
+        program.SetUniformMat4("transform", p * v * m);
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    // pitch 俯仰角 绕x轴旋转 可以理解为抬头和低头看
+    // yaw   偏航角 绕y轴旋转 可以理解为往左边或右边转头看
+    // roll  滚转角 绕z轴旋转 
+
+    float cameraSpeed = 0.5f; // adjust accordingly
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        pitch -= cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        pitch += cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        yaw += cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        yaw -= cameraSpeed;
+
+    glm::vec3 front(1.0f);
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+
+    std::cout << front.x << '\t' << front.y << '\t' << front.z << '\n';
+    cameraFront = glm::normalize(front);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST4
+

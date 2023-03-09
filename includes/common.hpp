@@ -49,6 +49,11 @@ public:
         glfwSetFramebufferSizeCallback(m_window, fun);
     }
 
+    void SetCursorPosCB(GLFWcursorposfun fun)
+    {
+        glfwSetCursorPosCallback(m_window, fun);
+    }
+
 private:
     void Init(const std::string_view& name, uint32_t w, uint32_t h)
     {
