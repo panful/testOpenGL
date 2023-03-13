@@ -3,12 +3,12 @@
  * 1. 使用glm对三角形做最简单的缩放，平移，旋转
  * 2. 一个绕(1,1,0)旋转30°的立方体
  * 3. MVP矩阵的作用，从模型坐标变换到屏幕坐标的过程
- * 4. MVP矩阵，随时间旋转的立方体，开启深度测试
+ * 4. 随时间旋转的立方体，开启深度测试
  * 5. 透视投影perspective和正交投影ortho
  * 6. NDC(Normalized Device Coordinates)标准化设备坐标系
  */
 
-#define TEST6
+#define TEST3
 
 #ifdef TEST1
 
@@ -272,7 +272,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         program.Use();
-        
+
         // 绕（1,1,0）旋转30°
         auto resultMat = glm::rotate(glm::mat4(1.0f), glm::radians(30.0f), glm::vec3(1, 1, 0));
         program.SetUniformMat4("transform", resultMat);
@@ -356,6 +356,19 @@ int main()
     glEnableVertexAttribArray(1);
 
     //----------------------------------------------------------------------------------
+    // 打印MVP矩阵得到的顶点坐标
+    auto print_vetices = [vertices](const char* name, const glm::mat4& mat) {
+        std::cout << "---------------- " << name << '\n';
+        for (size_t i = 0; i < 4; i++)
+        {
+            auto result_vertices = mat * glm::vec4(vertices[i * 6 + 0], vertices[i * 6 + 1], vertices[i * 6 + 2], 1.0f);
+            auto w = result_vertices.w;
+            std::cout << "w: " << w << "\t\t"
+                      << result_vertices.x / w << "\t\t"
+                      << result_vertices.y / w << "\t\t"
+                      << result_vertices.z / w << '\n';
+        }
+    };
 
     while (!glfwWindowShouldClose(window))
     {
@@ -379,10 +392,20 @@ int main()
         // 观察矩阵，将场景向后移动3个单位，相当于将观察点向前移动3个单位
         auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.f, 0.f, -3.f));
         // 投影矩阵，透视投影，第二个参数是窗口的宽高比，第三四是近远裁剪截面
-        auto project = glm::perspective(glm::radians(45.0f), 8 / 6.f, 0.1f, 1000.0f);
+        auto projection = glm::perspective(glm::radians(45.0f), 8 / 6.f, 0.1f, 1000.0f);
+        // 正交投影
+        //auto projection = glm::ortho(-1.f, 1.f, -1.f / (8 / 6.f), 1.f / (8 / 6.f), 2.f, 4.f);
+
+        // 透视除法是将整个向量（顶点坐标）除以w分量，使向量可以从4维降到3维
+        // OpenGL内部自动做透视除法，不需要写代码
+
+        print_vetices("origin", glm::mat4(1.f));
+        print_vetices("model", model);
+        print_vetices("modle + view", view * model);
+        print_vetices("model + view + projection", projection * view * model);
 
         auto resultMat = glm::mat4(1.0f);
-        resultMat = project * view * model;
+        resultMat = projection * view * model;
         program.SetUniformMat4("transform", resultMat);
 
         glBindVertexArray(VAO);
@@ -624,26 +647,27 @@ int main()
 
         // 绕(1,1,0)旋转
         auto m = glm::rotate(glm::mat4(1.0f), static_cast<float>(glfwGetTime()), glm::vec3(1, 1, 0));
-        //auto m = glm::rotate(glm::mat4(1.0f), glm::radians(30.f), glm::vec3(1, 1, 0));
+        // auto m = glm::rotate(glm::mat4(1.0f), glm::radians(30.f), glm::vec3(1, 1, 0));
 
-        // 观察矩阵，在(0,0,5)位置处观察，相当于将物体向屏幕里面平移5个单位
+        // 观察矩阵，在(0,0,5)位置处观察，沿着(0,0,-1)观察
+        // 就是将世界坐标的原点移动到(0,0,5)
         auto v = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -5));
 
         // 透视投影
         // 近远平面需要为正值
         // 如果远平面小于近平面就相当于反方向观察
-        // z坐标在[4,6]范围内的显示
-        //auto p = glm::perspective(glm::radians(45.0f), 8 / 6.f, 4.f, 6.f);
+        // 以相机为原点，顶点距离相机的距离在[4,6]范围内的顶点可以显示
+         auto p = glm::perspective(glm::radians(45.0f), 8 / 6.f, 4.f, 6.f);
 
         // 正交投影
         // 将观察坐标在x:[-1,1] y:[-1,1] z:[4,6]范围内的显示
-        // 注意z是[4,6]不是[-6,-4]
+        // 注意z是[4,6]不是[-6,-4]，因为观察矩阵是将世界坐标系原点移动到相机位置
         // 注意和视口大小的影响，模型是正方体，绘制出来后看起来可能不是立方体
-        //auto p = glm::ortho(-1.f, 1.f, -1.f, 1.f, 4.f, 6.f);
-        // 避免视口的宽高比和正交平截头体宽高比不一致导致的拉伸
+        // auto p = glm::ortho(-1.f, 1.f, -1.f, 1.f, 4.f, 6.f);
+        // 避免视口的宽高比和正交平截头体宽高比不一致导致的拉伸，可以做如下变换：
         constexpr auto width = 800.0f;
         constexpr auto height = 600.0f;
-        auto p = glm::ortho(-1.f, 1.f, -1.f / (width / height), 1.f / (width / height), 4.f, 6.f);
+        // auto p = glm::ortho(-1.f, 1.f, -1.f / (width / height), 1.f / (width / height), 4.f, 6.f);
 
         program.SetUniformMat4("transform", p * v * m);
 

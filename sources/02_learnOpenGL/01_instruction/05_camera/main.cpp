@@ -9,7 +9,7 @@
  * 
  */
 
-#define TEST7
+#define TEST6
 
 #ifdef TEST1
 
