@@ -4,10 +4,10 @@
  * 3. 2D空间向量的垂直向量 (就是2D向量绕原点旋转90°）
  * 4. 转置矩阵，逆矩阵
  * 5. 从矩阵中提取旋转、缩放、平移矩阵 https://blog.csdn.net/hunter_wwq/article/details/21473519/
- * 6. glm::scale rotate translate ortho perspective lookAt
+ * 6. glm::scale rotate translate ortho perspective lookAt frustum
  */
 
-#define TEST2
+#define TEST6
 
 #ifdef TEST1
 
@@ -452,6 +452,11 @@ int main()
     // 这个矩阵可以用于渲染一个视锥体场景，其中近处物体看起来比远处物体更大。
     auto perspectiveMat = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
+    // 透视投影矩阵
+    // 六个参数分别为左、右、下、上、近、远平面
+    // 可以用于创建非对称的投影矩阵，一般较少使用
+    auto frustumMat = glm::frustum(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);
+
     // 观察(视图）矩阵
     // 创建一个视图矩阵，其中相机的位置为 (0, 0, 3)，相机朝向的目标位置为 (0, 0, 0)，相机的上方向为 (0, 1, 0)。
     // 这个矩阵可以用于渲染一个相机观察的3D场景，将场景中的物体坐标转换为相机坐标。
@@ -473,7 +478,9 @@ int main()
               << "--------------- perspective mat\n"
               << perspectiveMat
               << "--------------- view mat\n"
-              << viewMat;
+              << viewMat
+              << "--------------- frustum mat\n"
+              << frustumMat;
 
     return 0;
 }
