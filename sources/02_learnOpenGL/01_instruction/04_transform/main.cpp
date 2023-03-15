@@ -7,9 +7,10 @@
  * 5. 透视投影perspective和正交投影ortho
  * 6. NDC(Normalized Device Coordinates)标准化设备坐标系
  * 7. 透视除法
+ * 8. z-fighting z冲突
  */
 
-#define TEST7
+#define TEST8
 
 #ifdef TEST1
 
@@ -195,7 +196,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #include <array>
 #include <common.hpp>
-#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -311,7 +311,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #include <array>
 #include <common.hpp>
-#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -395,7 +394,7 @@ int main()
         // 投影矩阵，透视投影，第二个参数是窗口的宽高比，第三四是近远裁剪截面
         auto projection = glm::perspective(glm::radians(45.0f), 8 / 6.f, 0.1f, 1000.0f);
         // 正交投影
-        //auto projection = glm::ortho(-1.f, 1.f, -1.f / (8 / 6.f), 1.f / (8 / 6.f), 2.f, 4.f);
+        // auto projection = glm::ortho(-1.f, 1.f, -1.f / (8 / 6.f), 1.f / (8 / 6.f), 2.f, 4.f);
 
         // 透视除法是将整个向量（顶点坐标）除以w分量，使向量可以从4维降到3维
         // OpenGL内部自动做透视除法，不需要写代码
@@ -442,7 +441,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #include <array>
 #include <common.hpp>
-#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -563,7 +561,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #include <array>
 #include <common.hpp>
-#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -658,7 +655,7 @@ int main()
         // 近远平面需要为正值
         // 如果远平面小于近平面就相当于反方向观察
         // 以相机为原点，顶点距离相机的距离在[4,6]范围内的顶点可以显示
-         auto p = glm::perspective(glm::radians(45.0f), 8 / 6.f, 4.f, 6.f);
+        auto p = glm::perspective(glm::radians(45.0f), 8 / 6.f, 4.f, 6.f);
 
         // 正交投影
         // 将观察坐标在x:[-1,1] y:[-1,1] z:[4,6]范围内的显示
@@ -705,7 +702,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #include <array>
 #include <common.hpp>
-#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -805,7 +801,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #include <array>
 #include <common.hpp>
-#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -921,3 +916,178 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST7
+
+#ifdef TEST8
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_01_04_TEST2.vs", "resources/02_01_04_TEST2.fs");
+
+    constexpr GLfloat offset { 0.01f };
+
+    std::vector<GLfloat> vertices;
+    constexpr GLfloat startPoint { -.7f };
+    for (size_t i = 0; i < 100; i++)
+    {
+        for (size_t j = 0; j < 100; j++)
+        {
+            vertices.emplace_back(startPoint + i * offset);
+            vertices.emplace_back(startPoint + j * offset);
+            vertices.emplace_back(0.0f);
+
+            vertices.emplace_back(1.0f);
+            vertices.emplace_back(0.0f);
+            vertices.emplace_back(0.0f);
+        }
+    }
+
+    std::vector<GLfloat> vertices2;
+    constexpr GLfloat startPoint2 { -.3f };
+    for (size_t i = 0; i < 100; i++)
+    {
+        for (size_t j = 0; j < 100; j++)
+        {
+            // pos
+            vertices2.emplace_back(startPoint2 + i * offset);
+            vertices2.emplace_back(startPoint2 + j * offset);
+            vertices2.emplace_back(0.0f);
+
+            // color
+            vertices2.emplace_back(0.0f);
+            vertices2.emplace_back(1.0f);
+            vertices2.emplace_back(0.0f);
+        }
+    }
+
+    std::vector<GLuint> indices;
+    for (size_t i = 0; i < 99; i++)
+    {
+        for (size_t j = 0; j < 99; j++)
+        {
+            indices.emplace_back(static_cast<GLuint>(j + i * 100));
+            indices.emplace_back(static_cast<GLuint>(j + 100 + i * 100));
+            indices.emplace_back(static_cast<GLuint>(j + 1 + i * 100));
+
+            indices.emplace_back(static_cast<GLuint>(100 + j + i * 100));
+            indices.emplace_back(static_cast<GLuint>(100 + 1 + j + i * 100));
+            indices.emplace_back(static_cast<GLuint>(j + 1 + i * 100));
+        }
+    }
+
+    unsigned int VBO, VAO, EBO;
+    {
+
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    unsigned int VBO2, VAO2, EBO2;
+    {
+        glGenVertexArrays(1, &VAO2);
+        glGenBuffers(1, &VBO2);
+        glGenBuffers(1, &EBO2);
+
+        glBindVertexArray(VAO2);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices2.size(), vertices2.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    //----------------------------------------------------------------------------------
+
+    // 要想出现z冲突现象，必须开启深度测试
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+
+        // 绕(1,1,0)旋转
+        auto m = glm::rotate(glm::mat4(1.0f), static_cast<float>(glfwGetTime()), glm::vec3(1, 1, 0));
+
+        // 观察矩阵
+        auto v = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -5));
+
+        // 透视投影
+        // auto p = glm::perspective(glm::radians(30.0f), 8 / 6.f, 4.f, 6.f);
+
+        // 正交投影
+        auto p = glm::ortho(-1.f, 1.f, -1.f / (8 / 6.f), 1.f / (8 / 6.f), 4.f, 6.f);
+
+        program.SetUniformMat4("transform", p * v * m);
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
+
+        glBindVertexArray(VAO2);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+
+    glDeleteVertexArrays(1, &VAO2);
+    glDeleteBuffers(1, &VBO2);
+    glDeleteBuffers(1, &EBO2);
+
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST8
+
