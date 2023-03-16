@@ -49,7 +49,7 @@ OpenGL测试代码
 
 [光栅化渲染器的实现 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/121543313)
 
-
+[空间数据结构(四叉树/八叉树/BVH树/BSP树/k-d树)](https://www.cnblogs.com/KillerAery/p/10878367.html)
 
 
 
