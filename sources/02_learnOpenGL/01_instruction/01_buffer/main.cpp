@@ -113,10 +113,23 @@ int main()
     glGenBuffers(1, &VBO);
 
     glBindVertexArray(VAO);
-
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    // 1.目标缓冲对象，符号常量必须为GL_ARRAY_BUFFER或GL_ELEMENT_ARRAY_BUFFER。
+    // 2.缓冲区对象的新数据存储的大小（以字节为单位）
+    // 3.复制到数据存储区以进行初始化的数据的指针，如果不复制数据，则指定NULL。
+    // 4.指定数据存储的预期使用模式。 符号常量必须为GL_STREAM_DRAW，GL_STATIC_DRAW或GL_DYNAMIC_DRAW
+    // glBufferData把用户定义的数据传输到当前绑定的显存缓冲区（VBO)中，顶点数据传输到GPU后，通过glVertexAttribPointer告诉GPU如何解释这些数据
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    // glVertexAttribPointer的参数含义：
+    // 1. 指定我们要配置的顶点属性，和顶点着色器中的layout的数字是对应的
+    // 2. 指定顶点属性的大小(坐标xyz共有三个,颜色rgb也有三个）
+    // 3. 指定数据的类型
+    // 4. 是否希望数据被标准化(Normalize)(映射到[0,1],有符号数则为[-1,1] 是否有法线
+    // 5. 步长(Stride),连续的顶点属性组之间的间隔,从这个属性第二次出现的地方到整个数组0位置之间有多少字节,可以理解为一组数据有多大，
+    //    比如一组数据包括坐标xyz，颜色rgb那么步长就为6，要乘字节长度，例如：6 * sizeof(GLfloat)
+    // 6. 数据指针,数据开始的位置，比如一组数据包括xyz,rgb，那么xyz开始的位置为0，rgb开始的位置为3，要乘字节长度，例如：reinterpret_cast<void*>(3 * sizeof(GLfloat))
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
