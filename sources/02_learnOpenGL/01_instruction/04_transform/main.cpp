@@ -8,9 +8,10 @@
  * 6. NDC(Normalized Device Coordinates)标准化设备坐标系
  * 7. 透视除法
  * 8. z-fighting z冲突
+ * 9. 解决z-fighting
  */
 
-#define TEST8
+#define TEST9
 
 #ifdef TEST1
 
@@ -1091,3 +1092,206 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #endif // TEST8
 
+#ifdef TEST9
+
+// 解决Z-fighting：
+// 多边形偏移、混合 https://www.jianshu.com/p/8f8f420a3702
+// 反向深度 https://blog.51cto.com/u_15057807/2621354
+
+// z-fighting问题的预防：
+// 避免两个物体靠的太近：在绘制时，插入一个小偏移
+// 将近裁剪面（设置透视投影时设置）设置的离观察者远一些：提高裁剪范围内的精确度
+// 使用更高位数的深度缓冲区：提高深度缓冲区的精确度
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_01_04_TEST2.vs", "resources/02_01_04_TEST2.fs");
+
+    constexpr GLfloat offset { 0.01f };
+
+    std::vector<GLfloat> vertices;
+    constexpr GLfloat startPoint { -.7f };
+    for (size_t i = 0; i < 100; i++)
+    {
+        for (size_t j = 0; j < 100; j++)
+        {
+            vertices.emplace_back(startPoint + i * offset);
+            vertices.emplace_back(startPoint + j * offset);
+            vertices.emplace_back(0.0f);
+
+            vertices.emplace_back(1.0f);
+            vertices.emplace_back(0.0f);
+            vertices.emplace_back(0.0f);
+        }
+    }
+
+    std::vector<GLfloat> vertices2;
+    constexpr GLfloat startPoint2 { -.3f };
+    for (size_t i = 0; i < 100; i++)
+    {
+        for (size_t j = 0; j < 100; j++)
+        {
+            // pos
+            vertices2.emplace_back(startPoint2 + i * offset);
+            vertices2.emplace_back(startPoint2 + j * offset);
+            vertices2.emplace_back(0.0f);
+
+            // color
+            vertices2.emplace_back(0.0f);
+            vertices2.emplace_back(1.0f);
+            vertices2.emplace_back(0.0f);
+        }
+    }
+
+    std::vector<GLuint> indices;
+    for (size_t i = 0; i < 99; i++)
+    {
+        for (size_t j = 0; j < 99; j++)
+        {
+            indices.emplace_back(static_cast<GLuint>(j + i * 100));
+            indices.emplace_back(static_cast<GLuint>(j + 100 + i * 100));
+            indices.emplace_back(static_cast<GLuint>(j + 1 + i * 100));
+
+            indices.emplace_back(static_cast<GLuint>(100 + j + i * 100));
+            indices.emplace_back(static_cast<GLuint>(100 + 1 + j + i * 100));
+            indices.emplace_back(static_cast<GLuint>(j + 1 + i * 100));
+        }
+    }
+
+    unsigned int VBO, VAO, EBO;
+    {
+
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    unsigned int VBO2, VAO2, EBO2;
+    {
+        glGenVertexArrays(1, &VAO2);
+        glGenBuffers(1, &VBO2);
+        glGenBuffers(1, &EBO2);
+
+        glBindVertexArray(VAO2);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices2.size(), vertices2.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    //----------------------------------------------------------------------------------
+
+    // 要想出现z冲突现象，必须开启深度测试
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+
+        // 绕(1,1,0)旋转
+        auto m = glm::rotate(glm::mat4(1.0f), static_cast<float>(glfwGetTime()), glm::vec3(1, 1, 0));
+
+        // 观察矩阵
+        auto v = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -5));
+
+        // 透视投影
+        // auto p = glm::perspective(glm::radians(30.0f), 8 / 6.f, 4.f, 6.f);
+
+        // 正交投影
+        auto p = glm::ortho(-1.f, 1.f, -1.f / (8 / 6.f), 1.f / (8 / 6.f), 4.f, 6.f);
+
+        program.SetUniformMat4("transform", p * v * m);
+
+        //-----------------------------------------------------
+
+        // 开启多边形偏移
+        // GL_POLYGON_OFFSET_POINT 对应光栅化模式: GL_POINT
+        // GL_POLYGON_OFFSET_LINE  对应光栅化模式: GL_LINE
+        // GL_POLYGON_OFFSET_FILL  对应光栅化模式: GL_FILL
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        // glPolygonOffset (GLfloat factor, GLfloat units);
+        // 每个Fragment的深度值都会增加偏移量: Offset = (m * factor) + (r * units);
+        // m: 多边形的深度的斜率的最⼤值,理解⼀个多边形越是与近裁剪⾯平行,m 就越接近于0.
+        // r: 能产⽣于窗⼝坐标系的深度值中可分辨的差异最小值.r 是是由具体OpenGL 平台指定的 ⼀个常量.
+        // ⼀个大于0的Offset 会把模型推到离你(摄像机) 更远的位置, 相应的⼀个⼩于0的Offset 会把模型拉近，
+        // 一般⽽⾔, 只需要将 -1.f 和 1.f 这样简单赋值给glPolygonOffset 基本可以满⾜足需求.
+        glPolygonOffset(1.f, 1.f);
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
+
+        glDisable(GL_POLYGON_OFFSET_FILL);
+
+        //-----------------------------------------------------
+
+        glBindVertexArray(VAO2);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
+
+        //-----------------------------------------------------
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+
+    glDeleteVertexArrays(1, &VAO2);
+    glDeleteBuffers(1, &VBO2);
+    glDeleteBuffers(1, &EBO2);
+
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST9
