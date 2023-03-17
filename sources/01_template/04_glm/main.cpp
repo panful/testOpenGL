@@ -7,7 +7,7 @@
  * 6. glm::scale rotate translate ortho perspective lookAt frustum
  */
 
-#define TEST6
+#define TEST2
 
 #ifdef TEST1
 
@@ -96,29 +96,49 @@ int main()
     {
         glm::vec2 v21(2, 3);
         glm::vec2 v22(4, 5);
-        glm::vec2 ret2 = v21 + v22;
-        glm::vec2 ret3 = v21 * v22;
-        float ret4 = glm::dot(v21, v22); // 向量的点乘结果是一个数量
+
+        auto add_vec = v21 + v22;
+
+        auto multi_vec1 = v21 * v22;
+        auto multi_vec2 = v22 * v21;
+
+        // 向量的点乘结果是一个数量（一维）
+        auto dot_vec1 = glm::dot(v21, v22);
+        auto dot_vec2 = glm::dot(v22, v21);
+
         // glm::cross(v21, v22); // glm中2维向量无法使用glm::cross()
 
-        std::cout << "( 2,3 ) + ( 4,5 ) = \t" << ret2 << '\n';
-        std::cout << "( 2,3 ) * ( 4,5 ) = \t" << ret3 << '\n';
-        std::cout << "( 2,3 ) . ( 4,5 ) = \t" << ret4 << '\n';
+        std::cout << "( 2,3 ) + ( 4,5 ) = \t" << add_vec << '\n';
+        std::cout << "( 2,3 ) * ( 4,5 ) = \t" << multi_vec1 << '\n';
+        std::cout << "( 4,5 ) * ( 2,3 ) = \t" << multi_vec2 << '\n';
+        std::cout << "( 2,3 ) . ( 4,5 ) = \t" << dot_vec1 << '\n';
+        std::cout << "( 4,5 ) . ( 2,3 ) = \t" << dot_vec2 << '\n';
     }
 
     std::cout << "-------------------------------------------\n";
 
     // 3维向量的点乘，叉乘
     {
-        glm::vec3 v32(1, 0, 0);
-        glm::vec3 v33(0, 0, 1);
-        glm::vec3 ret5 = glm::cross(v32, v33); // 叉乘
-        glm::vec3 ret6 = v32 * v33;
-        float ret7 = glm::dot(v32, v33); // 点乘
+        glm::vec3 v32(1, 2, 3);
+        glm::vec3 v33(3, 4, 5);
 
-        std::cout << "(1, 0, 0) x (0, 0, 1) = \t" << ret5 << '\n';
-        std::cout << "(1, 0, 0) * (0, 0, 1) = \t" << ret6 << '\n';
-        std::cout << "(1, 0, 0) . (0, 0, 1) = \t" << ret7 << '\n';
+        // 叉乘
+        auto cross_vec1 = glm::cross(v32, v33);
+        auto cross_vec2 = glm::cross(v33, v32);
+
+        // 点乘
+        auto dot_vec1 = glm::dot(v32, v33);
+        auto dot_vec2 = glm::dot(v33, v32);
+
+        auto multi_vec1 = v32 * v33;
+        auto multi_vec2 = v33 * v32;
+
+        std::cout << "(1, 2, 3) x (3, 4, 5) = \t" << cross_vec1 << '\n';
+        std::cout << "(3, 4, 5) x (1, 2, 3) = \t" << cross_vec2 << '\n';
+        std::cout << "(1, 2, 3) * (3, 4, 5) = \t" << multi_vec1 << '\n';
+        std::cout << "(3, 4, 5) * (1, 2, 3) = \t" << multi_vec2 << '\n';
+        std::cout << "(1, 2, 3) . (3, 4, 5) = \t" << dot_vec1 << '\n';
+        std::cout << "(3, 4, 5) . (1, 2, 3) = \t" << dot_vec2 << '\n';
     }
 
     std::cout << "-------------------------------------------\n";
