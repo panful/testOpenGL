@@ -51,5 +51,7 @@ OpenGL测试代码
 
 [空间数据结构(四叉树/八叉树/BVH树/BSP树/k-d树)](https://www.cnblogs.com/KillerAery/p/10878367.html)
 
+[图形学的一些资源记录](https://dhbloo.github.io/2019/11/01/Graphics-Refs/#rendering-equationpbribl)
 
+[现代OpenGL教程](https://doc.yonyoucloud.com/doc/wiki/project/modern-opengl-tutorial/tutorial1.html)
 
