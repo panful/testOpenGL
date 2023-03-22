@@ -1,5 +1,5 @@
 ﻿/*
- * 1.
+ * 1. 最简单的光照，光照颜色的吸收与反射规律
  */
 
 #define TEST1
@@ -23,6 +23,7 @@ int main()
 
     // clang-format off
     std::array<GLfloat, 6 * 6 * 6>  vertices{
+        // pos                // color
         -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
          0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
          0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
@@ -76,10 +77,10 @@ int main()
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
-
+        // pos
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
         glEnableVertexAttribArray(0);
-
+        // color
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
         glEnableVertexAttribArray(1);
     }
@@ -93,12 +94,9 @@ int main()
 
         glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
-
+        // 光照只需要pos
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
         glEnableVertexAttribArray(0);
-
-        // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-        // glEnableVertexAttribArray(1);
     }
 
     //----------------------------------------------------------------------------------
