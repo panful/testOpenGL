@@ -32,7 +32,7 @@ void main()
     // 光源经过反射之后的方向
     vec3 reflectDir = reflect(-lightDir, norm);
     // 反光度，越高反射光的能力越强，散射的越少，高光点就会越小
-    int shininess = 32;
+    int shininess = 128;
     // 【光源反射的方向】和【眼睛看向物体的反方向】之间的角度越小，点积结果越大（90°以内）
     // 即当视线方向和光源反射反向平行时，亮度最大
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
