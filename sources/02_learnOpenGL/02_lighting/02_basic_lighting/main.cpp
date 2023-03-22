@@ -1,5 +1,5 @@
 ﻿/*
- * 1. 基础光照
+ * 1. 漫反射光照 diffuse lighting
  */
 
 #define TEST1
