@@ -2,9 +2,11 @@
  * 1. glDepthFunc 深度测试函数的设置
  * 2. 对不同的图元使用不同的深度测试函数
  * 3. glDepthMask 设置深度掩码是否更新深度缓冲
+ * 4. 对深度值进行可视化 gl_FragCoord.z
+ * 5. 
  */
 
-#define TEST3
+#define TEST4
 
 #ifdef TEST1
 
@@ -522,3 +524,109 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST3
+
+#ifdef TEST4
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL("Depth Test", 800, 800);
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_01_TEST4.vs", "resources/02_04_01_TEST4.fs");
+
+    // clang-format off
+    std::array<GLfloat, 4 * 6> verticesPlane{
+        // pos                  // color
+        -0.5f, -0.5f,  0.5f,     0.0f, 1.0f, 0.0f, // 左下
+         0.5f, -0.5f,  -.5f,     0.0f, 1.0f, 0.0f, // 右下
+         0.5f,  0.5f,  -.5f,     0.0f, 1.0f, 0.0f, // 右上
+        -0.5f,  0.5f,  0.5f,     0.0f, 1.0f, 0.0f, // 左上
+    };
+
+    std::array<GLuint, 2 * 3> indicesPlane{
+        0, 1, 2,
+        0, 2, 3,
+    };
+    // clang-format on
+
+    unsigned int planeVAO;
+    {
+        unsigned int VBO, EBO;
+        glGenVertexArrays(1, &planeVAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(planeVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesPlane.size(), verticesPlane.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indicesPlane.size(), indicesPlane.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    //----------------------------------------------------------------------------------
+
+    // 开启深度测试
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+
+        // 使用modelMat让物体随着时间远离相机，即z值越来越大
+        auto modelMat = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, 5.f - glfwGetTime() / 2.f));
+        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        // 从观察坐标到裁剪坐标（应用投影矩阵）的过程就已经将变换z值的非线性方程嵌入进去了，即透视投影矩阵已经包含了这个非线性方程
+        auto perspectiveMat = glm::perspective(glm::radians(30.f), 800.f / 800.f, 0.1f, 100.f);
+        auto orthoMat = glm::ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
+
+        // 透视投影
+        program.SetUniformMat4("transform", perspectiveMat * viewMat * modelMat);
+        // 正交投影
+        // program.SetUniformMat4("transform", orthoMat * viewMat * modelMat);
+
+        glBindVertexArray(planeVAO);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesPlane.size()), GL_UNSIGNED_INT, 0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST4
+
