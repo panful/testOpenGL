@@ -328,7 +328,7 @@ int main()
         // 3. count 数组中顶点的数量
         //glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        // 绘制方式 https://www.cnblogs.com/qingsunny/archive/2013/03/20/2971979.html
+        // 绘制方式见resources文件夹内的primitive.png
 
         // 1.绘制方式
         // 2.依次从索引数组中读取几个顶点来进行绘制（这里一个点有3个坐标，3个颜色，因此为6）
