@@ -4,7 +4,7 @@
  * 3. 纹理图片alpha小于0.1时跳过该片段，从而实现透明效果
  */
 
-#define TEST3
+#define TEST2
 
 #ifdef TEST1
 
@@ -253,6 +253,8 @@ int main()
 
         program.Use();
         program.SetUniformMat4("transform", glm::mat4(1.f));
+        // 旋转之后物体混合就会出错
+        // program.SetUniformMat4("transform", glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime() / 2.), glm::vec3(0.f, 1.f, 0.f)));
 
         // OpenGL中深度测试在混合之前进行，所以距离眼睛更远的图元如果在后面绘制，
         // 就不会将颜色(R,G,B,A)缓存，所以就会导致距离眼睛更远的图元被丢弃
