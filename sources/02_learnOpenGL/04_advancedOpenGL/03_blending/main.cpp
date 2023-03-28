@@ -1,10 +1,10 @@
 /*
  * 1. 混合的基础示例
  * 2. 深度测试和混合一起使用
- * 3.
+ * 3. 纹理图片alpha小于0.1时跳过该片段，从而实现透明效果
  */
 
-#define TEST2
+#define TEST3
 
 #ifdef TEST1
 
@@ -293,3 +293,112 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST2
+
+#ifdef TEST3
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_03_TEST3.vs", "resources/02_04_03_TEST3.fs");
+    Texture textureGrass("resources/02_04_03_grass.png");
+    Texture textureWall("resources/02_04_03_wall.jpg");
+
+    // clang-format off
+    std::array<GLfloat, 6 * 5> quadVertices{
+        // pos                  // texture coord
+        -0.5f, -0.5f, 0.0f,     0.0f, 0.0f,   // 左下
+         0.5f, -0.5f, 0.0f,     1.0f, 0.0f,   // 右下
+         0.5f,  0.5f, 0.0f,     1.0f, 1.0f,   // 右上
+
+        -0.5f, -0.5f, 0.0f,     0.0f, 0.0f,   // 左下
+         0.5f,  0.5f, 0.0f,     1.0f, 1.0f,   // 右上
+        -0.5f,  0.5f, 0.0f,     0.0f, 1.0f,   // 左上
+    };
+    // clang-format on
+
+    unsigned int quadVAO;
+    {
+        unsigned int VBO;
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(quadVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * quadVertices.size(), quadVertices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    //----------------------------------------------------------------------------------
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.1f, 0.2f, 0.3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        //------------------------------------------------
+        // 左下角一堵墙前面一颗草
+        auto transform = glm::translate(glm::mat4(1.f), glm::vec3(-.4f, -.4f, 0.f));
+
+        program.Use();
+        program.SetUniformMat4("transform", transform);
+
+        textureWall.Bind();
+        glBindVertexArray(quadVAO);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(quadVertices.size() / 5));
+
+        textureGrass.Bind();
+        glBindVertexArray(quadVAO);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(quadVertices.size() / 5));
+
+        //------------------------------------------------
+        // 右上角一堵墙前面一棵草
+        transform = glm::translate(glm::mat4(1.f), glm::vec3(.4f, .4f, 0.f));
+        program.SetUniformMat4("transform", transform);
+
+        textureWall.Bind();
+        glBindVertexArray(quadVAO);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(quadVertices.size() / 5));
+
+        textureGrass.Bind();
+        glBindVertexArray(quadVAO);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(quadVertices.size() / 5));
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST3
