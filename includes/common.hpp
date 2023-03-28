@@ -225,6 +225,12 @@ public:
     //----------------------------------------------------------------------
     void SetUniformMat4(const std::string_view& name, const glm::mat4& m) const
     {
+        //glUniformMatrix4fv的参数：
+        //1.uniform的位置值。
+        //2.告诉OpenGL我们将要发送多少个矩阵
+        //3.是否对矩阵进行置换(Transpose)，也就是说交换矩阵的行和列。
+        //    OpenGL开发者通常使用一种内部矩阵布局，叫做列主序(Column - major Ordering)布局。GLM的默认布局就是列主序，所以并不需要置换矩阵，我们填GL_FALSE。
+        //4.矩阵数据，但是GLM并不是把它们的矩阵储存为OpenGL所希望接受的那种，因此要先用GLM的自带的函数value_ptr来变换这些数据。
         glUniformMatrix4fv(glGetUniformLocation(m_program, name.data()), 1, GL_FALSE, glm::value_ptr(m));
     }
 
