@@ -165,7 +165,7 @@ int main()
 
     int width, height, nrChannels;
     // 注意调用glBindTexture之后紧接着就要加载纹理图片，如果连续绑定多个纹理，紧接着再加载纹理图片，就会出错。
-    unsigned char* imageData = stbi_load("resources/p1.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* imageData = stbi_load("resources/02_01_03_barce.jpg", &width, &height, &nrChannels, 0);
     if (imageData)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);

@@ -18,6 +18,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <stb_image.h>
 // clang-format on
 
 #include <filesystem>
@@ -44,12 +45,12 @@ public:
         return m_window;
     }
 
-    void SetFramebufferSizeCB(GLFWframebuffersizefun fun)
+    void SetFramebufferSizeCB(GLFWframebuffersizefun fun) const
     {
         glfwSetFramebufferSizeCallback(m_window, fun);
     }
 
-    void SetCursorPosCB(GLFWcursorposfun fun)
+    void SetCursorPosCB(GLFWcursorposfun fun) const
     {
         glfwSetCursorPosCallback(m_window, fun);
     }
@@ -108,13 +109,13 @@ public:
     {
         return m_shader;
     }
-    void DeleteShader()
+    void DeleteShader() const
     {
         glDeleteShader(m_shader);
     }
 
 private:
-    void CheckErrors(uint32_t shader)
+    void CheckErrors(uint32_t shader) const
     {
         GLint success = 0;
         GLchar infoLog[1024] { 0 };
@@ -187,42 +188,42 @@ public:
 
     GLuint GetProgram() const { return m_program; }
 
-    void DeleteProgram() { glDeleteProgram(m_program); }
+    void DeleteProgram() const { glDeleteProgram(m_program); }
 
-    void Use() { glUseProgram(m_program); }
+    void Use() const { glUseProgram(m_program); }
 
     // GLfloat
     //----------------------------------------------------------------------
-    void SetUniform1f(const std::string_view& name, GLfloat v)
+    void SetUniform1f(const std::string_view& name, GLfloat v) const
     {
         glUniform1f(glGetUniformLocation(m_program, name.data()), v);
     }
 
-    void SetUniform2f(const std::string_view& name, GLfloat v1, GLfloat v2)
+    void SetUniform2f(const std::string_view& name, GLfloat v1, GLfloat v2) const
     {
         glUniform2f(glGetUniformLocation(m_program, name.data()), v1, v2);
     }
 
-    void SetUniform3f(const std::string_view& name, GLfloat v1, GLfloat v2, GLfloat v3)
+    void SetUniform3f(const std::string_view& name, GLfloat v1, GLfloat v2, GLfloat v3) const
     {
         glUniform3f(glGetUniformLocation(m_program, name.data()), v1, v2, v3);
     }
 
-    void SetUniform4f(const std::string_view& name, GLfloat v1, GLfloat v2, GLfloat v3, GLfloat v4)
+    void SetUniform4f(const std::string_view& name, GLfloat v1, GLfloat v2, GLfloat v3, GLfloat v4) const
     {
         glUniform4f(glGetUniformLocation(m_program, name.data()), v1, v2, v3, v4);
     }
 
     // GLint
     //----------------------------------------------------------------------
-    void SetUniform1i(const std::string_view& name, GLint v)
+    void SetUniform1i(const std::string_view& name, GLint v) const
     {
         glUniform1i(glGetUniformLocation(m_program, name.data()), v);
     }
 
     // Matrix
     //----------------------------------------------------------------------
-    void SetUniformMat4(const std::string_view& name, const glm::mat4& m)
+    void SetUniformMat4(const std::string_view& name, const glm::mat4& m) const
     {
         glUniformMatrix4fv(glGetUniformLocation(m_program, name.data()), 1, GL_FALSE, glm::value_ptr(m));
     }
@@ -233,12 +234,12 @@ private:
         m_program = glCreateProgram();
     }
 
-    void LinkShader()
+    void LinkShader() const
     {
         glLinkProgram(m_program);
     }
 
-    void CheckErrors()
+    void CheckErrors() const
     {
         GLint success { 0 };
         GLchar infoLog[512] { 0 };
@@ -251,7 +252,7 @@ private:
         }
     }
 
-    void AttachShader(const std::string_view& filePath, Shader::ShaderType type)
+    void AttachShader(const std::string_view& filePath, Shader::ShaderType type) const
     {
         if (!filePath.empty())
         {
@@ -265,48 +266,142 @@ private:
     uint32_t m_program;
 };
 
-static void CheckErrorImpl(const char* info, const char* file, int line, const char* func, const char* error)
+class Texture
 {
+public:
+    Texture(const std::string_view& path)
+        : m_texture(0)
+        , m_width(0)
+        , m_height(0)
+        , m_channels(0)
+    {
+        glGenTextures(1, &m_texture);
+
+        // 默认激活纹理单元0
+        Active(GL_TEXTURE0);
+
+        // 默认2D纹理
+        Bind();
+
+        // 默认环绕、过滤方式
+        SetWarpParameter(GL_REPEAT, GL_REPEAT);
+        SetFilterParameter(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+
+        LoadImage(path);
+    }
+    ~Texture() = default;
+
+public:
+    void Active(GLenum texUnit) const
+    {
+        glActiveTexture(texUnit);
+    }
+
+    void Bind() const
+    {
+        glBindTexture(GL_TEXTURE_2D, m_texture);
+    }
+
+    void Release() const
+    {
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    void LoadImage(const std::string_view& path, bool bFlip = true)
+    {
+        stbi_set_flip_vertically_on_load(bFlip);
+
+        if (auto data = stbi_load(path.data(), &m_width, &m_height, &m_channels, 0))
+        {
+            GLenum colorFormat { 0 };
+
+            if (m_channels == 3)
+            {
+                colorFormat = GL_RGB;
+            }
+            else if (m_channels == 4)
+            {
+                colorFormat = GL_RGBA;
+            }
+            else
+            {
+                std::clog << "Image channels error!\n";
+            }
+
+            glTexImage2D(GL_TEXTURE_2D, 0, colorFormat, m_width, m_height, 0, colorFormat, GL_UNSIGNED_BYTE, data);
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::clog << "Failed to load texture\n";
+        }
+    }
+
+    void SetWarpParameter(GLint s, GLint t) const
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, s);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, t);
+    }
+
+    void SetFilterParameter(GLint min, GLint mag) const
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+    }
+
+    int GetWidth() const { return m_width; }
+    int GetHeight() const { return m_height; }
+    int GetChannels() const { return m_channels; }
+
+private:
+    GLuint m_texture;
+    int m_width;
+    int m_height;
+    int m_channels;
+};
+
+namespace ErrorImpl {
+static void CheckErrorImpl(const char* info, const char* file, int line, const char* func)
+{
+    std::string_view strError;
+
+    switch (glGetError())
+    {
+    case GL_NO_ERROR:
+        strError = "NO_ERROR";
+        break;
+    case GL_INVALID_ENUM:
+        strError = "INVALID_ENUM";
+        break;
+    case GL_INVALID_VALUE:
+        strError = "INVALID_VALUE";
+        break;
+    case GL_INVALID_OPERATION:
+        strError = "INVALID_OPERATION";
+        break;
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+        strError = "INVALID_FRAMEBUFFER_OPERATION";
+        break;
+    case GL_OUT_OF_MEMORY:
+        strError = "OUT_OF_MEMORY";
+        break;
+    default:
+        strError = "SOMETHING_WRONG";
+        break;
+    }
+
     std::cout << "-----------------------------------------\n"
               << "-- Infomation:\t" << info << '\n'
               << "-- File:\t" << file << '\n'
               << "-- Line:\t" << line << '\n'
               << "-- Function:\t" << func << '\n'
-              << "-- Error:\t" << error << "\n\n";
+              << "-- Error:\t" << strError.data() << "\n\n";
 }
+} // namespace ErrorImpl
 
-#define _MACRO_INFO_ __FILE__, __LINE__, __FUNCTION__
-
-#define CheckErrorImplMacro(str)                                                \
-    do                                                                          \
-    {                                                                           \
-        switch (glGetError())                                                   \
-        {                                                                       \
-        case GL_NO_ERROR:                                                       \
-            CheckErrorImpl(str, _MACRO_INFO_, "NO_ERROR");                      \
-            break;                                                              \
-        case GL_INVALID_ENUM:                                                   \
-            CheckErrorImpl(str, _MACRO_INFO_, "INVALID_ENUM");                  \
-            break;                                                              \
-        case GL_INVALID_VALUE:                                                  \
-            CheckErrorImpl(str, _MACRO_INFO_, "INVALID_VALUE");                 \
-            break;                                                              \
-        case GL_INVALID_OPERATION:                                              \
-            CheckErrorImpl(str, _MACRO_INFO_, "INVALID_OPERATION");             \
-            break;                                                              \
-        case GL_INVALID_FRAMEBUFFER_OPERATION:                                  \
-            CheckErrorImpl(str, _MACRO_INFO_, "INVALID_FRAMEBUFFER_OPERATION"); \
-            break;                                                              \
-        case GL_OUT_OF_MEMORY:                                                  \
-            CheckErrorImpl(str, _MACRO_INFO_, "OUT_OF_MEMORY");                 \
-            break;                                                              \
-        default:                                                                \
-            CheckErrorImpl(str, _MACRO_INFO_, "SOMETHING_WRONG");               \
-            break;                                                              \
-        }                                                                       \
-    } while (false);
-
-#define CheckError() CheckErrorImplMacro("")
-#define CheckErrorWithInfo(str) CheckErrorImplMacro(str)
+#define CheckError() ErrorImpl::CheckErrorImpl("", __FILE__, __LINE__, __FUNCTION__)
+#define CheckErrorWithInfo(str) ErrorImpl::CheckErrorImpl(str, __FILE__, __LINE__, __FUNCTION__)
 
 #endif // !_COMMOND_HPP_

@@ -13,7 +13,6 @@
 #ifdef TEST1
 
 #include <common.hpp>
-#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -76,7 +75,7 @@ int main()
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // 翻转图片，OpenGL要求图片的y轴从下到上，图片的y轴一般是从上到下
-    unsigned char* data = stbi_load("resources/p1.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load("resources/02_01_03_barce.jpg", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -132,7 +131,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 #ifdef TEST2
 
 #include <common.hpp>
-#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -219,7 +217,7 @@ int main()
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // 翻转图片，OpenGL要求图片的y轴从下到上，图片的y轴一般是从上到下
-    unsigned char* data = stbi_load("resources/p0.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load("resources/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
     if (data)
     {
         // 当调用glTexImage2D时，当前绑定的纹理对象就会被附加上纹理图像
@@ -285,7 +283,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 #ifdef TEST3
 
 #include <common.hpp>
-#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -352,7 +349,7 @@ int main()
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true);
 
-    auto data0 = stbi_load("resources/p1.jpg", &width, &height, &nrChannels, 0);
+    auto data0 = stbi_load("resources/02_01_03_barce.jpg", &width, &height, &nrChannels, 0);
     if (data0)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data0);
@@ -373,7 +370,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    auto data1 = stbi_load("resources/p0.jpg", &width, &height, &nrChannels, 0);
+    auto data1 = stbi_load("resources/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
     if (data1)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
@@ -443,7 +440,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 #ifdef TEST4
 
 #include <common.hpp>
-#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -540,7 +536,7 @@ int main()
     glBindTexture(GL_TEXTURE_2D, texture1);
     // 加载纹理图片1
     int width, height, nrChannels;
-    unsigned char* data1 = stbi_load("resources/p0.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data1 = stbi_load("resources/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
     if (data1)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
@@ -555,7 +551,7 @@ int main()
     // 绑定第二个纹理
     glBindTexture(GL_TEXTURE_2D, texture2);
     // 加载纹理图片2
-    unsigned char* data2 = stbi_load("resources/p1.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data2 = stbi_load("resources/02_01_03_barce.jpg", &width, &height, &nrChannels, 0);
     if (data2)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
@@ -616,7 +612,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 #ifdef TEST5
 
 #include <common.hpp>
-#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -707,7 +702,7 @@ int main()
 
     // 加载纹理图片1
     glBindTexture(GL_TEXTURE_2D, texture1);
-    auto data1 = stbi_load("resources/p0.jpg", &width, &height, &nrChannels, 0);
+    auto data1 = stbi_load("resources/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
     if (data1)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
@@ -762,7 +757,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 #ifdef TEST6
 
 #include <common.hpp>
-#include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -884,7 +878,7 @@ int main()
 
     // 加载纹理图片1
     glBindTexture(GL_TEXTURE_2D, texture1);
-    auto data1 = stbi_load("resources/p0.jpg", &width, &height, &nrChannels, 0);
+    auto data1 = stbi_load("resources/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
     if (data1)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
@@ -897,7 +891,7 @@ int main()
 
     // 加载纹理图片2
     glBindTexture(GL_TEXTURE_2D, texture2);
-    auto data2 = stbi_load("resources/p1.jpg", &width, &height, &nrChannels, 0);
+    auto data2 = stbi_load("resources/02_01_03_barce.jpg", &width, &height, &nrChannels, 0);
     if (data2)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
