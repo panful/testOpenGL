@@ -1,8 +1,10 @@
 /*
  * 1. 混合的基础示例
+ * 2. 深度测试和混合一起使用
+ * 3.
  */
 
-#define TEST1
+#define TEST2
 
 #ifdef TEST1
 
@@ -20,7 +22,6 @@ int main()
     ShaderProgram program("resources/02_04_03_TEST1.vs", "resources/02_04_03_TEST1.fs");
 
     // clang-format off
-    // 8个顶点
     std::array<GLfloat, 3 * 7> verticesLeftTriangle{
         // pos                  // color
         -0.5f, -0.5f, 0.0f,     0.5f, 0.0f, 0.0f, 0.5f,  // 左下
@@ -34,7 +35,6 @@ int main()
          0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f, 0.5f,  // 右下
          0.1f,  0.5f, 0.0f,     0.0f, 1.0f, 0.0f, 0.5f,  // 中上
     };
-
     // clang-format on
 
     unsigned int VAOleft;
@@ -166,3 +166,130 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST1
+
+#ifdef TEST2
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_03_TEST1.vs", "resources/02_04_03_TEST1.fs");
+
+    // clang-format off
+    std::array<GLfloat, 3 * 7> verticesLeftTriangle{
+        // pos                  // color
+        -0.5f, -0.5f, 0.1f,     1.0f, 0.0f, 0.0f, 0.1f,  // 左下
+         0.3f, -0.5f, 0.1f,     1.0f, 0.0f, 0.0f, 0.1f,  // 右下
+        -0.1f,  0.5f, 0.1f,     1.0f, 0.0f, 0.0f, 0.1f,  // 中上
+    };
+
+    std::array<GLfloat, 3 * 7> verticesRightTriangle{
+        // pos                  // color
+        -0.3f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f, 0.6f,  // 左下
+         0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f, 0.6f,  // 右下
+         0.1f,  0.5f, 0.0f,     0.0f, 1.0f, 0.0f, 0.6f,  // 中上
+    };
+    // clang-format on
+
+    unsigned int VAOleft;
+    {
+        unsigned int VBO;
+        glGenVertexArrays(1, &VAOleft);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(VAOleft);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesLeftTriangle.size(), verticesLeftTriangle.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    unsigned int VAOright;
+    {
+        unsigned int VBO;
+        glGenVertexArrays(1, &VAOright);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(VAOright);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesRightTriangle.size(), verticesRightTriangle.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    //----------------------------------------------------------------------------------
+
+    // 开启混合
+    glEnable(GL_BLEND);
+    // 开启深度测试
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.f, 0.f, 1.f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // 设置混合方式
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        program.Use();
+        program.SetUniformMat4("transform", glm::mat4(1.f));
+
+        // OpenGL中深度测试在混合之前进行，所以距离眼睛更远的图元如果在后面绘制，
+        // 就不会将颜色(R,G,B,A)缓存，所以就会导致距离眼睛更远的图元被丢弃
+        // 正确的绘制顺序应当是：
+        // 1. 先绘制所有不透明的物体。
+        // 2. 对所有透明的物体排序。
+        // 3. 按顺序绘制所有透明的物体。
+        // 如果没有开启深度测试，则颜色结果按照drawcall顺序和混合方式计算
+
+        // 先绘制距离眼睛更近的图元(NDC坐标系，z的范围为[-1, 1]，z为-1时距离眼睛最近)
+        glBindVertexArray(VAOright);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(verticesRightTriangle.size() / 7));
+
+        // 再绘制距离眼睛更远的图元，由于开启了深度测试，和之前绘制的三角形重叠的区域会直接被丢弃
+        glBindVertexArray(VAOleft);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(verticesLeftTriangle.size() / 7));
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST2
