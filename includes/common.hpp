@@ -225,12 +225,12 @@ public:
     //----------------------------------------------------------------------
     void SetUniformMat4(const std::string_view& name, const glm::mat4& m) const
     {
-        //glUniformMatrix4fv的参数：
-        //1.uniform的位置值。
-        //2.告诉OpenGL我们将要发送多少个矩阵
-        //3.是否对矩阵进行置换(Transpose)，也就是说交换矩阵的行和列。
-        //    OpenGL开发者通常使用一种内部矩阵布局，叫做列主序(Column - major Ordering)布局。GLM的默认布局就是列主序，所以并不需要置换矩阵，我们填GL_FALSE。
-        //4.矩阵数据，但是GLM并不是把它们的矩阵储存为OpenGL所希望接受的那种，因此要先用GLM的自带的函数value_ptr来变换这些数据。
+        // glUniformMatrix4fv的参数：
+        // 1.uniform的位置值。
+        // 2.告诉OpenGL我们将要发送多少个矩阵
+        // 3.是否对矩阵进行置换(Transpose)，也就是说交换矩阵的行和列。
+        //     OpenGL开发者通常使用一种内部矩阵布局，叫做列主序(Column - major Ordering)布局。GLM的默认布局就是列主序，所以并不需要置换矩阵，我们填GL_FALSE。
+        // 4.矩阵数据，但是GLM并不是把它们的矩阵储存为OpenGL所希望接受的那种，因此要先用GLM的自带的函数value_ptr来变换这些数据。
         glUniformMatrix4fv(glGetUniformLocation(m_program, name.data()), 1, GL_FALSE, glm::value_ptr(m));
     }
 
@@ -279,7 +279,7 @@ public:
         : m_texture(0)
         , m_width(0)
         , m_height(0)
-        , m_channels(0)
+        , m_colorFormat(0)
     {
         glGenTextures(1, &m_texture);
 
@@ -293,11 +293,46 @@ public:
         SetWarpParameter(GL_REPEAT, GL_REPEAT);
         SetFilterParameter(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 
+        // 将图像数据加载到纹理中
         LoadImage(path);
+
+        // 取消纹理绑定
+        Release();
     }
+
+    Texture(GLsizei w, GLsizei h, GLenum format = GL_RGB)
+        : m_texture(0)
+        , m_width(w)
+        , m_height(h)
+        , m_colorFormat(format)
+    {
+        glGenTextures(1, &m_texture);
+
+        // 默认激活纹理单元0
+        Active(GL_TEXTURE0);
+
+        // 默认2D纹理
+        Bind();
+
+        // 创建一个图像数据为空的纹理
+        CreateNullTexture();
+
+        // 默认环绕、过滤方式
+        SetWarpParameter(GL_REPEAT, GL_REPEAT);
+        SetFilterParameter(GL_LINEAR, GL_LINEAR);
+
+        // 取消纹理绑定
+        Release();
+    }
+
     ~Texture() = default;
 
 public:
+    GLuint Get() const
+    {
+        return m_texture;
+    }
+
     void Active(GLenum texUnit) const
     {
         glActiveTexture(texUnit);
@@ -316,25 +351,23 @@ public:
     void LoadImage(const std::string_view& path, bool bFlip = true)
     {
         stbi_set_flip_vertically_on_load(bFlip);
-
-        if (auto data = stbi_load(path.data(), &m_width, &m_height, &m_channels, 0))
+        int channels { 0 };
+        if (auto data = stbi_load(path.data(), &m_width, &m_height, &channels, 0))
         {
-            GLenum colorFormat { 0 };
-
-            if (m_channels == 3)
+            if (channels == 3)
             {
-                colorFormat = GL_RGB;
+                m_colorFormat = GL_RGB;
             }
-            else if (m_channels == 4)
+            else if (channels == 4)
             {
-                colorFormat = GL_RGBA;
+                m_colorFormat = GL_RGBA;
             }
             else
             {
                 std::clog << "Image channels error!\n";
             }
 
-            glTexImage2D(GL_TEXTURE_2D, 0, colorFormat, m_width, m_height, 0, colorFormat, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, m_colorFormat, m_width, m_height, 0, m_colorFormat, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
 
             stbi_image_free(data);
@@ -357,15 +390,29 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
     }
 
-    int GetWidth() const { return m_width; }
-    int GetHeight() const { return m_height; }
-    int GetChannels() const { return m_channels; }
+    void ResetSize(GLsizei w, GLsizei h)
+    {
+        m_width = w;
+        m_height = h;
+
+        CreateNullTexture();
+    }
+
+    GLsizei GetWidth() const { return m_width; }
+    GLsizei GetHeight() const { return m_height; }
+    GLenum GetColorFormat() const { return m_colorFormat; }
+
+private:
+    void CreateNullTexture() const
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, m_colorFormat, m_width, m_height, 0, m_colorFormat, GL_UNSIGNED_BYTE, NULL);
+    }
 
 private:
     GLuint m_texture;
-    int m_width;
-    int m_height;
-    int m_channels;
+    GLsizei m_width;
+    GLsizei m_height;
+    GLenum m_colorFormat;
 };
 
 namespace ErrorImpl {
