@@ -5,10 +5,10 @@
  * 04. 对同一个着色器多次设置不同的纹理和VAO
  * 05. 采样器的使用，对纹理设置采样的方式
  * 06. 一个采样器应用到多个纹理
- * 
+ * 07. 读取纹理的像素数据
  */
 
-#define TEST5
+#define TEST7
 
 #ifdef TEST1
 
@@ -947,3 +947,198 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST6
+
+#ifdef TEST7
+
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+void cursorPosCB(GLFWwindow* w, double x, double y);
+void mouseCB(GLFWwindow* window, int button, int action, int mods);
+
+// 鼠标的位置
+double mouse_x { 0 };
+double mouse_y { 0 };
+
+// 纹理
+unsigned int texture { 0 };
+// stb_image读上来的像素数据
+unsigned char* data { nullptr };
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    initOpenGL.SetCursorPosCB(cursorPosCB);
+    initOpenGL.SetMouseCB(mouseCB);
+
+    ShaderProgram program("resources/02_01_03_TEST7.vs", "resources/02_01_03_TEST7.fs");
+
+    float vertices[] = {
+        // clang-format off
+         // positions           // texture coords
+         1.0f,  1.0f,  0.0f,    1.0f, 1.0f,   // top right
+         1.0f, -1.0f,  0.0f,    1.0f, 0.0f,   // bottom right
+        -1.0f, -1.0f,  0.0f,    0.0f, 0.0f,   // bottom left
+        -1.0f,  1.0f,  0.0f,    0.0f, 1.0f    // top left
+        // clang-format on
+    };
+    unsigned int indices[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+    };
+
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // 创建并绑定纹理
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    // 纹理环绕
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // 纹理过滤
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true); // 翻转图片，OpenGL要求图片的y轴从下到上，图片的y轴一般是从上到下
+    data = stbi_load("resources/02_01_03_alpha.png", &width, &height, &nrChannels, 0);
+    std::cout << "image: " << width << '\t' << height << '\n';
+    // 带alpha值的图像通道应该为4
+    if (data && nrChannels == 4)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+
+        // 绑定纹理
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    program.DeleteProgram();
+
+    stbi_image_free(data);
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+void cursorPosCB(GLFWwindow* w, double x, double y)
+{
+    mouse_x = x;
+    mouse_y = y;
+}
+
+void mouseCB(GLFWwindow* window, int button, int action, int mods)
+{
+    switch (action)
+    {
+    case GLFW_PRESS:
+        switch (button)
+        {
+        case GLFW_MOUSE_BUTTON_LEFT:
+        {
+            std::cout << "-------------------------------------\n"
+                      << mouse_x << '\t' << mouse_y << '\t';
+
+            GLint level { 0 };        // 细节级别。0是基本图像级别
+            GLint format { GL_RGBA }; // 像素数据的格式
+
+            // 获取纹理的宽度和高度
+            GLint width { 0 }, height { 0 };
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glGetTexLevelParameteriv(GL_TEXTURE_2D, level, GL_TEXTURE_WIDTH, &width);
+            glGetTexLevelParameteriv(GL_TEXTURE_2D, level, GL_TEXTURE_HEIGHT, &height);
+
+            std::cout << width << '\t' << height << '\n';
+
+            // 为像素数据分配内存
+            auto pixels = new GLubyte[width * height * 4];
+
+            // 获取像素数据
+            glGetTexImage(GL_TEXTURE_2D, level, format, GL_UNSIGNED_BYTE, pixels);
+
+            // 像素的索引，注意最后的'*4'以及y轴需要翻转
+            int index = ((int)(height - mouse_y) * width + (int)mouse_x) * 4;
+
+            // 纹理中的数据
+            auto r = (int)pixels[index + 0];
+            auto g = (int)pixels[index + 1];
+            auto b = (int)pixels[index + 2];
+            auto a = (int)pixels[index + 3];
+
+            // 使用stb_image读上来的图片原始数据
+            auto r2 = (int)data[index + 0];
+            auto g2 = (int)data[index + 1];
+            auto b2 = (int)data[index + 2];
+            auto a2 = (int)data[index + 3];
+
+            std::cout << r << '\t' << g << '\t' << b << '\t' << a << '\n';
+            std::cout << r2 << '\t' << g2 << '\t' << b2 << '\t' << a2 << '\n';
+
+            // 删除像素数据
+            delete[] pixels;
+
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+        break;
+        default:
+            break;
+        }
+    }
+}
+
+#endif // TEST7
