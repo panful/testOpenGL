@@ -80,9 +80,9 @@ void main()
 
    //FragColor = KernelFunc(blur);
    //FragColor = KernelFunc(sharpen);
-   FragColor = KernelFunc(edge_detection);
+   //FragColor = KernelFunc(edge_detection);
 
    //FragColor = Grayscale();
-   //FragColor = Inversion();
+   FragColor = Inversion();
 
 }
