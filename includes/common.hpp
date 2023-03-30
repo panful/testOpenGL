@@ -45,14 +45,34 @@ public:
         return m_window;
     }
 
+    // 窗口缩放
     void SetFramebufferSizeCB(GLFWframebuffersizefun fun) const
     {
         glfwSetFramebufferSizeCallback(m_window, fun);
     }
 
+    // 光标位置
     void SetCursorPosCB(GLFWcursorposfun fun) const
     {
         glfwSetCursorPosCallback(m_window, fun);
+    }
+
+    // 键盘按下抬起
+    void SetKeyCB(GLFWkeyfun fun) const
+    {
+        glfwSetKeyCallback(m_window, fun);
+    }
+
+    // 鼠标滚轮
+    void SetScrollCB(GLFWscrollfun fun) const
+    {
+        glfwSetScrollCallback(m_window, fun);
+    }
+
+    // 鼠标按下抬起
+    void SetMouseCB(GLFWmousebuttonfun fun) const
+    {
+        glfwSetMouseButtonCallback(m_window, fun);
     }
 
 private:
