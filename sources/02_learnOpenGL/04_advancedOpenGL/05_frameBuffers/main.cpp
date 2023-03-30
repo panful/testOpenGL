@@ -5,10 +5,10 @@
  * 4. 附加深度缓冲纹理到帧缓冲，从纹理中读取深度缓冲数据并打印
  * 5. 使用渲染缓冲对象存储深度缓冲信息，绘制需要开启深度测试的图像到帧缓冲
  * 6. 使用纹理存储深度缓冲信息，绘制需要开启深度测试的图像到帧缓冲
- * 7. 
+ * 7. 对帧缓冲的纹理进行后期处理，核效果
  */
 
-#define TEST4
+#define TEST7
 
 #ifdef TEST1
 
@@ -657,7 +657,7 @@ int main()
         glBindVertexArray(triangleVAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
-        
+
         // 自定义的FBO使用完深度测试后关闭深度测试
         glDisable(GL_DEPTH_TEST);
 
@@ -1198,3 +1198,231 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST6
+
+#ifdef TEST7
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+constexpr uint32_t windowWidth { 800 };
+constexpr uint32_t windowHeight { 600 };
+
+unsigned int texColorBuffer { 0 };
+
+int main()
+{
+    InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST7_Default_FBO.vs", "resources/02_04_05_TEST7_Default_FBO.fs");
+    ShaderProgram customFBOProgram("resources/02_04_05_TEST7_Custom_FBO.vs", "resources/02_04_05_TEST7_Custom_FBO.fs");
+
+    // clang-format off
+    // 立方体
+    std::array<GLfloat, 36 * 5> verticesCube{
+        // positions          // texture Coords
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+    };
+
+    // 矩形，绘制到默认帧缓冲
+    std::array<GLfloat, 5 * 6> vertices_quad {
+        // pos                     // texCoords
+        -0.8f,   0.8f,   0.0f,     0.0f, 1.0f,
+        -0.8f,  -0.8f,   0.0f,     0.0f, 0.0f,
+         0.8f,  -0.8f,   0.0f,     1.0f, 0.0f,
+
+        -0.8f,   0.8f,   0.0f,     0.0f, 1.0f,
+         0.8f,  -0.8f,   0.0f,     1.0f, 0.0f,
+         0.8f,   0.8f,   0.0f,     1.0f, 1.0f
+    };
+    // clang-format on
+
+    unsigned int cubeVAO;
+    {
+        unsigned int VBO;
+        glGenVertexArrays(1, &cubeVAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(cubeVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesCube.size(), verticesCube.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    unsigned int quadVAO;
+    {
+        unsigned int VBO;
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices_quad.size(), vertices_quad.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    Texture myTexture("resources/02_04_05_wall.jpg");
+    //Texture myTexture("resources/02_04_05_container.jpg");
+
+    //----------------------------------------------------------------------------------
+    // FBO帧缓冲对象
+    unsigned int FBO;
+    glGenFramebuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+    //----------------------------------------------------------------------------------
+    // 纹理
+    glGenTextures(1, &texColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, windowWidth, windowHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+
+    //----------------------------------------------------------------------------------
+    // RBO渲染缓冲对象
+    unsigned int RBO;
+    glGenRenderbuffers(1, &RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, windowWidth, windowHeight);
+    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RBO);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::clog << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n";
+        return -1;
+    }
+
+    // 将当前激活的帧缓冲绑定为默认帧缓冲
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    //----------------------------------------------------------------------------------
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        //----------------------------------------------------------------------------------
+        // 绑定自定义FBO
+        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+        // 为自定义的帧缓冲开启深度测试
+        glEnable(GL_DEPTH_TEST);
+
+        glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // 随时间绕xy轴旋转
+        auto modelMat = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
+        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
+
+        customFBOProgram.Use();
+        customFBOProgram.SetUniformMat4("transform", projectiongMat * viewMat * modelMat);
+
+        glBindVertexArray(cubeVAO);
+        myTexture.Bind();
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(verticesCube.size()) / 5);
+        glBindVertexArray(0);
+
+        // 自定义的帧缓冲使用完毕后关闭深度测试
+        glDisable(GL_DEPTH_TEST);
+
+        //----------------------------------------------------------------------------------
+        // 绑定默认的FBO，只是简单地绘制一张2D纹理
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glClearColor(0.0f, 0.5f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        defaultFBOProgram.Use();
+
+        glBindVertexArray(quadVAO);
+        glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        //----------------------------------------------------------------------------------
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+    defaultFBOProgram.DeleteProgram();
+    customFBOProgram.DeleteProgram();
+
+    // 删除帧缓冲
+    glDeleteFramebuffers(1, &FBO);
+    // 删除渲染缓冲
+    glDeleteRenderbuffers(1, &RBO);
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST7
