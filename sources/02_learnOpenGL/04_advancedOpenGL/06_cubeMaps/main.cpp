@@ -3,9 +3,10 @@
  * 2. 在天空盒内部绘制一个立方体
  * 3. 天空盒内部绘制一个立方体，提前深度测试
  * 4. 反射reflect 类似照镜子
+ * 5. 折射refract
  */
 
-#define TEST4
+#define TEST5
 
 #ifdef TEST1
 
@@ -773,3 +774,209 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST4
+
+#ifdef TEST5
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram skyBoxprogram("resources/02_04_06_TEST3_skybox.vs", "resources/02_04_06_TEST1.fs");
+    ShaderProgram cubeProgram("resources/02_04_06_TEST4_cube.vs", "resources/02_04_06_TEST5_cube.fs");
+
+    // clang-format off
+    // 8个顶点
+    std::array<GLfloat, 6 * 6 * 6> verticesCube{
+        // positions             // normals
+        -0.5f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,     0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,     0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,     0.0f,  0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,
+
+        -0.5f, -0.5f,  0.5f,     0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,     0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,     0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,     0.0f,  0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,     0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,     0.0f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f,  0.5f,    -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,    -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,    -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,    -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,    -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,    -1.0f,  0.0f,  0.0f,
+
+         0.5f,  0.5f,  0.5f,     1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,     1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,     1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,     1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,     1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,     1.0f,  0.0f,  0.0f,
+
+        -0.5f, -0.5f, -0.5f,     0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,     0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,     0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,     0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,     0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,     0.0f, -1.0f,  0.0f,
+
+        -0.5f,  0.5f, -0.5f,     0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,     0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,     0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,     0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,     0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,     0.0f,  1.0f,  0.0f
+    };
+
+    std::array<std::string_view, 6> cubeFaces{
+        "resources/02_04_06_skybox_back.jpg",
+        "resources/02_04_06_skybox_back.jpg",
+        "resources/02_04_06_skybox_back.jpg",
+        "resources/02_04_06_skybox_back.jpg",
+        "resources/02_04_06_skybox_back.jpg",
+        "resources/02_04_06_skybox_back.jpg"
+    };
+    // clang-format on
+
+    unsigned int skyBoxVAO;
+    {
+        unsigned int VBO;
+        glGenVertexArrays(1, &skyBoxVAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(skyBoxVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesCube.size(), verticesCube.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+    }
+
+    unsigned int cubeVAO;
+    {
+        unsigned int VBO;
+        glGenVertexArrays(1, &cubeVAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(cubeVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesCube.size(), verticesCube.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(sizeof(GLfloat) * 3));
+        glEnableVertexAttribArray(1);
+    }
+
+    GLuint cubeTexture { 0 };
+    glGenTextures(1, &cubeTexture);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+
+    int width { 0 }, height { 0 }, comp { 0 };
+    for (GLenum i = 0; i < 6; i++)
+    {
+        if (auto imageData = stbi_load(cubeFaces.at(i).data(), &width, &height, &comp, 0); imageData && comp == 3)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+        }
+        else
+        {
+            std::cerr << "load image failed!\n";
+            return -1;
+        }
+    }
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    //----------------------------------------------------------------------------------
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+        glEnable(GL_DEPTH_TEST);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // 天空盒内部的一个立方体
+        {
+            glDepthFunc(GL_LESS);
+
+            // 随着时间一直放大
+            auto scale = static_cast<float>(glfwGetTime() / 10.);
+            auto scaleMat = glm::scale(glm::mat4(1.f), glm::vec3(scale,scale,scale));
+
+            auto translateMat = glm::translate(glm::mat4(1.f), glm::vec3(0.5f, 0.f, 0.f));
+            auto modleMat = translateMat * scaleMat;
+            auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+            auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
+
+            cubeProgram.Use();
+            cubeProgram.SetUniformMat4("projection", projectiongMat);
+            cubeProgram.SetUniformMat4("view", viewMat);
+            cubeProgram.SetUniformMat4("model", modleMat);
+            cubeProgram.SetUniform3f("cameraPos", 0.f, 0.f, 5.f);
+
+            glBindVertexArray(cubeVAO);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(verticesCube.size() / 6));
+            glBindVertexArray(0);
+        }
+
+        // 天空盒
+        {
+            glDepthFunc(GL_LEQUAL);
+
+            auto modleMat = glm::mat4(1.0f);
+            auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+            viewMat = glm::mat4(glm::mat3(viewMat));
+            auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
+
+            skyBoxprogram.Use();
+            skyBoxprogram.SetUniformMat4("transform", projectiongMat * viewMat * modleMat);
+
+            glBindVertexArray(skyBoxVAO);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(verticesCube.size() / 6));
+            glBindVertexArray(0);
+        }
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+    skyBoxprogram.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST5
