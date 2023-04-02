@@ -2,9 +2,10 @@
  * 1. 分批填充数据（顶点、颜色、法线、纹理坐标等分开填充）glBufferSubData
  * 2. 在指定时刻分批填充数据
  * 3. 从内存拷贝数据到指定缓冲 glMapBuffer
+ * 4. 复制缓冲 glCopyBufferSubData
  */
 
-#define TEST3
+#define TEST4
 
 #ifdef TEST1
 
@@ -346,3 +347,130 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST3
+
+#ifdef TEST4
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+GLuint VAO { 0 };
+GLuint VBO { 0 };
+GLuint EBO { 0 };
+GLuint EBO2 { 0 };
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+
+    // clang-format off
+    std::array<GLfloat, 5 * 6> vertices{
+        // pos                  // color
+        -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f, // 左下
+         0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f, // 右下
+         0.5f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f, // 右上
+        -0.5f,  0.5f, 0.0f,     1.0f, 1.0f, 0.0f, // 左上
+         0.0f,  0.0f, 0.0f,     1.0f, 1.0f, 1.0f, // 原点
+    };
+
+    // 左右两个三角形
+    std::array<GLuint, 3 * 2> indices{
+        0, 4, 3,
+        1, 2, 4,
+    };
+
+    // 上下两个三角形
+    std::array<GLuint, 3 * 2> indices2{
+        0, 1, 4,
+        2, 3, 4,
+    };
+    // clang-format on
+
+    //---------------------------------------------------------------------------
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+    glGenBuffers(1, &EBO2);
+
+    //---------------------------------------------------------------------------
+    // 将数据填充到VBO、EBO、EBO2
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices2.size(), indices2.data(), GL_STATIC_DRAW);
+
+    //-----------------------------------------------------------------------
+    // 将EBO2的数据拷贝到EBO
+    // 方式1：
+    glBindBuffer(GL_COPY_READ_BUFFER, EBO2);
+    glBindBuffer(GL_COPY_WRITE_BUFFER, EBO);
+    glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, sizeof(GLuint) * indices.size());
+    // 方式2：
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
+    // glBindBuffer(GL_COPY_WRITE_BUFFER, EBO);
+    // glCopyBufferSubData(GL_ELEMENT_ARRAY_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, sizeof(GLuint) * indices.size());
+
+    //-----------------------------------------------------------------------
+    // 将VBO和EBO绑定到VAO
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(sizeof(GLfloat) * 3));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+    //---------------------------------------------------------------------------
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    program.DeleteProgram();
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    glDeleteBuffers(1, &EBO2);
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST4
