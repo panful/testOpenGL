@@ -1,0 +1,226 @@
+/*
+ * 1. 分批填充数据（顶点、颜色、法线、纹理坐标等分开填充）glBufferSubData
+ * 2. 在指定时刻分批填充数据
+ */
+
+#define TEST2
+
+#ifdef TEST1
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+GLuint vertexArrayObject { 0 };
+GLuint vertexBufferObject { 0 };
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+
+    // clang-format off
+    // 顶点数据
+    std::array<GLfloat, 3 * 3> vertices {
+        -0.5f,  -0.5f,  0.0f,   // left
+         0.5f,  -0.5f,  0.0f,   // right
+         0.0f,   0.5f,  0.0f    // top
+    };
+
+    // 颜色数据
+    std::array<GLfloat, 3 * 3> colors {
+        1.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 1.0f
+    };
+    // clang-format on
+
+    //---------------------------------------------------------------------------
+    // 先将VBO绑定到VAO，然后给VBO申请内存，不填充数据
+    glGenVertexArrays(1, &vertexArrayObject);
+    glGenBuffers(1, &vertexBufferObject);
+
+    glBindVertexArray(vertexArrayObject);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size() + sizeof(GLfloat) * colors.size(), NULL, GL_STATIC_DRAW);
+
+    glBindVertexArray(0);
+
+    //---------------------------------------------------------------------------
+    // 绑定VAO，将数据分批填充到VBO
+    glBindVertexArray(vertexArrayObject);
+    // glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
+    // 1.类型
+    // 2.开始位置
+    // 3.传入数据的大小
+    // 4.数据指针
+    // @note 缓冲需要有足够的已分配内存，所以对一个缓冲调用glBufferSubData之前必须要先调用glBufferData。
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * vertices.size(), vertices.data());
+    glBufferSubData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), sizeof(GLfloat) * colors.size(), colors.data());
+
+    // 位置数据
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+    // 颜色数据
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)(sizeof(GLfloat) * vertices.size()));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+    //---------------------------------------------------------------------------
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+        glBindVertexArray(vertexArrayObject);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    program.DeleteProgram();
+
+    glDeleteVertexArrays(1, &vertexArrayObject);
+    glDeleteBuffers(1, &vertexBufferObject);
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST1
+
+#ifdef TEST2
+
+#include <array>
+#include <common.hpp>
+#include <mutex>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+GLuint vertexArrayObject { 0 };
+GLuint vertexBufferObject { 0 };
+
+namespace {
+// clang-format off
+// 顶点数据
+std::array<GLfloat, 3 * 3> vertices {
+    -0.5f,  -0.5f,  0.0f,   // left
+        0.5f,  -0.5f,  0.0f,   // right
+        0.0f,   0.5f,  0.0f    // top
+};
+
+// 颜色数据
+std::array<GLfloat, 3 * 3> colors {
+    1.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 1.0f
+};
+// clang-format on
+}
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+
+    glGenVertexArrays(1, &vertexArrayObject);
+    glGenBuffers(1, &vertexBufferObject);
+
+    glBindVertexArray(vertexArrayObject);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size() + sizeof(GLfloat) * colors.size(), NULL, GL_STATIC_DRAW);
+
+    glBindVertexArray(0);
+
+    //---------------------------------------------------------------------------
+    // 按下F1之后才填充数据
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+        glBindVertexArray(vertexArrayObject);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    program.DeleteProgram();
+
+    glDeleteVertexArrays(1, &vertexArrayObject);
+    glDeleteBuffers(1, &vertexBufferObject);
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
+    {
+        // 保证只被填充一次，当然填充多次也不会出错。
+        static std::once_flag once_flag;
+
+        std::call_once(once_flag, []() {
+            // 一定要先绑定VAO
+            glBindVertexArray(vertexArrayObject);
+
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices.data());
+            glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices), sizeof(colors), colors.data());
+
+            // 位置
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+            glEnableVertexAttribArray(0);
+            // 颜色
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)(sizeof(GLfloat) * vertices.size()));
+            glEnableVertexAttribArray(1);
+
+            glBindVertexArray(0);
+
+            std::cout << "Fill data successfully\n";
+        });
+    }
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST2
