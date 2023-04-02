@@ -1,9 +1,10 @@
 /*
  * 1. 分批填充数据（顶点、颜色、法线、纹理坐标等分开填充）glBufferSubData
  * 2. 在指定时刻分批填充数据
+ * 3. 从内存拷贝数据到指定缓冲 glMapBuffer
  */
 
-#define TEST2
+#define TEST3
 
 #ifdef TEST1
 
@@ -224,3 +225,124 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST2
+
+#ifdef TEST3
+
+#include <array>
+#include <common.hpp>
+#include <mutex>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+GLuint vertexArrayObject { 0 };
+GLuint vertexBufferObject { 0 };
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+
+    // clang-format off
+    // 顶点数据
+    std::array<GLfloat, 3 * 6> vertices {
+        -0.5f,  -0.5f,  0.0f,    1.0f, 0.0f, 0.0f,
+         0.5f,  -0.5f,  0.0f,    1.0f, 0.0f, 0.0f,
+         0.0f,   0.5f,  0.0f,    1.0f, 0.0f, 0.0f,
+    };
+    // clang-format on
+
+    //---------------------------------------------------------------------------
+
+    glGenVertexArrays(1, &vertexArrayObject);
+    glGenBuffers(1, &vertexBufferObject);
+
+    glBindVertexArray(vertexArrayObject);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    // 必须提前预分配好内存
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), nullptr, GL_STATIC_DRAW);
+    // 获取指针
+    void* ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    // 拷贝数据到内存
+    std::copy(vertices.begin(), vertices.end(), static_cast<GLfloat*>(ptr));
+    // 停止映射，返回true表示数据映射成功，false失败
+    auto success = glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(sizeof(GLfloat) * 3));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+    //---------------------------------------------------------------------------
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+        glBindVertexArray(vertexArrayObject);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    program.DeleteProgram();
+
+    glDeleteVertexArrays(1, &vertexArrayObject);
+    glDeleteBuffers(1, &vertexBufferObject);
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    // 按下F1之后，将原来的顶点数据颜色修改
+    if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
+    {
+        // clang-format off
+        // 顶点数据
+        std::array<GLfloat, 3 * 6> vertices {
+            -0.5f,  -0.5f,  0.0f,    0.0f, 1.0f, 0.0f,
+             0.5f,  -0.5f,  0.0f,    0.0f, 1.0f, 0.0f,
+             0.0f,   0.5f,  0.0f,    0.0f, 1.0f, 0.0f,
+        };
+        // clang-format on
+
+        static std::once_flag once_flag;
+
+        std::call_once(once_flag, [vertices]() {
+            glBindVertexArray(vertexArrayObject);
+
+            // 获取指针
+            void* ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+            // 拷贝数据到内存
+            std::copy(vertices.begin(), vertices.end(), static_cast<GLfloat*>(ptr));
+            // 停止映射，返回true表示数据映射成功，false失败
+            auto success = glUnmapBuffer(GL_ARRAY_BUFFER);
+
+            glBindVertexArray(0);
+
+            std::cout << "Replace data successfully.\n";
+        });
+    }
+}
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST3
