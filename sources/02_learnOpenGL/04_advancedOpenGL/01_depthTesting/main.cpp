@@ -3,10 +3,10 @@
  * 2. 对不同的图元使用不同的深度测试函数
  * 3. glDepthMask 设置深度掩码是否更新深度缓冲
  * 4. 对深度值进行可视化 gl_FragCoord.z
- * 5. 
+ * 5. 提前深度测试演示
  */
 
-#define TEST4
+#define TEST5
 
 #ifdef TEST1
 
@@ -316,7 +316,7 @@ int main()
 
         // 接下来绘制的图元的深度值如果小于深度缓冲中的深度值则保留
         // 因为之前的深度值被glClear()清除了，所以接下来绘制的图元都会保留，直到下一次修改深度测试函数
-        // 可以将调用glClear()清除深度缓冲之后，深度缓冲中的深度值认为是一个无穷大的值
+        // 调用glClear()清除深度缓冲之后，深度缓冲中的深度值都是1.0，深度值范围是：[0.0, 1.0]
         glDepthFunc(GL_LESS);
 
         glBindVertexArray(cubeVAO);
@@ -630,3 +630,98 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #endif // TEST4
 
+#ifdef TEST5
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_01_TEST5.vs", "resources/02_04_01_TEST5.fs");
+
+    // clang-format off
+    std::array<GLfloat, 4 * 3> verticesPlane{
+        // pos
+        -0.5f, -0.5f, 0.0f,   // 左下
+         0.5f, -0.5f, 0.0f,   // 右下
+         0.5f,  0.5f, 0.0f,   // 右上
+        -0.5f,  0.5f, 0.0f,   // 左上
+    };
+
+    std::array<GLuint, 2 * 3> indicesPlane{
+        0, 1, 2,
+        0, 2, 3,
+    };
+    // clang-format on
+
+    unsigned int planeVAO;
+    {
+        unsigned int VBO, EBO;
+        glGenVertexArrays(1, &planeVAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(planeVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesPlane.size(), verticesPlane.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indicesPlane.size(), indicesPlane.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+    }
+
+    //----------------------------------------------------------------------------------
+    // 不同的硬件可能会有不同的结果，深度测试原理请看着色器文件
+
+    // 开启深度测试
+    glEnable(GL_DEPTH_TEST);
+
+    // 设置深度测试函数
+    glDepthFunc(GL_LESS);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+        program.SetUniformMat4("transform", glm::mat4(1.f));
+
+        glBindVertexArray(planeVAO);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesPlane.size()), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST5
