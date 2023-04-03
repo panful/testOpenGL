@@ -1,9 +1,10 @@
 /*
  * 1. 着色器只会对有图元部分的gl_FragCoord进行遍历
  * 2. 在顶点着色器中设置 gl_PointSize
+ * 3. 顶点着色器当前处理的顶点ID gl_VertexID
  */
 
-#define TEST2
+#define TEST3
 
 #ifdef TEST1
 
@@ -198,3 +199,145 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST2
+
+#ifdef TEST3
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_08_TEST3.vs", "resources/02_04_08_TEST2.fs");
+
+    // clang-format off
+    std::array<GLfloat, 4 * 6> vertices{
+        // pos                  // color
+        -0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,
+        -0.5f, -0.2f, 0.0f,     0.0f, 1.0f, 0.0f,
+        -0.5f,  0.2f, 0.0f,     0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f, 0.0f,     0.0f, 1.0f, 0.0f,
+    };
+
+    std::array<GLfloat, 4 * 6> vertices2{
+        // pos                  // color
+        0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f,
+        0.5f, -0.2f, 0.0f,     1.0f, 0.0f, 0.0f,
+        0.5f,  0.2f, 0.0f,     1.0f, 0.0f, 0.0f,
+        0.5f,  0.5f, 0.0f,     1.0f, 0.0f, 0.0f,
+    };
+
+    std::array<GLuint, 4> indices{
+        0, 1, 2, 3
+    };
+
+    std::array<GLuint, 3> indices2{
+        3, 2, 1
+    };
+    // clang-format on
+
+    GLuint VAO { 0 };
+    {
+        GLuint VBO { 0 }, EBO { 0 };
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+
+        glBindVertexArray(0);
+    }
+
+    GLuint VAO2 { 0 };
+    {
+        GLuint VBO { 0 }, EBO { 0 };
+        glGenVertexArrays(1, &VAO2);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(VAO2);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices2.size(), vertices2.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices2.size(), indices2.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+
+        glBindVertexArray(0);
+    }
+    //----------------------------------------------------------------------------------
+
+    glEnable(GL_PROGRAM_POINT_SIZE);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+        program.SetUniformMat4("transform", glm::mat4(1.f));
+
+        //------------------------------------------------------
+        glBindVertexArray(VAO);
+        glDrawElements(GL_POINTS, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
+        // glDrawArrays(GL_POINTS, 0, 4);
+        glBindVertexArray(0);
+
+        //------------------------------------------------------
+        glBindVertexArray(VAO2);
+        glDrawElements(GL_POINTS, static_cast<GLsizei>(indices2.size()), GL_UNSIGNED_INT, 0);
+        // glDrawArrays(GL_POINTS, 0, 4);
+        glBindVertexArray(0);
+
+        //------------------------------------------------------
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete buffers
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteVertexArrays(1, &VAO2);
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST3
