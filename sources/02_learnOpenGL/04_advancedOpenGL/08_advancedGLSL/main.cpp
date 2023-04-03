@@ -4,9 +4,10 @@
  * 3. 顶点着色器当前处理的顶点ID gl_VertexID
  * 4. 片段着色器判断当前片段是属于正向面的一部分还是背向面的一部分 gl_FrontFacing
  * 5. 使用提前深度测试时，设置片段的深度值 gl_FragDepth
+ * 6. 着色器中接口块（Interface Block）的使用，就是把着色器之间传输的变量包裹起来形成一个结构体
  */
 
-#define TEST5
+#define TEST6
 
 #ifdef TEST1
 
@@ -574,3 +575,95 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST5
+
+#ifdef TEST6
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_08_TEST6.vs", "resources/02_04_08_TEST6.fs");
+
+    // clang-format off
+    std::array<GLfloat, 4 * 6> vertices{
+        // pos                  // color
+        -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f, // 左下
+         0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f, // 右下
+         0.5f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f, // 右上
+        -0.5f,  0.5f, 0.0f,     1.0f, 1.0f, 1.0f, // 左上
+    };
+
+    std::array<GLuint, 2 * 3> indices{
+        0, 1, 3,
+        1, 2, 3,
+    };
+    // clang-format on
+
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    //----------------------------------------------------------------------------------
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // 绕y轴旋转
+        program.Use();
+        program.SetUniformMat4("transform", glm::mat4(1.f));
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST6
