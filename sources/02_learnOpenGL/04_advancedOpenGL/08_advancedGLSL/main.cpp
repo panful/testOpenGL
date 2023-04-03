@@ -3,9 +3,10 @@
  * 2. 在顶点着色器中设置 gl_PointSize
  * 3. 顶点着色器当前处理的顶点ID gl_VertexID
  * 4. 片段着色器判断当前片段是属于正向面的一部分还是背向面的一部分 gl_FrontFacing
+ * 5. 使用提前深度测试时，设置片段的深度值 gl_FragDepth
  */
 
-#define TEST4
+#define TEST5
 
 #ifdef TEST1
 
@@ -468,3 +469,108 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST4
+
+#ifdef TEST5
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_08_TEST1.vs", "resources/02_04_08_TEST5.fs");
+
+    // clang-format off
+    std::array<GLfloat, 4 * 6> verticesPlane{
+        // pos                  // color
+        -0.5f, -0.5f, -1.0f,     1.0f, 0.0f, 0.0f, // 左下
+         0.5f, -0.5f,  1.0f,     0.0f, 1.0f, 0.0f, // 右下
+         0.5f,  0.5f,  1.0f,     0.0f, 0.0f, 1.0f, // 右上
+        -0.5f,  0.5f, -1.0f,     1.0f, 1.0f, 1.0f, // 左上
+    };
+
+    std::array<GLuint, 2 * 3> indicesPlane{
+        0, 1, 3,
+        1, 2, 3,
+    };
+    // clang-format on
+
+    unsigned int planeVAO;
+    {
+        unsigned int VBO, EBO;
+        glGenVertexArrays(1, &planeVAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(planeVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesPlane.size(), verticesPlane.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indicesPlane.size(), indicesPlane.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    //----------------------------------------------------------------------------------
+    // 然而，由我们自己设置深度值有一个很大的缺点，只要我们在片段着色器中对gl_FragDepth进行写入，
+    // OpenGL就会（像深度测试小节中讨论的那样）禁用所有的提前深度测试(Early Depth Testing)。
+    // 它被禁用的原因是，OpenGL无法在片段着色器运行之前得知片段将拥有的深度值，因为片段着色器可能会完全修改这个深度值。
+    // 从OpenGL 4.2起，我们仍可以对两者进行一定的调和，具体使用方法请看片段着色器
+
+    // 开启深度测试
+    glEnable(GL_DEPTH_TEST);
+
+    // 设置深度测试函数
+    glDepthFunc(GL_LESS);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        // 将深度缓冲的值全部置为0.5
+        glClearDepth(0.5f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+
+        glBindVertexArray(planeVAO);
+        program.SetUniformMat4("transform", glm::mat4(1.f));
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesPlane.size()), GL_UNSIGNED_INT, 0);
+
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST5
