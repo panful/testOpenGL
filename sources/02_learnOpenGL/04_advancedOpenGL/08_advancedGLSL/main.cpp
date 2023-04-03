@@ -5,9 +5,10 @@
  * 4. 片段着色器判断当前片段是属于正向面的一部分还是背向面的一部分 gl_FrontFacing
  * 5. 使用提前深度测试时，设置片段的深度值 gl_FragDepth
  * 6. 着色器中接口块（Interface Block）的使用，就是把着色器之间传输的变量包裹起来形成一个结构体
+ * 7. 多个着色器中使用同一个全局Uniform块，Uniform Buffer Object的使用
  */
 
-#define TEST6
+#define TEST7
 
 #ifdef TEST1
 
@@ -667,3 +668,208 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST6
+
+#ifdef TEST7
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+GLuint UBO { 0 };
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program_red("resources/02_04_08_TEST7.vs", "resources/02_04_08_TEST7.fs");
+    ShaderProgram program_green("resources/02_04_08_TEST7.vs", "resources/02_04_08_TEST7.fs");
+    ShaderProgram program_blue("resources/02_04_08_TEST7.vs", "resources/02_04_08_TEST7.fs");
+    ShaderProgram program_white("resources/02_04_08_TEST7.vs", "resources/02_04_08_TEST7.fs");
+
+    // clang-format off
+    // 8个顶点
+    std::array<GLfloat, 8 * 6> verticesCube{
+        // pos
+        -0.5f, -0.5f, 0.5f,    // 前左下
+         0.5f, -0.5f, 0.5f,    // 前右下
+         0.5f,  0.5f, 0.5f,    // 前右上
+        -0.5f,  0.5f, 0.5f,    // 前左上
+
+        -0.5f, -0.5f, -.5f,    // 后左下
+         0.5f, -0.5f, -.5f,    // 后右下
+         0.5f,  0.5f, -.5f,    // 后右上
+        -0.5f,  0.5f, -.5f,    // 后左上
+    };
+
+    // 6个面，12个三角形
+    std::array<GLuint,6 * 2 * 3> indicesCube{
+        0, 1, 3, // 前
+        1, 2, 3,
+
+        1, 5, 2, // 右
+        5, 6, 2,
+
+        5, 4, 6, // 后
+        4, 7, 6,
+
+        4, 0, 7, // 左
+        0, 3, 7,
+              
+        3, 2, 7, // 上
+        2, 6, 7,
+
+        0, 1, 4, // 下
+        1, 5, 4,
+    };
+    // clang-format on
+
+    GLuint cubeVAO { 0 };
+    {
+        GLuint VBO { 0 }, EBO { 0 };
+        glGenVertexArrays(1, &cubeVAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(cubeVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesCube.size(), verticesCube.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indicesCube.size(), indicesCube.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+    }
+
+    // 设置Uniform块的绑定点，也可以在着色器中使用"binging=x"指定（OpenGL4.2及以上版本支持）
+    {
+        // 获取块的序号，和绑定点不一样，注意区分
+        auto index_Test = glGetUniformBlockIndex(program_red.GetProgram(), "Test");
+        auto index_MatVP = glGetUniformBlockIndex(program_red.GetProgram(), "MatVP");
+
+        std::cout << "index: " << index_Test << '\t' << index_MatVP << '\n';
+
+        // 设置Uniform块的绑定点
+        // glUniformBlockBinding(program_red.GetProgram(), index_red, 6);
+        // glUniformBlockBinding(program_green.GetProgram(), index_green, 6);
+        // glUniformBlockBinding(program_blue.GetProgram(), index_blue, 6);
+        // glUniformBlockBinding(program_white.GetProgram(), index_white, 6);
+    }
+
+    // 创建一个UBO，并给uniform buffer预分配内存空间
+    {
+        glGenBuffers(1, &UBO);
+
+        glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+        glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        // 1. 绑定目标
+        // 2. 绑定点索引，和着色器中的 "binding = x" 中的x数值对应，或者和glUniformBlockBinding设置的绑定点对应
+        // 3. 偏移量
+        // 4. 大小
+        // glBindBufferRange(GL_UNIFORM_BUFFER, 6, UBO, 0, 2 * sizeof(glm::mat4));
+
+        // glBindBufferBase和glBindBufferRange效果是一样的，只是前者比后者少两个参数
+        // 后者通过偏移量和大小两个参数可以绑定Uniform缓冲的特定一部分到绑定点中
+        // 后者也可以让多个不同的Uniform块绑定到同一个Uniform缓冲上
+        glBindBufferBase(GL_UNIFORM_BUFFER, 6, UBO);
+    }
+
+    // 给uniform buffer填充数据
+    {
+        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
+
+        glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+        // glBufferSubData的使用可以看 02_04_07_TEST1
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(viewMat));
+        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projectiongMat));
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+
+    //----------------------------------------------------------------------------------
+    // Uniform缓冲对象（Uniform Buffer Object）可以让多个不同的着色器使用相同的全局Uniform变量
+    // 比如我有多个着色器，但是每个着色器中都有一个viewMat和projectionMat，他们的数据完全相同，
+    // 这时候就可以使用UBO，只需要对这两个矩阵设置一次就可以达到多个着色器中共享这两个矩阵
+
+    // 开启深度测试
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glBindVertexArray(cubeVAO);
+
+        // 四个立方体使用相同的缩放旋转矩阵
+        auto rotateMat = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1, 1, 0));
+        auto scaleMat = glm::scale(glm::mat4(1.f), glm::vec3(0.5f, 0.5f, 0.5f));
+
+        // 右上红色立方体
+        {
+            auto translateMat = glm::translate(glm::mat4(1.f), glm::vec3(0.5f, 0.5f, 0.f));
+            program_red.Use();
+            program_red.SetUniformMat4("model", translateMat * rotateMat * scaleMat);
+            program_red.SetUniform3f("myColor", 1.f, 0.f, 0.f);
+            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesCube.size()), GL_UNSIGNED_INT, 0);
+        }
+
+        // 左上绿色立方体
+        {
+            auto translateMat = glm::translate(glm::mat4(1.f), glm::vec3(-0.5f, 0.5f, 0.f));
+            program_green.Use();
+            program_green.SetUniformMat4("model", translateMat * rotateMat * scaleMat);
+            program_green.SetUniform3f("myColor", 0.f, 1.f, 0.f);
+            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesCube.size()), GL_UNSIGNED_INT, 0);
+        }
+
+        // 左下蓝色立方体
+        {
+            auto translateMat = glm::translate(glm::mat4(1.f), glm::vec3(-0.5f, -0.5f, 0.f));
+            program_blue.Use();
+            program_blue.SetUniformMat4("model", translateMat * rotateMat * scaleMat);
+            program_blue.SetUniform3f("myColor", 0.f, 0.f, 1.f);
+            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesCube.size()), GL_UNSIGNED_INT, 0);
+        }
+
+        // 右下白色立方体
+        {
+            auto translateMat = glm::translate(glm::mat4(1.f), glm::vec3(0.5f, -0.5f, 0.f));
+            program_white.Use();
+            program_white.SetUniformMat4("model", translateMat * rotateMat * scaleMat);
+            program_white.SetUniform3f("myColor", 1.f, 1.f, 1.f);
+            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesCube.size()), GL_UNSIGNED_INT, 0);
+        }
+
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffers and programs
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST7
