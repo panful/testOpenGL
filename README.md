@@ -27,6 +27,8 @@ OpenGL测试代码
 
 [OpenGL官方文档](https://www.khronos.org/opengl/wiki/)
 
+[OpenGL官方对渲染管线的定义](https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview)
+
 [OpenGL函数查询](https://registry.khronos.org/OpenGL-Refpages/gl4/index.php)
 
 [glfw函数查询](https://www.glfw.org/docs/latest/quick_guide.html)
