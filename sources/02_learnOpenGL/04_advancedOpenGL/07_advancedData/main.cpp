@@ -3,9 +3,10 @@
  * 2. 在指定时刻分批填充数据
  * 3. 从内存拷贝数据到指定缓冲 glMapBuffer
  * 4. 复制缓冲 glCopyBufferSubData
+ * 5. 将多个VBO绑定到一个VAO上
  */
 
-#define TEST4
+#define TEST5
 
 #ifdef TEST1
 
@@ -474,3 +475,104 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST4
+
+#ifdef TEST5
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+
+    // clang-format off
+    // 顶点数据
+    std::array<GLfloat, 3 * 3> vertices {
+        -0.5f,  -0.5f,  0.0f,   // left
+         0.5f,  -0.5f,  0.0f,   // right
+         0.0f,   0.5f,  0.0f    // top
+    };
+
+    // 颜色数据
+    std::array<GLfloat, 3 * 3> colors {
+        1.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 1.0f
+    };
+    // clang-format on
+
+    //---------------------------------------------------------------------------
+    // 创建多个VBO和一个VAO
+    GLuint VAO { 0 }, VBO_Pos { 0 }, VBO_Color { 0 };
+
+    glGenBuffers(1, &VBO_Pos);
+    glGenBuffers(1, &VBO_Color);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_Pos);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_Color);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * colors.size(), colors.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //---------------------------------------------------------------------------
+    // 将多个VBO绑定到一个VAO上
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    // 绑定完GL_ARRAY_BUFFER之后需要立即启用顶点属性，且顺序不可打乱
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_Pos);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_Color);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+    //---------------------------------------------------------------------------
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    program.DeleteProgram();
+
+    // remember to delete the buffers
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST5
