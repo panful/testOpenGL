@@ -1,9 +1,10 @@
 /*
  * 1. 实例化，一组顶点绘制多个同样的图形 gl_InstanceID
  * 2. 使用多个VBO的方式给每个实例设置不同的属性 glVertexAttribDivisor
+ * 3. 对 GL_TRIANGLE_STRIP 类型的图元进行实例化
  */
 
-#define TEST2
+#define TEST3
 
 #ifdef TEST1
 
@@ -214,3 +215,91 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST2
+
+#ifdef TEST3
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_10_TEST1.vs", "resources/02_04_10_TEST1.fs");
+
+    // clang-format off
+    std::array<GLfloat, 2 * 4> vertices {
+        -0.9f, -0.1f, 
+        -0.8f, -0.1f,
+        -0.9f,  0.1f,
+        -0.8f,  0.1f,
+    };
+    // clang-format on
+
+    GLuint VAO { 0 };
+    {
+        GLuint VBO { 0 };
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    program.Use();
+    GLfloat offset = 0.11f;
+    for (size_t i = 0; i < 10; i++)
+    {
+        program.SetUniform1f("offsets[" + std::to_string(i) + "]", i * offset);
+    }
+
+    //------------------------------------------------------------------------------------------
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+        glBindVertexArray(VAO);
+        // 实例化是对每一个drawcall使用，即glDrawArrays或glDrawElements，而不是最基本的线段或三角面
+        glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, 10);
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffers
+
+    glDeleteVertexArrays(1, &VAO);
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST3
