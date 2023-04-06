@@ -4,9 +4,10 @@
  * 3. 从内存拷贝数据到指定缓冲 glMapBuffer
  * 4. 复制缓冲 glCopyBufferSubData
  * 5. 将多个VBO绑定到一个VAO上
+ * 6. 顶点着色器的顶点属性设置为mat4
  */
 
-#define TEST5
+#define TEST6
 
 #ifdef TEST1
 
@@ -576,3 +577,149 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST5
+
+#ifdef TEST6
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+constexpr GLsizei numOfInstances { 10 };
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_07_TEST6.vs", "resources/02_04_07_TEST1.fs");
+
+    // clang-format off
+    std::array<GLfloat, 5 * 4> vertices {
+        -0.5f, -0.5f,      1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,      0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,      0.0f,  0.0f,  1.0f,
+        -0.5f,  0.5f,      1.0f,  1.0f,  1.0f,
+    };
+
+    std::array<GLuint, 3 * 2> indices {
+        0, 1, 2,
+        0, 2, 3,
+    };
+
+    // 四个顶点共需要四个相同的模型矩阵
+    std::array<GLfloat, 4 * 4 *4> model {
+        1.f,    0.f,    0.f,    0.f,
+        0.f,    1.f,    0.f,    0.f,
+        0.f,    0.f,    1.f,    0.f,
+        .5f,    .5f,    0.f,    1.f,
+
+        1.f,    0.f,    0.f,    0.f,
+        0.f,    1.f,    0.f,    0.f,
+        0.f,    0.f,    1.f,    0.f,
+        .5f,    .5f,    0.f,    1.f,
+
+        1.f,    0.f,    0.f,    0.f,
+        0.f,    1.f,    0.f,    0.f,
+        0.f,    0.f,    1.f,    0.f,
+        .5f,    .5f,    0.f,    1.f,
+
+        1.f,    0.f,    0.f,    0.f,
+        0.f,    1.f,    0.f,    0.f,
+        0.f,    0.f,    1.f,    0.f,
+        .5f,    .5f,    0.f,    1.f,
+    };
+    // clang-format on
+
+    //------------------------------------------------------------------------
+    // 生成VBO EBO
+    GLuint VBO { 0 };
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    GLuint EBO { 0 };
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    GLuint VBO2 { 0 };
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(model), model.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //------------------------------------------------------------------------
+    // 绑定VBO到VAO
+    GLuint VAO { 0 };
+    glGenVertexArrays(1, &VAO);
+
+    glBindVertexArray(VAO);
+
+    // 顶点位置和颜色
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    // 顶点模型变换矩阵
+    // 顶点属性最大允许的数据大小等于一个vec4。如果将glVertexAttribPointer第二个参数设置为4*4程序会崩溃
+    // 因为一个mat4本质上是4个vec4，我们需要为这个矩阵预留4个顶点属性。
+    // 因为我们将它的位置值设置为2，矩阵每一列的顶点属性位置值就是2、3、4、5
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4 * 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * 4 * sizeof(float), (void*)(sizeof(glm::vec4)));
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * 4 * sizeof(float), (void*)(2 * sizeof(glm::vec4)));
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * 4 * sizeof(float), (void*)(3 * sizeof(glm::vec4)));
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+    glBindVertexArray(0);
+
+    //------------------------------------------------------------------------
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glBindVertexArray(VAO);
+        program.Use();
+        // 通过uniform设置顶点的模型变换矩阵，和使用顶点属性有相同的效果
+        // auto model = glm::translate(glm::mat4(1.f), glm::vec3(0.5f, 0.5f, 0.0f));
+        // program.SetUniformMat4("model", glm::translate(glm::mat4(1.f), glm::vec3(0.5f, 0.5f, 0.0f)));
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffers
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST6
