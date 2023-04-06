@@ -1,10 +1,10 @@
 /*
  * 1. 使用几何着色器将输入的顶点绘制成三角形
  * 2. 将顶点着色器的变量传入到几何着色器再到片段着色器
- * 3. 深度测试
+ * 3. 利用几何着色器在给定位置生成立方体并开启深度测试
  */
 
-#define TEST2
+#define TEST3
 
 #ifdef TEST1
 
@@ -192,12 +192,9 @@ int main()
     ShaderProgram program("resources/02_04_09_TEST3.vs", "resources/02_04_09_TEST3.fs", "resources/02_04_09_TEST3.gs");
 
     // clang-format off
-    std::array<GLfloat, 1 * 6> vertices{
-        // -0.5f, -0.5f,  0.0f,  1.0f, 0.0f, 0.0f,
-        //  0.0f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-        //  0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
-
-         0.f,   0.f,   0.f,   1.0f, 0.0f, 0.0f,
+    std::array<GLfloat, 2 * 7> vertices{
+        -2.0f, -2.0f,  0.0f,  1.0f,     1.0f, 0.0f, 0.0f,
+         2.0f,  2.0f,  0.0f,  1.0f,     1.0f, 0.0f, 0.0f,
     };
     // clang-format on
 
@@ -212,9 +209,9 @@ int main()
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(4 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -223,6 +220,8 @@ int main()
     }
 
     //-----------------------------------------------------------------------
+    // 给两个顶点，在这两个顶点处各生成一个立方体，开启深度测试
+    // 透视除法在几何着色器之后
 
     glEnable(GL_DEPTH_TEST);
 
@@ -233,18 +232,17 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //auto modleMat = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1.f, 1.f, 0.f));
-        auto modleMat = glm::translate(glm::mat4(1.f), glm::vec3(0.5, 0.0, 0.0));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modleMat = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(0.f, 1.f, 0.f));
+        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 10.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         program.Use();
         program.SetUniformMat4("model", modleMat);
         program.SetUniformMat4("view", viewMat);
-        program.SetUniformMat4("transform", projectiongMat);
+        program.SetUniformMat4("projection", projectiongMat);
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(vertices.size() / 6));
+        glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(vertices.size() / 7));
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
