@@ -2,9 +2,10 @@
  * 1. 混合的基础示例
  * 2. 深度测试和混合一起使用
  * 3. 纹理图片alpha小于0.1时跳过该片段，从而实现透明效果
+ * 4. 交叉图像的混合
  */
 
-#define TEST2
+#define TEST4
 
 #ifdef TEST1
 
@@ -404,3 +405,179 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST3
+
+#ifdef TEST4
+
+#include <array>
+#include <common.hpp>
+
+namespace {
+// clang-format off
+    std::array<GLfloat, 4 * 7> red{
+         .9f,  .6f, -.5f,       1.f, 0.f, 0.f, .5f,
+         .9f,  .5f, -.5f,       1.f, 0.f, 0.f, .5f,
+        -.9f,  .6f,  .5f,       1.f, 0.f, 0.f, .5f,
+        -.9f,  .5f,  .5f,       1.f, 0.f, 0.f, .5f,
+    };
+
+    std::array<GLfloat, 4 * 7> green{
+        -.9f,  .9f, -.5f,       0.f, 1.f, 0.f, .5f,
+        -.9f,  .7f, -.5f,       0.f, 1.f, 0.f, .5f,
+         .5f, -.7f,  .5f,       0.f, 1.f, 0.f, .5f,
+         .5f, -.9f,  .5f,       0.f, 1.f, 0.f, .5f,
+    };
+
+    std::array<GLfloat, 4 * 7> blue{
+        -.5f, -.7f, -.5f,       0.f, 0.f, 1.f, .5f,
+        -.5f, -.9f, -.5f,       0.f, 0.f, 1.f, .5f,
+         .9f,  .9f,  .5f,       0.f, 0.f, 1.f, .5f,
+         .9f,  .7f,  .5f,       0.f, 0.f, 1.f, .5f,
+
+    };
+
+    std::array<GLfloat, 4 * 7> red2{
+         .9f,  .2f,  .5f,       1.f, 0.f, 0.f, 1.f,
+         .9f,  .1f,  .5f,       1.f, 0.f, 0.f, 1.f,
+        -.9f,  .2f,  .5f,       1.f, 0.f, 0.f, 1.f,
+        -.9f,  .1f,  .5f,       1.f, 0.f, 0.f, 1.f,
+    };
+
+    std::array<GLfloat, 4 * 7> red3{
+         .9f, -.5f, -.5f,       1.f, 0.f, 0.f, 1.f,
+         .9f, -.6f, -.5f,       1.f, 0.f, 0.f, 1.f,
+        -.9f, -.5f, -.5f,       1.f, 0.f, 0.f, 1.f,
+        -.9f, -.6f, -.5f,       1.f, 0.f, 0.f, 1.f,
+    };
+// clang-format on
+
+auto transformMat { glm::mat4(1.f) };
+}
+
+GLuint CreateVAO(const std::array<GLfloat, 4 * 7>& vertices);
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+void keyCB(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    initOpenGL.SetKeyCB(keyCB);
+    ShaderProgram program("resources/02_04_03_TEST1.vs", "resources/02_04_03_TEST1.fs");
+
+    std::array<GLuint, 5> VAOs {
+        CreateVAO(red2),
+        CreateVAO(red3),
+        CreateVAO(red),
+        CreateVAO(green),
+        CreateVAO(blue),
+    };
+
+    //----------------------------------------------------------------------------------
+
+    // 开启混合
+    glEnable(GL_BLEND);
+    // 开启深度测试
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(1.f, 1.f, 1.f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // 设置混合方式
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        program.Use();
+        program.SetUniformMat4("transform", transformMat);
+
+        for (auto VAO : VAOs)
+        {
+            glBindVertexArray(VAO);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            glBindVertexArray(0);
+        }
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+void keyCB(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    auto offset { glm::radians(5.f) };
+
+    switch (action)
+    {
+    case GLFW_PRESS:
+    case GLFW_REPEAT:
+    {
+        switch (key)
+        {
+        case GLFW_KEY_DOWN:
+            transformMat = glm::rotate(transformMat, offset, glm::vec3(1.f, 0.f, 0.f));
+            break;
+        case GLFW_KEY_UP:
+            transformMat = glm::rotate(transformMat, offset, glm::vec3(-1.f, 0.f, 0.f));
+            break;
+        case GLFW_KEY_RIGHT:
+            transformMat = glm::rotate(transformMat, offset, glm::vec3(0.f, 1.f, 0.f));
+            break;
+        case GLFW_KEY_LEFT:
+            transformMat = glm::rotate(transformMat, offset, glm::vec3(0.f, -1.f, 0.f));
+            break;
+        default:
+            break;
+        }
+        break;
+    default:
+        break;
+    }
+    }
+}
+
+GLuint CreateVAO(const std::array<GLfloat, 4 * 7>& vertices)
+{
+    GLuint VAO { 0 }, VBO { 0 };
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    return VAO;
+}
+
+#endif // TEST4
