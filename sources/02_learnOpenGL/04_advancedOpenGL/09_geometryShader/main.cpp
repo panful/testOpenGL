@@ -4,9 +4,10 @@
  * 3. 利用几何着色器在给定位置生成立方体并开启深度测试
  * 4. 将三角形带（GL_TRIANGLE_STRIP）传入几何着色器
  * 5. 几何着色器中变量 gl_PrimitiveIDIn 和 gl_PrimitiveID 的使用
+ * 6. gl_Layer的使用，一般可以用于渲染3D纹理，多图层等场景
  */
 
-#define TEST5
+#define TEST6
 
 #ifdef TEST1
 
@@ -444,3 +445,87 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST5
+
+#ifdef TEST6
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_09_TEST1.vs", "resources/02_04_09_TEST1.fs", "resources/02_04_09_TEST6.gs");
+
+    // clang-format off
+    std::array<GLfloat, 3 * 3> vertices{
+        -0.5f, -0.5f, 0.0f,    // left
+         0.5f, -0.5f, 0.0f,    // right
+         0.0f,  0.5f, 0.0f,    // top
+    };
+    // clang-format on
+
+    GLuint VAO { 0 };
+    {
+        GLuint VBO { 0 };
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    //----------------------------------------------------------------------------------
+
+    glEnable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size()) / 3);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete buffers
+
+    glDeleteVertexArrays(1, &VAO);
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST6
