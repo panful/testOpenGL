@@ -2,9 +2,10 @@
  * 1. 使用几何着色器将输入的顶点绘制成三角形
  * 2. 将顶点着色器的变量传入到几何着色器再到片段着色器
  * 3. 利用几何着色器在给定位置生成立方体并开启深度测试
+ * 4. 将三角形带（GL_TRIANGLE_STRIP）传入几何着色器
  */
 
-#define TEST3
+#define TEST4
 
 #ifdef TEST1
 
@@ -189,7 +190,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_09_TEST3.vs", "resources/02_04_09_TEST3.fs", "resources/02_04_09_TEST3.gs");
+    ShaderProgram program("resources/02_04_09_TEST3.vs", "resources/02_04_09_TEST2.fs", "resources/02_04_09_TEST3.gs");
 
     // clang-format off
     std::array<GLfloat, 2 * 7> vertices{
@@ -270,3 +271,86 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST3
+
+#ifdef TEST4
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_09_TEST1.vs", "resources/02_04_09_TEST2.fs", "resources/02_04_09_TEST4.gs");
+
+    // clang-format off
+    std::array<GLfloat, 3 * 4> vertices{
+        -0.5f, -0.5f,  0.0f,
+         0.5f, -0.5f,  0.0f,
+        -0.5f,  0.5f,  0.0f,
+         0.5f,  0.5f,  0.0f,
+    };
+    // clang-format on
+
+    GLuint VAO { 0 };
+    {
+        GLuint VBO { 0 };
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    //----------------------------------------------------------------------------------
+    // GL_TRIANGLE_STRIP类型的图元，传入到几何着色器的数据是每一个三角形数据
+    // 即不会将这个三角形带的所有三角形一次传入到几何着色器
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(vertices.size()) / 3);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete buffers
+
+    glDeleteVertexArrays(1, &VAO);
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST4
