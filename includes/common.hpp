@@ -224,14 +224,29 @@ public:
         glUniform2f(glGetUniformLocation(m_program, name.data()), v1, v2);
     }
 
+    void SetUniform2fv(const std::string_view& name, glm::vec2 v) const
+    {
+        glUniform2f(glGetUniformLocation(m_program, name.data()), v.x, v.y);
+    }
+
     void SetUniform3f(const std::string_view& name, GLfloat v1, GLfloat v2, GLfloat v3) const
     {
         glUniform3f(glGetUniformLocation(m_program, name.data()), v1, v2, v3);
     }
 
+    void SetUniform3fv(const std::string_view& name, glm::vec3 v) const
+    {
+        glUniform3f(glGetUniformLocation(m_program, name.data()), v.x, v.y, v.z);
+    }
+
     void SetUniform4f(const std::string_view& name, GLfloat v1, GLfloat v2, GLfloat v3, GLfloat v4) const
     {
         glUniform4f(glGetUniformLocation(m_program, name.data()), v1, v2, v3, v4);
+    }
+
+    void SetUniform4fv(const std::string_view& name, glm::vec4 v) const
+    {
+        glUniform4f(glGetUniformLocation(m_program, name.data()), v.x, v.y, v.z, v.w);
     }
 
     // GLint
