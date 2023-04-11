@@ -4,10 +4,11 @@
  * 3. 利用几何着色器在给定位置生成立方体并开启深度测试
  * 4. 将三角形带（GL_TRIANGLE_STRIP）传入几何着色器
  * 5. 几何着色器中变量 gl_PrimitiveIDIn 和 gl_PrimitiveID 的使用
- * 6. gl_Layer的使用，一般可以用于渲染3D纹理，多图层等场景
+ * 6. gl_Layer的使用，一般可以用于渲染3D纹理、立方体阴影映射、立方体环境映射等场景
+ * 7. 几何着色器多次实例化、多视口 gl_ViewportIndex gl_InvocationID
  */
 
-#define TEST6
+#define TEST7
 
 #ifdef TEST1
 
@@ -529,3 +530,107 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST6
+
+#ifdef TEST7
+
+#include <array>
+#include <common.hpp>
+
+constexpr int width = 800;
+constexpr int height = 600;
+constexpr float wot = 400.f;
+constexpr float hot = 300.f;
+
+int main()
+{
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(width, height, "LearnOpenGL", NULL, NULL);
+    if (window == NULL)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
+
+    ShaderProgram program("resources/02_04_09_TEST1.vs", "resources/02_04_09_TEST2.fs", "resources/02_04_09_TEST7.gs");
+
+    // clang-format off
+    std::array<GLfloat, 3 * 3> vertices{
+        -0.5f, -0.5f, 0.0f,    // left
+         0.5f, -0.5f, 0.0f,    // right
+         0.0f,  0.5f, 0.0f,    // top
+    };
+    // clang-format on
+
+    GLuint VAO { 0 };
+    {
+        GLuint VBO { 0 };
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    //----------------------------------------------------------------------------------
+    // 设置视口索引及视口范围，OpenGL版本必须高于410
+    // 参数1对应于几何着色器中的 gl_ViewportIndex
+    glViewportIndexedf(0, 0.0f, 0.0f, wot, hot);
+    glViewportIndexedf(1, wot, 0.0f, wot, hot);
+    glViewportIndexedf(2, 0.0f, hot, wot, hot);
+    glViewportIndexedf(3, wot, hot, wot, hot);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // 每个视口使用不同的模型矩阵
+        program.Use();
+        glm::mat4 model[4];
+        model[0] = glm::rotate(glm::mat4(1.f), static_cast<GLfloat>(glfwGetTime()), glm::vec3(0.f, 1.f, 0.f));
+        model[1] = glm::rotate(glm::mat4(1.f), static_cast<GLfloat>(glfwGetTime()), glm::vec3(1.f, 0.f, 0.f));
+        model[2] = glm::rotate(glm::mat4(1.f), static_cast<GLfloat>(glfwGetTime()), glm::vec3(0.f, 0.f, 1.f));
+        model[3] = glm::rotate(glm::mat4(1.f), static_cast<GLfloat>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
+        program.SetUniformMat4("model[0]", model[0]);
+        program.SetUniformMat4("model[1]", model[1]);
+        program.SetUniformMat4("model[2]", model[2]);
+        program.SetUniformMat4("model[3]", model[3]);
+
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size()) / 3);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete buffers
+
+    glDeleteVertexArrays(1, &VAO);
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST7
