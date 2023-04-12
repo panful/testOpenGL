@@ -6,9 +6,10 @@
  * 05. 采样器的使用，对纹理设置采样的方式
  * 06. 一个采样器应用到多个纹理
  * 07. 读取纹理的像素数据
+ * 08. 自定义纹理数据，1D纹理的使用
  */
 
-#define TEST7
+#define TEST8
 
 #ifdef TEST1
 
@@ -1144,3 +1145,140 @@ void mouseCB(GLFWwindow* window, int button, int action, int mods)
 }
 
 #endif // TEST7
+
+#ifdef TEST8
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_01_03_TEST8.vs", "resources/02_01_03_TEST8.fs");
+
+    // clang-format off
+    std::array<GLfloat, 4 * 4> vertices {
+         // positions             // texture coords
+         0.5f,  0.5f,  0.0f,      1.0f,
+         0.5f, -0.5f,  0.0f,      1.0f,
+        -0.5f,  0.5f,  0.0f,      0.0f,
+        -0.5f, -0.5f,  0.0f,      0.0f,
+    };
+    // clang-format on
+
+    unsigned int VBO, VAO;
+    {
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+
+        glBindVertexArray(0);
+    }
+
+    // 自定义一个包含10个像素的1D纹理，红 -> 绿 -> 蓝
+    // 1D纹理就是一个高度为1，宽度不小于1的1维图片
+    constexpr size_t numOfPixels { 10 };
+    std::array<GLubyte, numOfPixels * 4> imageData;
+    for (size_t i = 0; i < numOfPixels; i++)
+    {
+        GLubyte r, g, b;
+        // clang-format off
+        switch (i)
+        {
+        case 0:
+        case 1:
+            { r = 255; g = 0; b = 0; } break;
+        case 2:
+        case 3:
+            { r = 255; g = 255; b = 0; } break;
+        case 4:
+        case 5:
+            { r = 0; g = 255; b = 0; } break;
+        case 6:
+        case 7:
+            { r = 0; g = 255; b = 255; } break;
+        case 8:
+        case 9:
+            { r = 0; g = 0; b = 255; } break;
+        default:
+            break;
+        }
+        // clang-format on
+
+        imageData[i * 4 + 0] = r;
+        imageData[i * 4 + 1] = g;
+        imageData[i * 4 + 2] = b;
+        imageData[i * 4 + 3] = 255;
+
+        std::cout << (int)r << '\t' << (int)g << '\t' << (int)b << '\n';
+    }
+
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_1D, texture);
+
+    // 1D纹理只需要设置S方向的环绕方式
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    // 可以尝试不同的过滤方式，绘制的图案会不一样
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // 1D纹理不需要设置纹理的height（始终为1），其他参数和2D一样
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, numOfPixels, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData.data());
+    glGenerateMipmap(GL_TEXTURE_1D);
+
+    glBindTexture(GL_TEXTURE_1D, 0);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+
+        glBindTexture(GL_TEXTURE_1D, texture);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<GLsizei>(vertices.size() / 4));
+        glBindTexture(GL_TEXTURE_1D, 0);
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST8
