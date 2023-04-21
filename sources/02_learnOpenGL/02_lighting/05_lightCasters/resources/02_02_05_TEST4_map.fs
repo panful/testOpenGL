@@ -55,7 +55,7 @@ void main()
     }
     else
     {
-        // 如果片段在聚光灯圆锥的外部，则只显示材质的漫反射颜色（没有灯光会比较暗）
+        // 如果片段在聚光灯圆锥的外部，则只显示材质的漫反射颜色（没有灯光因此会比较暗）
         FragColor = vec4(light.ambient * texture(material.diffuse, TextureCoord).rgb, 1.f);
     }
 } 
