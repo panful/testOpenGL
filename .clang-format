@@ -24,6 +24,9 @@ BraceWrapping:
 # 尾随的注释对齐
 AlignTrailingComments: true
 
+# 每行最多字符数，0表示没有字符数限制
+ColumnLimit: 150
+
 # AlignConsecutiveAssignments: true  # 对齐连续的多行赋值
 # PointerAlignment: Right # 指针的*紧靠变量名
 

@@ -85,6 +85,7 @@ int main()
         glEnableVertexAttribArray(2);
     }
 
+    // 光源位置
     auto lightPos = glm::vec3(.8f, .8f, .0f);
 
     unsigned int VAO_light;
@@ -106,18 +107,14 @@ int main()
     Texture texture("resources/container.png");
 
     //----------------------------------------------------------------------------------
-
     // 相机位置
     auto viewPos = glm::vec3(0.f, 0.f, 5.f);
-
     // 光源颜色
-    auto r { 1.f }, g { 1.f }, b { 1.f };
-    auto lightColor = glm::vec3(r, b, b);
+    auto lightColor = glm::vec3(1.f);
     // 光源的漫反射、环境反射、镜面反射颜色
     auto diffuseColor = lightColor * glm::vec3(0.5f); // 漫反射光照占光源颜色的50%
     auto ambientColor = lightColor * glm::vec3(0.2f); // 环境光照只占光源颜色的20%
     auto specularColor = lightColor * glm::vec3(1.f); // 镜面反射和光源颜色完全一样
-
     // 材质的反光度
     auto materialShininess = 32.f;
     // 材质的镜面反射颜色
@@ -293,18 +290,14 @@ int main()
     Texture texture_specular("resources/container_specular_colored.png", 1);
 
     //----------------------------------------------------------------------------------
-
     // 相机位置
     auto viewPos = glm::vec3(0.f, 0.f, 5.f);
-
     // 光源颜色
-    auto r { 1.f }, g { 1.f }, b { 1.f };
-    auto lightColor = glm::vec3(r, b, b);
+    auto lightColor = glm::vec3(1.f);
     // 光源的漫反射、环境反射、镜面反射颜色
     auto diffuseColor = lightColor * glm::vec3(0.5f); // 漫反射光照占光源颜色的50%
     auto ambientColor = lightColor * glm::vec3(0.2f); // 环境光照只占光源颜色的20%
     auto specularColor = lightColor * glm::vec3(1.f); // 镜面反射和光源颜色完全一样
-
     // 材质的反光度
     auto materialShininess = 32.f;
 
@@ -484,18 +477,14 @@ int main()
     Texture texture_emission("resources/emission.jpg", 2);
 
     //----------------------------------------------------------------------------------
-
     // 相机位置
     auto viewPos = glm::vec3(0.f, 0.f, 5.f);
-
     // 光源颜色
-    auto r { 1.f }, g { 1.f }, b { 1.f };
-    auto lightColor = glm::vec3(r, b, b);
+    auto lightColor = glm::vec3(1.f);
     // 光源的漫反射、环境反射、镜面反射颜色
     auto diffuseColor = lightColor * glm::vec3(0.5f); // 漫反射光照占光源颜色的50%
     auto ambientColor = lightColor * glm::vec3(0.2f); // 环境光照只占光源颜色的20%
     auto specularColor = lightColor * glm::vec3(1.f); // 镜面反射和光源颜色完全一样
-
     // 材质的反光度
     auto materialShininess = 32.f;
 
