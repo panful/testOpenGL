@@ -310,16 +310,17 @@ private:
 class Texture
 {
 public:
-    Texture(const std::string_view& path)
+    Texture(const std::string_view& path, GLuint textureUnit = 0)
         : m_texture(0)
         , m_width(0)
         , m_height(0)
         , m_colorFormat(0)
+        , m_textureUnit(textureUnit)
     {
         glGenTextures(1, &m_texture);
 
         // 默认激活纹理单元0
-        Active(GL_TEXTURE0);
+        Active(m_textureUnit);
 
         // 默认2D纹理
         Bind();
@@ -335,16 +336,17 @@ public:
         Release();
     }
 
-    Texture(GLsizei w, GLsizei h, GLenum format = GL_RGB)
+    Texture(GLsizei w, GLsizei h, GLenum format = GL_RGB, GLuint textureUnit = 0)
         : m_texture(0)
         , m_width(w)
         , m_height(h)
         , m_colorFormat(format)
+        , m_textureUnit(textureUnit)
     {
         glGenTextures(1, &m_texture);
 
         // 默认激活纹理单元0
-        Active(GL_TEXTURE0);
+        Active(m_textureUnit);
 
         // 默认2D纹理
         Bind();
@@ -362,19 +364,22 @@ public:
 
     ~Texture() = default;
 
+private:
+    GLuint m_texture;
+    GLsizei m_width;
+    GLsizei m_height;
+    GLenum m_colorFormat;
+    GLuint m_textureUnit;
+
 public:
     GLuint Get() const
     {
         return m_texture;
     }
 
-    void Active(GLenum texUnit) const
+    void Bind(GLuint textureUnit = 0) const
     {
-        glActiveTexture(texUnit);
-    }
-
-    void Bind() const
-    {
+        Active(m_textureUnit);
         glBindTexture(GL_TEXTURE_2D, m_texture);
     }
 
@@ -443,11 +448,10 @@ private:
         glTexImage2D(GL_TEXTURE_2D, 0, m_colorFormat, m_width, m_height, 0, m_colorFormat, GL_UNSIGNED_BYTE, NULL);
     }
 
-private:
-    GLuint m_texture;
-    GLsizei m_width;
-    GLsizei m_height;
-    GLenum m_colorFormat;
+    void Active(GLuint texUnit) const
+    {
+        glActiveTexture(GL_TEXTURE0 + texUnit);
+    }
 };
 
 namespace ErrorImpl {
