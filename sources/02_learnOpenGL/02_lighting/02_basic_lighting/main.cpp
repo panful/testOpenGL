@@ -1,6 +1,6 @@
 ﻿/*
- * 1. 漫反射光照 diffuse lighting
- * 2. 镜面光照 specular lighting 冯氏着色(Phong Shading)
+ * 1. 环境和漫反射光照 diffuse lighting
+ * 2. 环境和漫反射以及镜面光照 specular lighting 冯氏着色(Phong Shading)
  * 3. 光源随着时间旋转，对于TEST2渲染效果看起来更明显
  * 4. 高洛德着色(Gouraud Shading)，在顶点着色器进行光照计算，片段的颜色值是由插值光照颜色所得来的
  */
