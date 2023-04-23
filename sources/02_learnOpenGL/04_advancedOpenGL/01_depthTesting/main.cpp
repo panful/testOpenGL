@@ -4,9 +4,11 @@
  * 3. glDepthMask 设置深度掩码是否更新深度缓冲
  * 4. 对深度值进行可视化 gl_FragCoord.z
  * 5. 提前深度测试演示
+ * 6. glDepthRange设置深度值映射范围
+ * 7. GL_DEPTH_CLAMP 将视锥体内的所有顶点都显示，不考虑近裁剪平面
  */
 
-#define TEST5
+#define TEST7
 
 #ifdef TEST1
 
@@ -578,6 +580,7 @@ int main()
     }
 
     //----------------------------------------------------------------------------------
+    // 示例需要等一会才会显示渲染结果
 
     // 开启深度测试
     glEnable(GL_DEPTH_TEST);
@@ -725,3 +728,282 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST5
+
+#ifdef TEST6
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_01_TEST1.vs", "resources/02_04_01_TEST1.fs");
+
+    // clang-format off
+    // 8个顶点
+    std::array<GLfloat, 8 * 6> verticesCube{
+        // pos                  // color
+        -0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左下
+         0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前右下
+         0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前右上
+        -0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左上
+
+        -0.5f, -0.5f, -.5f,     1.0f, 0.0f, 0.0f, // 后左下
+         0.5f, -0.5f, -.5f,     1.0f, 0.0f, 0.0f, // 后右下
+         0.5f,  0.5f, -.5f,     1.0f, 0.0f, 0.0f, // 后右上
+        -0.5f,  0.5f, -.5f,     1.0f, 0.0f, 0.0f, // 后左上
+    };
+
+    // 6个面，12个三角形
+    std::array<GLuint,6 * 2 * 3> indicesCube{
+        0, 1, 3, // 前
+        1, 2, 3,
+
+        1, 5, 2, // 右
+        5, 6, 2,
+
+        5, 4, 6, // 后
+        4, 7, 6,
+
+        4, 0, 7, // 左
+        0, 3, 7,
+              
+        3, 2, 7, // 上
+        2, 6, 7,
+
+        0, 1, 4, // 下
+        1, 5, 4,
+    };
+
+    std::array<GLfloat, 4 * 6> verticesPlane{
+        // pos                  // color
+        -0.8f, -0.8f,  0.8f,     0.0f, 1.0f, 0.0f, // 左下
+         0.8f, -0.8f,  0.8f,     0.0f, 1.0f, 0.0f, // 右下
+         0.8f,  0.8f, -0.8f,     0.0f, 1.0f, 0.0f, // 右上
+        -0.8f,  0.8f, -0.8f,     0.0f, 1.0f, 0.0f, // 左上
+    };
+
+    std::array<GLuint, 2 * 3> indicesPlane{
+        0, 1, 2,
+        0, 2, 3,
+    };
+    // clang-format on
+
+    unsigned int cubeVAO;
+    {
+        unsigned int VBO, EBO;
+        glGenVertexArrays(1, &cubeVAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(cubeVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesCube.size(), verticesCube.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indicesCube.size(), indicesCube.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    unsigned int planeVAO;
+    {
+        unsigned int VBO, EBO;
+        glGenVertexArrays(1, &planeVAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+
+        glBindVertexArray(planeVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesPlane.size(), verticesPlane.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indicesPlane.size(), indicesPlane.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    //----------------------------------------------------------------------------------
+    // glDepthRange(nearNormDepth, farNormalDepth) 设置深度值映射范围
+    // 参数可以取0.0到1.0范围内的任意值，甚至可以让nearNormDepth > farNormalDepth
+    // 可以通过该函数可以实现：设置渲染顺序、半透明效果和精度控制（z-fighting)等
+
+    // 默认的深度值映射范围：[0.0, 1.0]
+    double range[2] { 0. };
+    glGetDoublev(GL_DEPTH_RANGE, range);
+    std::cout << "default depth range:\t" << range[0] << '\t' << range[1] << '\n';
+
+    // 开启深度测试
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+
+        auto modleMat = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1, 1, 0));
+        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
+
+        program.SetUniformMat4("transform", projectiongMat * viewMat * modleMat);
+
+        // 红色立方体，将深度值映射到[0.5, 1.0]
+        glDepthRange(.5, 1.);
+        glBindVertexArray(cubeVAO);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesCube.size()), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+        // 绿色平面，将深度值映射到[0.0, 0.5]
+        glDepthRange(.0, .5);
+        glBindVertexArray(planeVAO);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesPlane.size()), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+        //----------------------------------------------------------------------------------
+        // 因为红色立方体的深度值范围为[0.5, 1.0]，绿色平面深度值范围为[0.0, 0.5]，
+        // 所以绿色平面的深度值永远不会大于红色立方体的深度值，所以绿色平面永远都在上面
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST6
+
+#ifdef TEST7
+
+#include <array>
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram program("resources/02_04_01_TEST1.vs", "resources/02_04_01_TEST1.fs");
+
+    // clang-format off
+    std::array<GLfloat, 4 * 6> verticesCube{
+        // pos                  // color
+        .0f,  .0f,  .5f,        1.f, 0.f, 0.f,
+        .0f, -.5f,  .0f,        1.f, 0.f, 0.f,
+        .0f,  .0f, -.5f,        1.f, 0.f, 0.f,
+        .0f,  .5f,  .0f,        1.f, 0.f, 0.f,
+    };
+    // clang-format on
+
+    unsigned int rectVAO;
+    {
+        unsigned int VBO;
+
+        glGenVertexArrays(1, &rectVAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(rectVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verticesCube.size(), verticesCube.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1);
+    }
+
+    //----------------------------------------------------------------------------------
+    // GL_DEPTH_CLAMP 可以让不考虑近裁剪平面的视锥体内的所有顶点都映射到GL_DEPTH_RANGE的范围内
+    // 此时的视锥体就相当于是一个金字塔，相机到视锥体远平面之间的所有顶点都可以渲染
+    // NDC坐标z值小于-1.0时可以显示，大于1.0仍然不能显示，因为大于1.0时不在视锥体内部
+    glEnable(GL_DEPTH_CLAMP);
+
+    // 开启深度测试
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+
+        auto modelMat = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(0, 1, 0));
+        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        // 距离相机2.7到3.3之间的片段才可以显示，启用GL_DEPTH_CLAMP之后，0.0到3.3之间的都可以显示
+        auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 2.7f, 3.3f);
+        program.SetUniformMat4("transform", projectiongMat * viewMat * modelMat);
+
+        //----------------------------------------------------------------------------------
+        // 将模型向屏幕外移动0.7个单位，即一部分图元的z值会大于1.0，GL_DEPTH_CLAMP使能，z值大于1.0的部分也不会显示
+        // program.SetUniformMat4("transform", glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, .7f)) * modelMat);
+        // 将模型向屏幕内移动0.7个单位，即使z值小于-1.0，仍然可以显示
+        // program.SetUniformMat4("transform", glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -.7f)) * modelMat);
+
+        glBindVertexArray(rectVAO);
+        glDrawArrays(GL_LINE_LOOP, 0, 4);
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+    program.DeleteProgram();
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+#endif // TEST7
