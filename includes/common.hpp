@@ -137,15 +137,17 @@ public:
 private:
     void CheckErrors(uint32_t shader) const
     {
-        GLint success = 0;
-        GLchar infoLog[1024] { 0 };
-
+        GLint success { 0 };
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (!success)
         {
-            glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
-            std::clog << "---------------------------------------\n";
-            std::clog << infoLog << '\n';
+            GLint logLength { 0 };
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
+
+            auto infoLog = new char[logLength]();
+            glGetShaderInfoLog(shader, logLength, nullptr, infoLog);
+            std::clog << "---------------------------------------\n" << infoLog << '\n';
+            delete[] infoLog;
         }
     }
 
@@ -206,54 +208,63 @@ public:
         CheckErrors();
     }
 
-    GLuint GetProgram() const { return m_program; }
+    GLuint GetProgram() const
+    {
+        return m_program;
+    }
 
-    void DeleteProgram() const { glDeleteProgram(m_program); }
+    void DeleteProgram() const
+    {
+        glDeleteProgram(m_program);
+    }
 
-    void Use() const { glUseProgram(m_program); }
+    void Use() const
+    {
+        glUseProgram(m_program);
+    }
 
     // GLfloat
     //----------------------------------------------------------------------
     void SetUniform1f(const std::string_view& name, GLfloat v) const
     {
-        glUniform1f(glGetUniformLocation(m_program, name.data()), v);
+        glUniform1f(Location(name), v);
     }
 
     void SetUniform2f(const std::string_view& name, GLfloat v1, GLfloat v2) const
     {
-        glUniform2f(glGetUniformLocation(m_program, name.data()), v1, v2);
+        glUniform2f(Location(name), v1, v2);
     }
 
     void SetUniform2fv(const std::string_view& name, glm::vec2 v) const
     {
-        glUniform2f(glGetUniformLocation(m_program, name.data()), v.x, v.y);
+        glUniform2f(Location(name), v.x, v.y);
     }
 
     void SetUniform3f(const std::string_view& name, GLfloat v1, GLfloat v2, GLfloat v3) const
     {
-        glUniform3f(glGetUniformLocation(m_program, name.data()), v1, v2, v3);
+        glUniform3f(Location(name), v1, v2, v3);
     }
 
     void SetUniform3fv(const std::string_view& name, glm::vec3 v) const
     {
-        glUniform3f(glGetUniformLocation(m_program, name.data()), v.x, v.y, v.z);
+        glUniform3f(Location(name), v.x, v.y, v.z);
     }
 
     void SetUniform4f(const std::string_view& name, GLfloat v1, GLfloat v2, GLfloat v3, GLfloat v4) const
     {
-        glUniform4f(glGetUniformLocation(m_program, name.data()), v1, v2, v3, v4);
+        glUniform4f(Location(name), v1, v2, v3, v4);
     }
 
     void SetUniform4fv(const std::string_view& name, glm::vec4 v) const
     {
-        glUniform4f(glGetUniformLocation(m_program, name.data()), v.x, v.y, v.z, v.w);
+        glUniform4f(Location(name), v.x, v.y, v.z, v.w);
     }
 
     // GLint
     //----------------------------------------------------------------------
     void SetUniform1i(const std::string_view& name, GLint v) const
     {
-        glUniform1i(glGetUniformLocation(m_program, name.data()), v);
+        glUniform1i(Location(name), v);
     }
 
     // Matrix
@@ -264,9 +275,10 @@ public:
         // 1.uniform的位置值。
         // 2.告诉OpenGL我们将要发送多少个矩阵
         // 3.是否对矩阵进行置换(Transpose)，也就是说交换矩阵的行和列。
-        //     OpenGL开发者通常使用一种内部矩阵布局，叫做列主序(Column - major Ordering)布局。GLM的默认布局就是列主序，所以并不需要置换矩阵，我们填GL_FALSE。
+        //      OpenGL开发者通常使用一种内部矩阵布局，叫做列主序(Column-major Ordering)布局。
+        //      GLM的默认布局就是列主序，所以并不需要置换矩阵，我们填GL_FALSE。
         // 4.矩阵数据，但是GLM并不是把它们的矩阵储存为OpenGL所希望接受的那种，因此要先用GLM的自带的函数value_ptr来变换这些数据。
-        glUniformMatrix4fv(glGetUniformLocation(m_program, name.data()), 1, GL_FALSE, glm::value_ptr(m));
+        glUniformMatrix4fv(Location(name), 1, GL_FALSE, glm::value_ptr(m));
     }
 
 private:
@@ -283,13 +295,18 @@ private:
     void CheckErrors() const
     {
         GLint success { 0 };
-        GLchar infoLog[512] { 0 };
         glGetProgramiv(m_program, GL_LINK_STATUS, &success);
         if (!success)
         {
-            glGetProgramInfoLog(m_program, 512, NULL, infoLog);
-            std::clog << "link shader program failed\n"
+            GLint logLength { 0 };
+            glGetProgramiv(m_program, GL_INFO_LOG_LENGTH, &logLength);
+
+            auto infoLog = new char[logLength]();
+            glGetProgramInfoLog(m_program, logLength, nullptr, infoLog);
+            std::clog << "---------------------------------------\n"
+                      << "Link shader program failed\n"
                       << infoLog << '\n';
+            delete[] infoLog;
         }
     }
 
@@ -302,6 +319,18 @@ private:
             vs.DeleteShader();
         }
     };
+
+    GLint Location(const std::string_view& name) const
+    {
+        auto location = glGetUniformLocation(m_program, name.data());
+
+        if (-1 == location)
+        {
+            throw std::runtime_error("Wrong of uniform name");
+        }
+
+        return location;
+    }
 
 private:
     uint32_t m_program;
@@ -438,9 +467,18 @@ public:
         CreateNullTexture();
     }
 
-    GLsizei GetWidth() const { return m_width; }
-    GLsizei GetHeight() const { return m_height; }
-    GLenum GetColorFormat() const { return m_colorFormat; }
+    GLsizei GetWidth() const
+    {
+        return m_width;
+    }
+    GLsizei GetHeight() const
+    {
+        return m_height;
+    }
+    GLenum GetColorFormat() const
+    {
+        return m_colorFormat;
+    }
 
 private:
     void CreateNullTexture() const
