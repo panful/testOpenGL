@@ -926,7 +926,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #ifdef TEST8
 
-#include <array>
+#include <vector>
 #include <common.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -1109,7 +1109,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 // 将近裁剪面（设置透视投影时设置）设置的离观察者远一些：提高裁剪范围内的精确度
 // 使用更高位数的深度缓冲区：提高深度缓冲区的精确度
 
-#include <array>
+#include <vector>
 #include <common.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
