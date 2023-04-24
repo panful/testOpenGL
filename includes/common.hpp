@@ -326,7 +326,7 @@ private:
 
         if (-1 == location)
         {
-            throw std::runtime_error("Wrong of uniform name");
+            std::clog << "Wrong of uniform name\t" << name << '\n';
         }
 
         return location;

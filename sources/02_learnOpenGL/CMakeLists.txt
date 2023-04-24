@@ -2,3 +2,4 @@
 add_subdirectory("01_gettingStarted")
 add_subdirectory("02_lighting")
 add_subdirectory("04_advancedOpenGL")
+add_subdirectory("05_advancedLighting")
