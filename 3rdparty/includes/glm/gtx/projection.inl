@@ -1,4 +1,4 @@
-﻿/// @ref gtx_projection
+/// @ref gtx_projection
 
 namespace glm
 {

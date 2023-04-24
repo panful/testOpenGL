@@ -1,4 +1,4 @@
-﻿set(target_name "02_00_02_debug")
+set(target_name "02_00_02_debug")
 
 add_executable (${target_name} "main.cpp")
 

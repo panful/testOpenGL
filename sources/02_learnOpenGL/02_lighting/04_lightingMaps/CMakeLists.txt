@@ -1,4 +1,4 @@
-﻿set(target_name "02_02_04_lightingMaps")
+set(target_name "02_02_04_lightingMaps")
 
 add_executable (${target_name} "main.cpp")
 

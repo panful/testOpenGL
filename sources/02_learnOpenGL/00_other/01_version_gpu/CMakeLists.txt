@@ -1,4 +1,4 @@
-﻿set(target_name "02_00_01_version_gpu")
+set(target_name "02_00_01_version_gpu")
 
 add_executable (${target_name} "main.cpp")
 

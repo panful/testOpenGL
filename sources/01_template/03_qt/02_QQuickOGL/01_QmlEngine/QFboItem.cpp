@@ -1,4 +1,4 @@
-﻿#include "QFboItem.h"
+#include "QFboItem.h"
 #include "FboRenderer.h"
 #include <QDebug>
 

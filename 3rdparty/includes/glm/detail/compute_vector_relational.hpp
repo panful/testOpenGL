@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 //#include "compute_common.hpp"
 #include "setup.hpp"

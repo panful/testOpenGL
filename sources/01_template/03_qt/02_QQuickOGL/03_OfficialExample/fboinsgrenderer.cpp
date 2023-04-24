@@ -1,4 +1,4 @@
-﻿
+
 #include "fboinsgrenderer.h"
 #include "logorenderer.h"
 

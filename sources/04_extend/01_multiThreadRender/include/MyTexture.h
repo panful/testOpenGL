@@ -4,7 +4,7 @@
 #include <atomic>
 #include "MyTextureInterface.h"
 /// <summary>
-/// @details 仅有一层的二维纹理
+/// @details 浠呮湁涓�灞傜殑浜岀淮绾圭悊
 /// </summary>
 class MyTexture2D:public MyTextureInterface 
 {

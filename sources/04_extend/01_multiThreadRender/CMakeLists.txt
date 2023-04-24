@@ -1,4 +1,4 @@
-﻿set(target_name "04_01_multiThreadRender")
+set(target_name "04_01_multiThreadRender")
 
 # 如果不是Windows平台不生成该项目
 if(NOT WIN32)

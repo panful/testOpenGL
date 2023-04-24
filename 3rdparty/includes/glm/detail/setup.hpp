@@ -1,4 +1,4 @@
-﻿#ifndef GLM_SETUP_INCLUDED
+#ifndef GLM_SETUP_INCLUDED
 
 #include <cassert>
 #include <cstddef>

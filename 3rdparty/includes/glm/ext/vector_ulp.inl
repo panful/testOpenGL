@@ -1,4 +1,4 @@
-﻿namespace glm
+namespace glm
 {
     template<length_t L, typename T, qualifier Q>
     GLM_FUNC_QUALIFIER vec<L, T, Q> next_float(vec<L, T, Q> const& x)

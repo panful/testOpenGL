@@ -1,4 +1,4 @@
-﻿/// @ref ext_scalar_relational
+/// @ref ext_scalar_relational
 /// @file glm/ext/scalar_relational.hpp
 ///
 /// @defgroup ext_scalar_relational GLM_EXT_scalar_relational

@@ -1,4 +1,4 @@
-﻿#define TEST6
+#define TEST6
 
 /*
 1.右键菜单控制图形大小以及颜色

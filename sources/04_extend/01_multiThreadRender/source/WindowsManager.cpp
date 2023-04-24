@@ -27,7 +27,7 @@ void WindowManager::wait()
     double nextPrintTime = glfwGetTime() + 1;
     while (true)
     {
-        //Ö÷´°¿Ú´¦ÀíÊÂ¼þ
+        //ä¸»çª—å£å¤„ç†äº‹ä»¶
         mainWin->processEvent();
         //close all when one is closed
         allClosed = false;

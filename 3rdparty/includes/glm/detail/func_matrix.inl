@@ -1,4 +1,4 @@
-﻿#include "../geometric.hpp"
+#include "../geometric.hpp"
 #include <limits>
 
 namespace glm{

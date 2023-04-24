@@ -1,4 +1,4 @@
-﻿#version 420 core // 注意GLSL的版本
+#version 420 core // 注意GLSL的版本
 
 out vec4 FragColor;
 in vec3 myColor;

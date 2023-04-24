@@ -1,4 +1,4 @@
-﻿/// @ref ext_quaternion_transform
+/// @ref ext_quaternion_transform
 /// @file glm/ext/quaternion_transform.hpp
 ///
 /// @defgroup ext_quaternion_transform GLM_EXT_quaternion_transform

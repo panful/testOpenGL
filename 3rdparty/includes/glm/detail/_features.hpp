@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 // #define GLM_CXX98_EXCEPTIONS
 // #define GLM_CXX98_RTTI

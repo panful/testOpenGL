@@ -1,1 +1,1 @@
-﻿add_subdirectory("01_GDI")
+add_subdirectory("01_GDI")

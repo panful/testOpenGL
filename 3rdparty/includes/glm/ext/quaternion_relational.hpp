@@ -1,4 +1,4 @@
-﻿/// @ref ext_quaternion_relational
+/// @ref ext_quaternion_relational
 /// @file glm/ext/quaternion_relational.hpp
 ///
 /// @defgroup ext_quaternion_relational GLM_EXT_quaternion_relational

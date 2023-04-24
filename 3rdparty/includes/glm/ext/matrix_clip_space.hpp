@@ -1,4 +1,4 @@
-﻿/// @ref ext_matrix_clip_space
+/// @ref ext_matrix_clip_space
 /// @file glm/ext/matrix_clip_space.hpp
 ///
 /// @defgroup ext_matrix_clip_space GLM_EXT_matrix_clip_space

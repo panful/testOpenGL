@@ -1,4 +1,4 @@
-﻿# testOpenGL
+# testOpenGL
 OpenGL测试代码
 
 ## 1. 目录说明

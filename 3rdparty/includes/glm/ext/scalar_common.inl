@@ -1,4 +1,4 @@
-﻿namespace glm
+namespace glm
 {
     template<typename T>
     GLM_FUNC_QUALIFIER T min(T a, T b, T c)

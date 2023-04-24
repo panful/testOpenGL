@@ -1,4 +1,4 @@
-﻿/*
+/*
  *      *** 将shadertoy的例子用到OpenGL中 ***
  * 顶点着色器只需要绘制全屏的一个矩形（两个三角形）
  * 片段着色器中使用shadertoy的代码，需要在主程序中设置uniform，其中iResolution（分辨率）一般是必须的

@@ -1,1 +1,1 @@
-﻿add_subdirectory("01_multiThreadRender")
+add_subdirectory("01_multiThreadRender")

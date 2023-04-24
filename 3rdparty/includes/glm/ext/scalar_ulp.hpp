@@ -1,4 +1,4 @@
-﻿/// @ref ext_scalar_ulp
+/// @ref ext_scalar_ulp
 /// @file glm/ext/scalar_ulp.hpp
 ///
 /// @defgroup ext_scalar_ulp GLM_EXT_scalar_ulp

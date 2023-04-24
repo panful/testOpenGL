@@ -1,4 +1,4 @@
-﻿/// @ref gtx_closest_point
+/// @ref gtx_closest_point
 
 namespace glm
 {

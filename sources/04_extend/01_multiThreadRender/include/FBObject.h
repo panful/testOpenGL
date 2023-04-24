@@ -23,7 +23,7 @@ public:
 
     void unUse();
 
-    /// @brief µ±Ç°äÖÈ¾Íê³É£¬½»»»µ±Ç°ÎÆÀí¶ÔÏó
+    /// @brief å½“å‰æ¸²æŸ“å®Œæˆï¼Œäº¤æ¢å½“å‰çº¹ç†å¯¹è±¡
     void setReady(bool);
 
     bool isReady();

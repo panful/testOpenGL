@@ -1,4 +1,4 @@
-﻿/// @ref ext_scalar_constants
+/// @ref ext_scalar_constants
 /// @file glm/ext/scalar_constants.hpp
 ///
 /// @defgroup ext_scalar_constants GLM_EXT_scalar_constants

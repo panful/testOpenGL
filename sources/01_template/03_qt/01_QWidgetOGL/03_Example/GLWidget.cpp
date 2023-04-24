@@ -1,4 +1,4 @@
-﻿
+
 #include "glwidget.h"
 #include <QMouseEvent>
 #include <QOpenGLShaderProgram>

@@ -1,4 +1,4 @@
-﻿#include "MyOglWidget.h"
+#include "MyOglWidget.h"
 
 //GLSL
 //#version表示使用GLSL的版本

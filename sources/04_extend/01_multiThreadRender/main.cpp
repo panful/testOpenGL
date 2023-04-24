@@ -1,4 +1,4 @@
-﻿
+
 #include "gllear.h"
 #include "GlobalInit.h"
 #include "WindowsManager.h"

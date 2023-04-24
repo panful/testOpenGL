@@ -1,4 +1,4 @@
-﻿/*
+/*
  * 1. phong模型的缺陷，blinn-phong与phong模型对比
  * 2. 设置反光度让blinn-phong和phong模型光照效果差别更小一些
  */

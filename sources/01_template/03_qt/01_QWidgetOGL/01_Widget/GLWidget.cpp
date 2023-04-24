@@ -1,4 +1,4 @@
-﻿#include "GLWidget.h"
+#include "GLWidget.h"
 
 void GLWidget::initializeGL()
 {

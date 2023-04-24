@@ -1,4 +1,4 @@
-﻿#include <QApplication>
+#include <QApplication>
 #include "MyOglWidget.h"
 
 int main(int argc, char** argv)

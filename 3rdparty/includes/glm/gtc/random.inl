@@ -1,4 +1,4 @@
-﻿#include "../geometric.hpp"
+#include "../geometric.hpp"
 #include "../exponential.hpp"
 #include "../trigonometric.hpp"
 #include "../detail/type_vec1.hpp"

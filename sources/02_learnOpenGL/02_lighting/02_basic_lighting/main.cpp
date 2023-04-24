@@ -1,4 +1,4 @@
-﻿/*
+/*
  * 1. 环境和漫反射光照 diffuse lighting
  * 2. 环境和漫反射以及镜面光照 specular lighting 冯氏着色(Phong Shading)
  * 3. 光源随着时间旋转，对于TEST2渲染效果看起来更明显

@@ -1,4 +1,4 @@
-﻿set(CMAKE_AUTOMOC ON) # Meta-Object Compiler
+set(CMAKE_AUTOMOC ON) # Meta-Object Compiler
 set(CMAKE_AUTORCC OFF) # Resource Compiler
 set(CMAKE_AUTOUIC OFF) # User Interface Compiler
 

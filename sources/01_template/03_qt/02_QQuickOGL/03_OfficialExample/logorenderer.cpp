@@ -1,4 +1,4 @@
-﻿
+
 #include "logorenderer.h"
 #include <QPainter>
 #include <QPaintEngine>

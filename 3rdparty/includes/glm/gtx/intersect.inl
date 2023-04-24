@@ -1,4 +1,4 @@
-﻿/// @ref gtx_intersect
+/// @ref gtx_intersect
 
 namespace glm
 {

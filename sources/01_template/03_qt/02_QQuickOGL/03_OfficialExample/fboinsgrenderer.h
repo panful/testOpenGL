@@ -1,4 +1,4 @@
-﻿
+
 #ifndef FBOINSGRENDERER_H
 #define FBOINSGRENDERER_H
 

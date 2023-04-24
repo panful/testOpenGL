@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <QOpenGLFunctions_3_3_Core>
 #include <QQuickFramebufferObject>
 

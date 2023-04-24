@@ -1,4 +1,4 @@
-﻿#include "_vectorize.hpp"
+#include "_vectorize.hpp"
 #include <cmath>
 #include <limits>
 

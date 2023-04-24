@@ -1,4 +1,4 @@
-﻿namespace glm
+namespace glm
 {
     template<typename T, qualifier Q>
     GLM_FUNC_QUALIFIER T angle(qua<T, Q> const& x)

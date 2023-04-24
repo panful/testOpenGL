@@ -1,4 +1,4 @@
-﻿/*
+/*
 * 01.获取OpenGL版本，双显卡切换 https://blog.csdn.net/hhy321/article/details/122322475
 */
 

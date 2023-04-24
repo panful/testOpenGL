@@ -1,4 +1,4 @@
-﻿/// @ref ext_vector_uint1_precision
+/// @ref ext_vector_uint1_precision
 /// @file glm/ext/vector_uint1_precision.hpp
 ///
 /// @defgroup ext_vector_uint1_precision GLM_EXT_vector_uint1_precision

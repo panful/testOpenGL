@@ -1,4 +1,4 @@
-﻿#include "MyWindow.h"
+#include "MyWindow.h"
 #include <iostream>
 #include <chrono>
 #include <mutex>

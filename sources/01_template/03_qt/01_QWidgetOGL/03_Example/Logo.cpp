@@ -1,4 +1,4 @@
-﻿
+
 #include "logo.h"
 #include <qmath.h>
 

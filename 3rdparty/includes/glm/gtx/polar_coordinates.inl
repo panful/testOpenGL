@@ -1,4 +1,4 @@
-﻿/// @ref gtx_polar_coordinates
+/// @ref gtx_polar_coordinates
 
 namespace glm
 {

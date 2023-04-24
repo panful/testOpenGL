@@ -1,4 +1,4 @@
-﻿set(target_name "01_02_glew_glfw")
+set(target_name "01_02_glew_glfw")
 
 # 如果不是Windows平台不生成该项目
 if(NOT WIN32)

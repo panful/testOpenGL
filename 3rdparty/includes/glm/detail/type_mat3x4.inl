@@ -1,4 +1,4 @@
-﻿namespace glm
+namespace glm
 {
     // -- Constructors --
 

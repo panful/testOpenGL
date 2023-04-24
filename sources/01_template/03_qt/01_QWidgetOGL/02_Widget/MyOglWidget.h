@@ -1,4 +1,4 @@
-﻿#include <QOpenGLWidget>
+#include <QOpenGLWidget>
 #include <QOpenGLFunctions_4_5_Core>
 
 class MyOglWidget :

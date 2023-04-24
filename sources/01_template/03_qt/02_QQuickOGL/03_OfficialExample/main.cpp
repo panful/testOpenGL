@@ -1,4 +1,4 @@
-﻿
+
 #include <QGuiApplication>
 
 #include <QtQuick/QQuickView>

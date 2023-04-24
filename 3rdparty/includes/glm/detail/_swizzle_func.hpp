@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #define GLM_SWIZZLE_GEN_VEC2_ENTRY(T, P, CONST, A, B)    \
     vec<2, T, Q> A ## B() CONST                            \

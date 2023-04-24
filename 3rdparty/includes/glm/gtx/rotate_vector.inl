@@ -1,4 +1,4 @@
-﻿/// @ref gtx_rotate_vector
+/// @ref gtx_rotate_vector
 
 namespace glm
 {

@@ -1,4 +1,4 @@
-﻿add_subdirectory("01_glad_glfw")
+add_subdirectory("01_glad_glfw")
 add_subdirectory("02_glew_glfw")
 
 find_package(Qt6)

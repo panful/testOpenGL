@@ -1,4 +1,4 @@
-﻿/// @ref gtc_integer
+/// @ref gtc_integer
 
 namespace glm{
 namespace detail

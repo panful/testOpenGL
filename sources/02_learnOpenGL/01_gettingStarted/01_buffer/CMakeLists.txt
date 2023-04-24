@@ -1,4 +1,4 @@
-﻿set(target_name "02_01_01_buffer")
+set(target_name "02_01_01_buffer")
 
 add_executable (${target_name} "main.cpp")
 

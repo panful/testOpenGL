@@ -1,4 +1,4 @@
-﻿#include "ViewerItem.h"
+#include "ViewerItem.h"
 #include "FboRender.h"
 
 #include <QOpenGLFunctions_3_3_Core>

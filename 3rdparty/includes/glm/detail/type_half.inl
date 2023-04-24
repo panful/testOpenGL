@@ -1,4 +1,4 @@
-﻿namespace glm{
+namespace glm{
 namespace detail
 {
     GLM_FUNC_QUALIFIER float overflow()

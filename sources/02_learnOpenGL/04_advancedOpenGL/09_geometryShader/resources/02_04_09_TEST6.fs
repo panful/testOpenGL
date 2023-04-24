@@ -1,4 +1,4 @@
-﻿#version 430 core
+#version 430 core
 
 // gl_Layer 在430以后才支持
 

@@ -1,4 +1,4 @@
-﻿/// @ref core
+/// @ref core
 /// @file glm/detail/func_common.inl
 
 #include "../vector_relational.hpp"
