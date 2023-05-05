@@ -11,7 +11,7 @@
  * 10. 窗口的右上角绘制一个小窗口
  */
 
-#define TEST10
+#define TEST4
 
 #ifdef TEST1
 
@@ -587,7 +587,7 @@ int main()
     ShaderProgram program("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST1_Custom_FBO.fs");
 
     // clang-format off
-    std::array<GLfloat, 3 * 7> vertices{
+    std::array<GLfloat, 3 * 6> vertices{
         // pos                  // color
         -0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 左下
          0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f, // 右下

@@ -572,6 +572,13 @@ public:
         Release();
     }
 
+    void Draw()
+    {
+        Bind();
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_indices.size()), GL_UNSIGNED_INT, 0);
+        Release();
+    }
+
 private:
     GLuint m_vao;
     GLuint m_vbo;
