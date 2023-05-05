@@ -8,9 +8,10 @@
  * 6.不使用vao vbo ebo绘制，glDrawElements
  * 7.一次性生成多个缓冲对象（vao vbo等）
  * 8.一个VAO对应多个EBO
+ * 9.测试class Renderer
  */
 
-#define TEST8
+#define TEST9
 
 #ifdef TEST1
 
@@ -1274,3 +1275,56 @@ int main()
 }
 
 #endif // TEST8
+
+#ifdef TEST9
+
+#include "common.hpp"
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("resources/02_01_01_TEST8.vs", "resources/02_01_01_TEST8.fs");
+
+    // clang-format off
+    std::vector<GLfloat> vertices {
+        -0.5f,  -0.5f,
+         0.5f,  -0.5f,
+         0.5f,   0.5f,
+        -0.5f,   0.5f,
+    };
+    std::vector<GLuint> indices {
+        0, 1, 2,
+        0, 2, 3,
+    };
+
+    std::vector<GLfloat> vertices2{
+        -0.8f,  0.8f,
+         0.8f,  0.8f,
+        -0.8f, -0.8f,
+         0.8f, -0.8f
+    };
+    // clang-format on
+
+    Renderer triangle(vertices, indices, { 2 });
+    Renderer line(vertices2, { 2 });
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+
+        triangle.Draw(GL_TRIANGLES);
+        line.Draw(GL_LINES);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST9

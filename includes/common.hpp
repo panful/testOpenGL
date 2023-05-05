@@ -23,10 +23,11 @@
 #include <fstream>
 #include <initializer_list>
 #include <iostream>
+#include <memory>
+#include <numeric>
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
-#include <type_traits>
 #include <vector>
 
 class InitOpenGL
@@ -496,205 +497,112 @@ private:
     }
 };
 
-class IndexBufferObject
+class Renderer
 {
-public:
-    IndexBufferObject(const void* data, GLsizei size)
-        : m_ibo(0)
-    {
-        glGenBuffers(1, &m_ibo);
-        Bind();
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-        Release();
-    }
-
-    ~IndexBufferObject()
-    {
-        glDeleteBuffers(1, &m_ibo);
-    }
-
-    void Bind() const
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    }
-
-    void Release() const
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-
 private:
-    GLuint m_ibo;
-};
-
-class VertexBufferObject
-{
-public:
-    VertexBufferObject(const void* data, GLsizei size)
-        : m_vbo(0)
+    enum class DrawType
     {
-        glGenBuffers(1, &m_vbo);
-        Bind();
-        glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-        Release();
-    }
-
-    ~VertexBufferObject()
-    {
-        glDeleteBuffers(1, &m_vbo);
-    }
-
-    void Bind() const
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    }
-
-    void Release() const
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-private:
-    GLuint m_vbo;
-};
-
-class VertexBufferElement
-{
-public:
-    constexpr VertexBufferElement(GLuint type, GLuint count, GLboolean norm = GL_FALSE)
-        : m_type(type)
-        , m_count(count)
-        , m_normalized(norm)
-    {
-    }
+        Arrays   = 0,
+        Elements = 1
+    };
 
 public:
-    static GLuint GetElementSize(GLuint type)
-    {
-        switch (type)
-        {
-        case GL_FLOAT:
-            return 4;
-        case GL_UNSIGNED_INT:
-            return 4;
-        case GL_UNSIGNED_BYTE:
-            return 1;
-        default:
-            assert(false);
-        }
-    }
-
-private:
-    unsigned int m_type;
-    unsigned int m_count;
-    unsigned char m_normalized;
-};
-
-class VertexBufferLayout
-{
-public:
-    VertexBufferLayout()
-        : m_stride(0)
-    {
-    }
-
-    template <typename T>
-    void Push(GLuint count, GLboolean norm = GL_FALSE)
-    {
-        assert(false);
-    }
-
-    template <>
-    void Push<GLfloat>(GLuint count, GLboolean norm)
-    {
-        m_elements.emplace_back(VertexBufferElement(GL_FLOAT, count, norm));
-        m_stride += count * VertexBufferElement::GetElementSize(GL_FLOAT);
-    }
-
-    template <>
-    void Push<GLubyte>(GLuint count, GLboolean norm)
-    {
-        m_elements.emplace_back(VertexBufferElement(GL_UNSIGNED_BYTE, count, norm));
-        m_stride += count * VertexBufferElement::GetElementSize(GL_UNSIGNED_BYTE);
-    }
-
-    template <>
-    void Push<GLuint>(GLuint count, GLboolean norm)
-    {
-        m_elements.emplace_back(VertexBufferElement(GL_UNSIGNED_INT, count, norm));
-        m_stride += count * VertexBufferElement::GetElementSize(GL_UNSIGNED_INT);
-    }
-
-    GLuint GetStride() const
-    {
-        return m_stride;
-    }
-
-    GLuint GetNumOfElements() const
-    {
-        return m_elements.size();
-    }
-
-private:
-    GLuint m_stride;
-    std::vector<VertexBufferElement> m_elements;
-};
-
-template <typename T = GLfloat,
-    typename         = typename std::enable_if_t<std::disjunction_v<std::is_same<T, GLuint>, std::is_same<T, GLfloat>, std::is_same<T, GLubyte>>>>
-class VertexArrayObject
-{
-public:
-    VertexArrayObject(const VertexBufferObject& vbo, const VertexBufferLayout<T> layout)
+    Renderer(const std::vector<GLfloat>& vertices, const std::vector<GLuint>& indices, std::initializer_list<GLuint>&& layout)
         : m_vao(0)
-        , m_vbo(vbo)
+        , m_vbo(0)
+        , m_ebo(0)
+        , m_count(static_cast<GLsizei>(indices.size()))
+        , m_drawType(DrawType::Elements)
     {
         glGenVertexArrays(1, &m_vao);
-        Bind();
-        m_vbo.Bind();
 
-        for (GLuint i = 0; i < layout.GetNumOfElements(); i++)
-        {
-            
-        }
+        glGenBuffers(1, &m_vbo);
+        glGenBuffers(1, &m_ebo);
 
-        GLuint index { 0 };
-        GLuint attriSize { 0 };
-        for (auto& elem : m_layout)
+        glBindVertexArray(m_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+        GLuint stride = std::accumulate(layout.begin(), layout.end(), 0);
+        GLuint index { 0 }, offset { 0 };
+        for (auto& elem : layout)
         {
             glEnableVertexAttribArray(index);
-            glVertexAttribPointer(
-                index, elem, GL_FLOAT, GL_FALSE, m_vertexAttributeSize * sizeof(GLfloat), reinterpret_cast<void*>(sizeof(GLfloat) * attriSize));
-
-            attriSize += elem;
+            glVertexAttribPointer(index, elem, GL_FLOAT, GL_FALSE, stride * sizeof(GLfloat), (void*)(sizeof(GLfloat) * offset));
+            offset += elem;
             index++;
         }
 
-        Release();
+        glBindVertexArray(0);
     }
 
-    ~VertexArrayObject()
+    Renderer(const std::vector<GLfloat>& vertices, std::initializer_list<GLuint>&& layout)
+        : m_vao(0)
+        , m_vbo(0)
+        , m_ebo(0)
+        , m_count(static_cast<GLsizei>(vertices.size()))
+        , m_drawType(DrawType::Arrays)
+    {
+        glGenVertexArrays(1, &m_vao);
+
+        glGenBuffers(1, &m_vbo);
+
+        glBindVertexArray(m_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+        GLuint stride = std::accumulate(layout.begin(), layout.end(), 0);
+        GLuint index { 0 }, offset { 0 };
+        for (auto& elem : layout)
+        {
+            glEnableVertexAttribArray(index);
+            glVertexAttribPointer(index, elem, GL_FLOAT, GL_FALSE, stride * sizeof(GLfloat), (void*)(sizeof(GLfloat) * offset));
+            offset += elem;
+            index++;
+        }
+
+        glBindVertexArray(0);
+    }
+
+    ~Renderer()
     {
         glDeleteVertexArrays(1, &m_vao);
+        glDeleteBuffers(1, &m_vbo);
+        if (0 != m_ebo)
+        {
+            glDeleteBuffers(1, &m_ebo);
+        }
     }
 
-    void Bind() const
+    void Draw(GLenum mode)
     {
         glBindVertexArray(m_vao);
-    }
 
-    void Release() const
-    {
+        switch (m_drawType)
+        {
+        case DrawType::Arrays:
+            glDrawArrays(mode, 0, m_count);
+            break;
+        case DrawType::Elements:
+            glDrawElements(mode, m_count, GL_UNSIGNED_INT, 0);
+            break;
+        default:
+            assert(false);
+        }
+
         glBindVertexArray(0);
     }
 
 private:
     GLuint m_vao;
-    VertexBufferObject m_vbo;
-};
-
-class Renderer
-{
+    GLuint m_vbo;
+    GLuint m_ebo;
+    GLsizei m_count;
+    DrawType m_drawType;
 };
 
 namespace ErrorImpl {
