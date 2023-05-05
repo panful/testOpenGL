@@ -212,7 +212,7 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
 
-    cubeProgram.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;

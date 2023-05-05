@@ -166,8 +166,8 @@ int main()
     glDeleteVertexArrays(1, &lightVAO);
     glDeleteBuffers(1, &lightVBO);
 
-    cubeProgram.DeleteProgram();
-    lightProgram.DeleteProgram();
+    
+    
 
     glfwTerminate();
     return 0;
@@ -350,8 +350,8 @@ int main()
     glDeleteVertexArrays(1, &lightVAO);
     glDeleteBuffers(1, &lightVBO);
 
-    cubeProgram.DeleteProgram();
-    lightProgram.DeleteProgram();
+    
+    
 
     glfwTerminate();
     return 0;
@@ -538,8 +538,8 @@ int main()
     glDeleteVertexArrays(1, &lightVAO);
     glDeleteBuffers(1, &lightVBO);
 
-    cubeProgram.DeleteProgram();
-    lightProgram.DeleteProgram();
+    
+    
 
     glfwTerminate();
     return 0;
@@ -726,8 +726,8 @@ int main()
     glDeleteVertexArrays(1, &lightVAO);
     glDeleteBuffers(1, &lightVBO);
 
-    cubeProgram.DeleteProgram();
-    lightProgram.DeleteProgram();
+    
+    
 
     glfwTerminate();
     return 0;

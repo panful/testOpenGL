@@ -1,4 +1,5 @@
-# https://blog.csdn.net/chongbin007/article/details/125173376
+
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 
 BasedOnStyle: WebKit
 Language: Cpp
@@ -20,6 +21,7 @@ BraceWrapping:
   BeforeCatch:              true  # catch 新起一行
   BeforeElse:               true  # else  新起一行
   AfterCaseLabel:           true  # case  新起一行
+  BeforLambdaBody:          true
 
 # 尾随的注释对齐
 AlignTrailingComments: true
@@ -30,12 +32,25 @@ ColumnLimit: 150
 # 禁止函数定义与函数名在同一行
 AllowShortFunctionsOnASingleLine: false
 
-# AlignConsecutiveAssignments: true   # 对齐连续的多行赋值
-# PointerAlignment: Right             # 指针的*紧靠变量名
+# template<typename T>之后换行
+AlwaysBreakTemplateDeclarations: true
 
-# 让clangformat对{}中的内容不生效
-#  // clang-format off
-#  // 这里的代码将不受clang-format的影响
-#  // clang-format on
+# 构造函数初始值设定项换行样式
+#BreakConstructorInitializers: BeforeColon
 
-# Cpp11BracedListStyle: true 删除列表初始化{后面的和}前面的空格 删除的样式 {1,2} 不删除的样式 { 1,2 }
+# 继承列表样式
+BreakInheritanceList: AfterComma
+
+# 对齐连续的多行赋值
+AlignConsecutiveAssignments: true
+
+# 自动补充namespace注释
+FixNamespaceComments: true
+
+# 定义之间空一行，函数与函数之间，类与类之间等
+SeparateDefinitionBlocks : Always
+# 定义之间的空行最多为一行
+MaxEmptyLinesToKeep: 1
+
+# 宏的换行符左对齐
+AlignEscapedNewlines: Left

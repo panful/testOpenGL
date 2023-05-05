@@ -149,7 +149,7 @@ int main()
     }
 
     // remember to delete the buffer
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;
@@ -278,7 +278,7 @@ int main()
     }
 
     // remember to delete the buffer
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;
@@ -387,7 +387,7 @@ int main()
     }
 
     // remember to delete the buffer
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;
@@ -506,7 +506,7 @@ int main()
     }
 
     // remember to delete the buffer
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;

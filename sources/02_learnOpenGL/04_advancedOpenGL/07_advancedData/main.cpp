@@ -94,7 +94,7 @@ int main()
         glfwPollEvents();
     }
 
-    program.DeleteProgram();
+    
 
     glDeleteVertexArrays(1, &vertexArrayObject);
     glDeleteBuffers(1, &vertexBufferObject);
@@ -182,7 +182,7 @@ int main()
         glfwPollEvents();
     }
 
-    program.DeleteProgram();
+    
 
     glDeleteVertexArrays(1, &vertexArrayObject);
     glDeleteBuffers(1, &vertexBufferObject);
@@ -299,7 +299,7 @@ int main()
         glfwPollEvents();
     }
 
-    program.DeleteProgram();
+    
 
     glDeleteVertexArrays(1, &vertexArrayObject);
     glDeleteBuffers(1, &vertexBufferObject);
@@ -454,7 +454,7 @@ int main()
         glfwPollEvents();
     }
 
-    program.DeleteProgram();
+    
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
@@ -557,7 +557,7 @@ int main()
         glfwPollEvents();
     }
 
-    program.DeleteProgram();
+    
 
     // remember to delete the buffers
 

@@ -7,26 +7,26 @@
 ///  @date      2023-2-27
 ///-------------------------------------------------------
 
-#ifndef _COMMOND_HPP_
-#define _COMMOND_HPP_
+#pragma once
 
 // glad需要在glfw之前包含
-
 // clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+// clang-format on
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <stb_image.h>
-// clang-format on
 
 #include <filesystem>
 #include <fstream>
+#include <initializer_list>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
+#include <vector>
 
 class InitOpenGL
 {
@@ -111,7 +111,7 @@ class Shader
 public:
     enum class ShaderType
     {
-        Vertex = 0,
+        Vertex   = 0,
         Fragment = 1,
         Geometry = 2,
     };
@@ -123,15 +123,14 @@ public:
         CreateShader(filePath, type);
     }
 
-    ~Shader() = default;
+    ~Shader()
+    {
+        glDeleteShader(m_shader);
+    }
 
     GLuint GetShader() const
     {
         return m_shader;
-    }
-    void DeleteShader() const
-    {
-        glDeleteShader(m_shader);
     }
 
 private:
@@ -158,7 +157,7 @@ private:
             std::ifstream ifs(path.data());
             std::ostringstream iss;
             iss << ifs.rdbuf();
-            auto str = iss.str();
+            auto str        = iss.str();
             auto shaderCode = str.c_str();
 
             switch (t)
@@ -208,14 +207,14 @@ public:
         CheckErrors();
     }
 
+    ~ShaderProgram()
+    {
+        glDeleteProgram(m_program);
+    }
+
     GLuint GetProgram() const
     {
         return m_program;
-    }
-
-    void DeleteProgram() const
-    {
-        glDeleteProgram(m_program);
     }
 
     void Use() const
@@ -316,7 +315,6 @@ private:
         {
             Shader vs(filePath, type);
             glAttachShader(m_program, vs.GetShader());
-            vs.DeleteShader();
         }
     };
 
@@ -391,7 +389,10 @@ public:
         Release();
     }
 
-    ~Texture() = default;
+    ~Texture()
+    {
+        glDeleteTextures(1, &m_texture);
+    }
 
 private:
     GLuint m_texture;
@@ -461,7 +462,7 @@ public:
 
     void ResetSize(GLsizei w, GLsizei h)
     {
-        m_width = w;
+        m_width  = w;
         m_height = h;
 
         CreateNullTexture();
@@ -471,10 +472,12 @@ public:
     {
         return m_width;
     }
+
     GLsizei GetHeight() const
     {
         return m_height;
     }
+
     GLenum GetColorFormat() const
     {
         return m_colorFormat;
@@ -490,6 +493,93 @@ private:
     {
         glActiveTexture(GL_TEXTURE0 + texUnit);
     }
+};
+
+class VertexArrayObject
+{
+public:
+    VertexArrayObject()
+        : m_vao(0)
+        , m_vbo(0)
+        , m_ebo(0)
+        , m_vertexAttributeSize(0)
+    {
+        glGenVertexArrays(1, &m_vao);
+        glGenBuffers(1, &m_vbo);
+        glGenBuffers(1, &m_ebo);
+    }
+
+    ~VertexArrayObject()
+    {
+        glDeleteVertexArrays(1, &m_vao);
+        glDeleteBuffers(1, &m_vbo);
+        glDeleteBuffers(1, &m_ebo);
+    }
+
+public:
+    void Bind() const
+    {
+        glBindVertexArray(m_vao);
+    }
+
+    void Release() const
+    {
+        glBindVertexArray(0);
+    }
+
+    void SetVertices(const std::vector<GLfloat>& vertices)
+    {
+        m_vertices = vertices;
+    }
+
+    void SetIndices(const std::vector<GLuint>& indices)
+    {
+        m_indices = indices;
+    }
+
+    void SetLayout(const std::initializer_list<GLuint>& layout)
+    {
+        m_layout = layout;
+
+        for (auto& elem : m_layout)
+        {
+            m_vertexAttributeSize += elem;
+        }
+    }
+
+    void Build()
+    {
+        Bind();
+
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * m_vertices.size(), m_vertices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * m_indices.size(), m_indices.data(), GL_STATIC_DRAW);
+
+        GLuint index { 0 };
+        GLuint attriSize { 0 };
+        for (auto& elem : m_layout)
+        {
+            glEnableVertexAttribArray(index);
+            glVertexAttribPointer(
+                index, elem, GL_FLOAT, GL_FALSE, m_vertexAttributeSize * sizeof(GLfloat), reinterpret_cast<void*>(sizeof(GLfloat) * attriSize));
+
+            attriSize += elem;
+            index++;
+        }
+
+        Release();
+    }
+
+private:
+    GLuint m_vao;
+    GLuint m_vbo;
+    GLuint m_ebo;
+    GLuint m_vertexAttributeSize;
+    std::vector<GLfloat> m_vertices;
+    std::vector<GLuint> m_indices;
+    std::initializer_list<GLuint> m_layout;
 };
 
 namespace ErrorImpl {
@@ -533,5 +623,3 @@ static void CheckErrorImpl(const char* info, const char* file, int line, const c
 
 #define CheckError() ErrorImpl::CheckErrorImpl("", __FILE__, __LINE__, __FUNCTION__)
 #define CheckErrorWithInfo(str) ErrorImpl::CheckErrorImpl(str, __FILE__, __LINE__, __FUNCTION__)
-
-#endif // !_COMMOND_HPP_

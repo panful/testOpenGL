@@ -110,7 +110,7 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;
@@ -264,7 +264,7 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;
@@ -421,7 +421,7 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;
@@ -593,7 +593,7 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;
@@ -738,7 +738,7 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;
@@ -932,7 +932,7 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;
@@ -1060,7 +1060,7 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    program.DeleteProgram();
+    
 
     stbi_image_free(data);
 
@@ -1264,7 +1264,7 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;

@@ -181,8 +181,8 @@ int main()
     }
 
     // remember to delete the buffer
-    defaultFBOProgram.DeleteProgram();
-    customFBOProgram.DeleteProgram();
+    
+    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -340,8 +340,8 @@ int main()
     }
 
     // remember to delete the buffer
-    defaultFBOProgram.DeleteProgram();
-    customFBOProgram.DeleteProgram();
+    
+    
 
     delete texColorBuffer;
     texColorBuffer = nullptr;
@@ -522,8 +522,8 @@ int main()
     }
 
     // remember to delete the buffer
-    defaultFBOProgram.DeleteProgram();
-    customFBOProgram.DeleteProgram();
+    
+    
 
     delete texColorBuffer;
     texColorBuffer = nullptr;
@@ -687,7 +687,7 @@ int main()
     }
 
     // remember to delete the buffer
-    program.DeleteProgram();
+    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -954,8 +954,8 @@ int main()
     }
 
     // remember to delete the buffer
-    defaultFBOProgram.DeleteProgram();
-    customFBOProgram.DeleteProgram();
+    
+    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -1179,8 +1179,8 @@ int main()
     }
 
     // remember to delete the buffers
-    defaultFBOProgram.DeleteProgram();
-    customFBOProgram.DeleteProgram();
+    
+    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -1395,8 +1395,8 @@ int main()
     }
 
     // remember to delete the buffer
-    defaultFBOProgram.DeleteProgram();
-    customFBOProgram.DeleteProgram();
+    
+    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -1630,8 +1630,8 @@ int main()
     }
 
     // remember to delete the buffer
-    defaultFBOProgram.DeleteProgram();
-    customFBOProgram.DeleteProgram();
+    
+    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -1851,8 +1851,8 @@ int main()
     }
 
     // remember to delete the buffer
-    defaultFBOProgram.DeleteProgram();
-    customFBOProgram.DeleteProgram();
+    
+    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -2143,8 +2143,8 @@ int main()
     }
 
     // remember to delete the buffer
-    defaultFBOProgram.DeleteProgram();
-    customFBOProgram.DeleteProgram();
+    
+    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);

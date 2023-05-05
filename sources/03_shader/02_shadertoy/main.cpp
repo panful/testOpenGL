@@ -80,7 +80,7 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;
@@ -204,7 +204,7 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;
@@ -300,7 +300,7 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;
@@ -401,7 +401,7 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    program.DeleteProgram();
+    
 
     glfwTerminate();
     return 0;

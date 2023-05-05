@@ -179,8 +179,8 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteVertexArrays(1, &VAO_light);
 
-    cubeProgram.DeleteProgram();
-    lightProgram.DeleteProgram();
+    
+    
 
     glfwTerminate();
     return 0;
