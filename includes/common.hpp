@@ -26,6 +26,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 
 class InitOpenGL
@@ -495,67 +496,167 @@ private:
     }
 };
 
-class VertexArrayObject
+class IndexBufferObject
 {
 public:
-    VertexArrayObject()
-        : m_vao(0)
-        , m_vbo(0)
-        , m_ebo(0)
-        , m_vertexAttributeSize(0)
+    IndexBufferObject(const void* data, GLsizei size)
+        : m_ibo(0)
     {
-        glGenVertexArrays(1, &m_vao);
-        glGenBuffers(1, &m_vbo);
-        glGenBuffers(1, &m_ebo);
+        glGenBuffers(1, &m_ibo);
+        Bind();
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+        Release();
     }
 
-    ~VertexArrayObject()
+    ~IndexBufferObject()
     {
-        glDeleteVertexArrays(1, &m_vao);
-        glDeleteBuffers(1, &m_vbo);
-        glDeleteBuffers(1, &m_ebo);
+        glDeleteBuffers(1, &m_ibo);
     }
 
-public:
     void Bind() const
     {
-        glBindVertexArray(m_vao);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
     }
 
     void Release() const
     {
-        glBindVertexArray(0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    void SetVertices(const std::vector<GLfloat>& vertices)
+private:
+    GLuint m_ibo;
+};
+
+class VertexBufferObject
+{
+public:
+    VertexBufferObject(const void* data, GLsizei size)
+        : m_vbo(0)
     {
-        m_vertices = vertices;
+        glGenBuffers(1, &m_vbo);
+        Bind();
+        glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+        Release();
     }
 
-    void SetIndices(const std::vector<GLuint>& indices)
+    ~VertexBufferObject()
     {
-        m_indices = indices;
+        glDeleteBuffers(1, &m_vbo);
     }
 
-    void SetLayout(const std::initializer_list<GLuint>& layout)
+    void Bind() const
     {
-        m_layout = layout;
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    }
 
-        for (auto& elem : m_layout)
+    void Release() const
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+private:
+    GLuint m_vbo;
+};
+
+class VertexBufferElement
+{
+public:
+    constexpr VertexBufferElement(GLuint type, GLuint count, GLboolean norm = GL_FALSE)
+        : m_type(type)
+        , m_count(count)
+        , m_normalized(norm)
+    {
+    }
+
+public:
+    static GLuint GetElementSize(GLuint type)
+    {
+        switch (type)
         {
-            m_vertexAttributeSize += elem;
+        case GL_FLOAT:
+            return 4;
+        case GL_UNSIGNED_INT:
+            return 4;
+        case GL_UNSIGNED_BYTE:
+            return 1;
+        default:
+            assert(false);
         }
     }
 
-    void Build()
+private:
+    unsigned int m_type;
+    unsigned int m_count;
+    unsigned char m_normalized;
+};
+
+class VertexBufferLayout
+{
+public:
+    VertexBufferLayout()
+        : m_stride(0)
     {
+    }
+
+    template <typename T>
+    void Push(GLuint count, GLboolean norm = GL_FALSE)
+    {
+        assert(false);
+    }
+
+    template <>
+    void Push<GLfloat>(GLuint count, GLboolean norm)
+    {
+        m_elements.emplace_back(VertexBufferElement(GL_FLOAT, count, norm));
+        m_stride += count * VertexBufferElement::GetElementSize(GL_FLOAT);
+    }
+
+    template <>
+    void Push<GLubyte>(GLuint count, GLboolean norm)
+    {
+        m_elements.emplace_back(VertexBufferElement(GL_UNSIGNED_BYTE, count, norm));
+        m_stride += count * VertexBufferElement::GetElementSize(GL_UNSIGNED_BYTE);
+    }
+
+    template <>
+    void Push<GLuint>(GLuint count, GLboolean norm)
+    {
+        m_elements.emplace_back(VertexBufferElement(GL_UNSIGNED_INT, count, norm));
+        m_stride += count * VertexBufferElement::GetElementSize(GL_UNSIGNED_INT);
+    }
+
+    GLuint GetStride() const
+    {
+        return m_stride;
+    }
+
+    GLuint GetNumOfElements() const
+    {
+        return m_elements.size();
+    }
+
+private:
+    GLuint m_stride;
+    std::vector<VertexBufferElement> m_elements;
+};
+
+template <typename T = GLfloat,
+    typename         = typename std::enable_if_t<std::disjunction_v<std::is_same<T, GLuint>, std::is_same<T, GLfloat>, std::is_same<T, GLubyte>>>>
+class VertexArrayObject
+{
+public:
+    VertexArrayObject(const VertexBufferObject& vbo, const VertexBufferLayout<T> layout)
+        : m_vao(0)
+        , m_vbo(vbo)
+    {
+        glGenVertexArrays(1, &m_vao);
         Bind();
+        m_vbo.Bind();
 
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-
-        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * m_vertices.size(), m_vertices.data(), GL_STATIC_DRAW);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * m_indices.size(), m_indices.data(), GL_STATIC_DRAW);
+        for (GLuint i = 0; i < layout.GetNumOfElements(); i++)
+        {
+            
+        }
 
         GLuint index { 0 };
         GLuint attriSize { 0 };
@@ -572,21 +673,28 @@ public:
         Release();
     }
 
-    void Draw()
+    ~VertexArrayObject()
     {
-        Bind();
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_indices.size()), GL_UNSIGNED_INT, 0);
-        Release();
+        glDeleteVertexArrays(1, &m_vao);
+    }
+
+    void Bind() const
+    {
+        glBindVertexArray(m_vao);
+    }
+
+    void Release() const
+    {
+        glBindVertexArray(0);
     }
 
 private:
     GLuint m_vao;
-    GLuint m_vbo;
-    GLuint m_ebo;
-    GLuint m_vertexAttributeSize;
-    std::vector<GLfloat> m_vertices;
-    std::vector<GLuint> m_indices;
-    std::initializer_list<GLuint> m_layout;
+    VertexBufferObject m_vbo;
+};
+
+class Renderer
+{
 };
 
 namespace ErrorImpl {
