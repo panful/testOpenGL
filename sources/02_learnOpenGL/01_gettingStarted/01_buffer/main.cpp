@@ -1,41 +1,43 @@
 
 /*
-* 1 使用vao vbo绘制
-* 2 使用vao vbo ebo绘制
-* 3 只使用vbo绘制，不使用vao
-* 4.只使用vbo和ebo绘制，不使用vao
-* 5.不使用vao vbo ebo绘制，glDrawArrays
-* 6.不使用vao vbo ebo绘制，glDrawElements
-* 7.一次性生成多个缓冲对象（vao vbo等）
-*/
+ * 1 使用vao vbo绘制
+ * 2 使用vao vbo ebo绘制
+ * 3 只使用vbo绘制，不使用vao
+ * 4.只使用vbo和ebo绘制，不使用vao
+ * 5.不使用vao vbo ebo绘制，glDrawArrays
+ * 6.不使用vao vbo ebo绘制，glDrawElements
+ * 7.一次性生成多个缓冲对象（vao vbo等）
+ * 8.一个VAO对应多个EBO
+ */
 
-#define TEST1
+#define TEST8
 
 #ifdef TEST1
 
+// clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+// clang-format on
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
-const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_WIDTH  = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 const char* VS = "#version 330 core                     \n"
-"layout (location = 0) in vec3 aPos;                    \n"
-"void main()                                            \n"
-"{                                                      \n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);    \n"
-"}                                                      \n\0";
+                 "layout (location = 0) in vec3 aPos;                    \n"
+                 "void main()                                            \n"
+                 "{                                                      \n"
+                 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);    \n"
+                 "}                                                      \n\0";
 
 const char* FS = "#version 330 core                     \n"
-"void main()                                            \n"
-"{                                                      \n"
-"   gl_FragColor = vec4(0.0f,0.8f,0.0f,1.0f);           \n"
-"}                                                      \n\0";
+                 "void main()                                            \n"
+                 "{                                                      \n"
+                 "   gl_FragColor = vec4(0.0f,0.8f,0.0f,1.0f);           \n"
+                 "}                                                      \n\0";
 
 int main()
 {
@@ -92,7 +94,8 @@ int main()
     glLinkProgram(shaderProgram);
 
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
+    if (!success)
+    {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
@@ -102,9 +105,9 @@ int main()
     glDeleteShader(fragmentShader);
 
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,  // left  
-         0.5f, -0.5f, 0.0f,  // right 
-         0.0f,  0.5f, 0.0f,  // top   
+        -0.5f, -0.5f, 0.0f, // left
+        0.5f, -0.5f, 0.0f,  // right
+        0.0f, 0.5f, 0.0f,   // top
     };
 
     // Buffer
@@ -129,7 +132,8 @@ int main()
     // 4. 是否希望数据被标准化(Normalize)(映射到[0,1],有符号数则为[-1,1] 是否有法线
     // 5. 步长(Stride),连续的顶点属性组之间的间隔,从这个属性第二次出现的地方到整个数组0位置之间有多少字节,可以理解为一组数据有多大，
     //    比如一组数据包括坐标xyz，颜色rgb那么步长就为6，要乘字节长度，例如：6 * sizeof(GLfloat)
-    // 6. 数据指针,数据开始的位置，比如一组数据包括xyz,rgb，那么xyz开始的位置为0，rgb开始的位置为3，要乘字节长度，例如：reinterpret_cast<void*>(3 * sizeof(GLfloat))
+    // 6. 数据指针,数据开始的位置，比如一组数据包括xyz,rgb，那么xyz开始的位置为0，rgb开始的位置为3，要乘字节长度，例如：reinterpret_cast<void*>(3 *
+    // sizeof(GLfloat))
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -174,30 +178,31 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #ifdef TEST2
 
+// clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+// clang-format on
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_WIDTH  = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
+const char* vertexShaderSource   = "#version 330 core\n"
+                                   "layout (location = 0) in vec3 aPos;\n"
+                                   "void main()\n"
+                                   "{\n"
+                                   "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+                                   "}\0";
 const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\n\0";
+                                   "out vec4 FragColor;\n"
+                                   "void main()\n"
+                                   "{\n"
+                                   "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+                                   "}\n\0";
 
 int main()
 {
@@ -232,7 +237,6 @@ int main()
         return -1;
     }
 
-
     // build and compile our shader program
     // ------------------------------------
     // vertex shader
@@ -266,7 +270,8 @@ int main()
     glLinkProgram(shaderProgram);
     // check for linking errors
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
+    if (!success)
+    {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
@@ -276,14 +281,15 @@ int main()
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-         0.5f,  0.5f, 0.0f,  // top right
-         0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  // bottom left
-        -0.5f,  0.5f, 0.0f   // top left 
+        0.5f, 0.5f, 0.0f,   // top right
+        0.5f, -0.5f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f, // bottom left
+        -0.5f, 0.5f, 0.0f   // top left
     };
-    unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 3,  // first Triangle
-        1, 2, 3   // second Triangle
+    unsigned int indices[] = {
+        // note that we start from 0!
+        0, 1, 3, // first Triangle
+        1, 2, 3  // second Triangle
     };
     unsigned int VBO, VAO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -301,19 +307,19 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
+    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards
+    // we can safely unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0);
 
-
     // uncomment this call to draw in wireframe polygons.
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // render loop
     // -----------
@@ -330,10 +336,11 @@ int main()
 
         // draw our first triangle
         glUseProgram(shaderProgram);
-        glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        //glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(
+            VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        // glBindVertexArray(0); // no need to unbind it every time 
+        // glBindVertexArray(0); // no need to unbind it every time
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -366,7 +373,7 @@ void processInput(GLFWwindow* window)
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width and 
+    // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
@@ -374,9 +381,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #ifdef TEST3
 
-#include <iostream>
+// clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+// clang-format on
+#include <iostream>
 
 int main(void)
 {
@@ -406,11 +415,11 @@ int main(void)
 
     /* Define a vertex shader */
     const char* vertexShaderSource = "#version 330 core\n"
-        "layout (location = 0) in vec2 aPos;\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
-        "}\0";
+                                     "layout (location = 0) in vec2 aPos;\n"
+                                     "void main()\n"
+                                     "{\n"
+                                     "   gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
+                                     "}\0";
 
     /* Compile the vertex shader */
     GLuint vertexShader;
@@ -430,11 +439,11 @@ int main(void)
 
     /* Define a fragment shader */
     const char* fragmentShaderSource = "#version 330 core\n"
-        "out vec4 FragColor;\n"
-        "void main()\n"
-        "{\n"
-        "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-        "}\n\0";
+                                       "out vec4 FragColor;\n"
+                                       "void main()\n"
+                                       "{\n"
+                                       "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+                                       "}\n\0";
 
     /* Compile the fragment shader */
     GLuint fragmentShader;
@@ -464,7 +473,8 @@ int main(void)
     /*
     /* Check if the shader program linked successfully */
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
+    if (!success)
+    {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
@@ -477,11 +487,7 @@ int main(void)
     glDeleteShader(fragmentShader);
 
     /* Define vertices for a triangle */
-    float vertices[] = {
-         0.0f,  0.5f,
-         0.5f, -0.5f,
-        -0.5f, -0.5f
-    };
+    float vertices[] = { 0.0f, 0.5f, 0.5f, -0.5f, -0.5f, -0.5f };
 
     /* Generate a buffer object */
     GLuint VBO;
@@ -529,22 +535,24 @@ int main(void)
 
 #ifdef TEST4
 
-#include <iostream>
+// clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+// clang-format on
+#include <iostream>
 
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
+const char* vertexShaderSource   = "#version 330 core\n"
+                                   "layout (location = 0) in vec3 aPos;\n"
+                                   "void main()\n"
+                                   "{\n"
+                                   "    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+                                   "}\0";
 const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\n\0";
+                                   "out vec4 FragColor;\n"
+                                   "void main()\n"
+                                   "{\n"
+                                   "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+                                   "}\n\0";
 
 int main()
 {
@@ -689,9 +697,11 @@ int main()
 
 #ifdef TEST5
 
-#include <iostream>
+// clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+// clang-format on
+#include <iostream>
 
 int main(void)
 {
@@ -721,11 +731,11 @@ int main(void)
 
     /* Define a vertex shader */
     const char* vertexShaderSource = "#version 330 core\n"
-        "layout (location = 0) in vec2 aPos;\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
-        "}\0";
+                                     "layout (location = 0) in vec2 aPos;\n"
+                                     "void main()\n"
+                                     "{\n"
+                                     "   gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
+                                     "}\0";
 
     /* Compile the vertex shader */
     GLuint vertexShader;
@@ -745,11 +755,11 @@ int main(void)
 
     /* Define a fragment shader */
     const char* fragmentShaderSource = "#version 330 core\n"
-        "out vec4 FragColor;\n"
-        "void main()\n"
-        "{\n"
-        "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-        "}\n\0";
+                                       "out vec4 FragColor;\n"
+                                       "void main()\n"
+                                       "{\n"
+                                       "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+                                       "}\n\0";
 
     /* Compile the fragment shader */
     GLuint fragmentShader;
@@ -779,7 +789,8 @@ int main(void)
     /*
     /* Check if the shader program linked successfully */
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
+    if (!success)
+    {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
@@ -792,11 +803,7 @@ int main(void)
     glDeleteShader(fragmentShader);
 
     /* Define vertices for a triangle */
-    float vertices[] = {
-         0.0f,  0.5f,
-         0.5f, -0.5f,
-        -0.5f, -0.5f
-    };
+    float vertices[] = { 0.0f, 0.5f, 0.5f, -0.5f, -0.5f, -0.5f };
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)vertices);
     glEnableVertexAttribArray(0);
@@ -830,9 +837,13 @@ int main(void)
 
 #ifdef TEST6
 
-#include <iostream>
+// clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+// clang-format on
+#include <iostream>
+
+#include <iostream>
 
 int main(void)
 {
@@ -862,11 +873,11 @@ int main(void)
 
     /* Define a vertex shader */
     const char* vertexShaderSource = "#version 330 core\n"
-        "layout (location = 0) in vec2 aPos;\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
-        "}\0";
+                                     "layout (location = 0) in vec2 aPos;\n"
+                                     "void main()\n"
+                                     "{\n"
+                                     "   gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
+                                     "}\0";
 
     /* Compile the vertex shader */
     GLuint vertexShader;
@@ -886,11 +897,11 @@ int main(void)
 
     /* Define a fragment shader */
     const char* fragmentShaderSource = "#version 330 core\n"
-        "out vec4 FragColor;\n"
-        "void main()\n"
-        "{\n"
-        "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-        "}\n\0";
+                                       "out vec4 FragColor;\n"
+                                       "void main()\n"
+                                       "{\n"
+                                       "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+                                       "}\n\0";
 
     /* Compile the fragment shader */
     GLuint fragmentShader;
@@ -920,7 +931,8 @@ int main(void)
     /*
     /* Check if the shader program linked successfully */
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
+    if (!success)
+    {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
@@ -934,15 +946,23 @@ int main(void)
 
     /* Define vertices for a triangle */
     float vertices[] = {
-        -0.5f,  0.5f,
-         0.5f,  0.5f,
-         0.5f, -0.5f,
-        -0.5f, -0.5f,
+        -0.5f,
+        0.5f,
+        0.5f,
+        0.5f,
+        0.5f,
+        -0.5f,
+        -0.5f,
+        -0.5f,
     };
 
     unsigned int indices[] = {
-        0,1,2,
-        0,2,3,
+        0,
+        1,
+        2,
+        0,
+        2,
+        3,
     };
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)vertices);
@@ -977,38 +997,42 @@ int main(void)
 
 #ifdef TEST7
 
+// clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+// clang-format on
+#include <iostream>
+
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
-const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_WIDTH  = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 const char* VS = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec3 aColor;\n"
-"out vec3 fColor;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"   fColor = aColor;\n"
-"}\0";
+                 "layout (location = 0) in vec3 aPos;\n"
+                 "layout (location = 1) in vec3 aColor;\n"
+                 "out vec3 fColor;\n"
+                 "void main()\n"
+                 "{\n"
+                 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+                 "   fColor = aColor;\n"
+                 "}\0";
 const char* FS = "#version 330 core\n"
-"in vec3 fColor;\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   //vec4 color = vec4(fColor,0.0);\n"
-"   //if(color.a<1.0) discard;\n"
-"   FragColor = vec4(fColor, 0.5f);\n"
-"}\n\0";
+                 "in vec3 fColor;\n"
+                 "out vec4 FragColor;\n"
+                 "void main()\n"
+                 "{\n"
+                 "   //vec4 color = vec4(fColor,0.0);\n"
+                 "   //if(color.a<1.0) discard;\n"
+                 "   FragColor = vec4(fColor, 0.5f);\n"
+                 "}\n\0";
 
 int main()
 {
-    //初始化
+    // 初始化
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -1022,7 +1046,7 @@ int main()
         return -1;
     }
 
-    //设置当前上下文，回调函数（键盘，鼠标等）
+    // 设置当前上下文，回调函数（键盘，鼠标等）
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -1031,7 +1055,7 @@ int main()
         return -1;
     }
 
-    //着色器 -> 创建 加载 编译 链接 绑定
+    // 着色器 -> 创建 加载 编译 链接 绑定
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &VS, NULL);
     glCompileShader(vertexShader);
@@ -1062,7 +1086,8 @@ int main()
     glLinkProgram(shaderProgram);
 
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
+    if (!success)
+    {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
@@ -1074,16 +1099,16 @@ int main()
 
     glUseProgram(shaderProgram);
 
-    //顶点数据
+    // 顶点数据
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,  1.0f,  0.0f,  0.0f,  // left
-         0.5f, -0.5f, 0.0f,  0.0f,  1.0f,  0.0f,  // right
-         0.0f,  0.5f, 0.0f,  0.0f,  0.0f,  1.0f,  // top
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // left
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,  // right
+        0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,   // top
     };
 
-    //缓冲对象：创建 绑定类型 链接数据 配置数据
-    GLuint vbo[5]{ 0 };
-    GLuint vao[5]{ 0 };
+    // 缓冲对象：创建 绑定类型 链接数据 配置数据
+    GLuint vbo[5] { 0 };
+    GLuint vao[5] { 0 };
 
     glGenVertexArrays(5, vao);
     glGenBuffers(5, vbo);
@@ -1101,7 +1126,7 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    //循环绘制
+    // 循环绘制
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -1135,5 +1160,117 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-#endif //TEST7
+#endif // TEST7
 
+#ifdef TEST8
+
+#include <array>
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("resources/02_01_01_TEST8.vs", "resources/02_01_01_TEST8.fs");
+
+    // clang-format off
+    std::array<GLfloat, 2 * 5> vertices{
+        // pos
+        -0.5f, -0.5f,
+         0.5f, -0.5f,
+         0.5f,  0.5f,
+        -0.5f,  0.5f,
+         0.0f,  0.0f,
+    };
+
+    std::array<GLuint, 3> indices1{
+        0, 4, 3
+    };
+
+    std::array<GLuint, 3> indices2{
+        1, 2, 4
+    };
+
+    std::array<GLuint, 2 * 2> indices3{
+        0, 1,
+        2, 3,
+    };
+    // clang-format on
+
+    GLuint VBO { 0 }, VAO { 0 };
+    {
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glBindVertexArray(0);
+    }
+
+    GLuint EBO1 { 0 };
+    {
+        glGenBuffers(1, &EBO1);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices1), indices1.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    GLuint EBO2 { 0 };
+    {
+        glGenBuffers(1, &EBO2);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices2), indices2.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    GLuint EBO3 { 0 };
+    {
+        glGenBuffers(1, &EBO3);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO3);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices3), indices3.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    //----------------------------------------------------------------------------------
+    // 一个VAO对应多个EBO
+    // VBO保存的是顶点属性（位置，颜色，法线等），
+    // VAO将VBO和顶点属性的结构（glVertexAttribPointer）保存到一块
+    // EBO是索引，相同的顶点可以有多个不同的索引
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+
+        glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices1.size()), GL_UNSIGNED_INT, 0);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices2.size()), GL_UNSIGNED_INT, 0);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO3);
+        glDrawElements(GL_LINES, static_cast<GLsizei>(indices3.size()), GL_UNSIGNED_INT, 0);
+
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffers
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST8
