@@ -145,7 +145,7 @@ private:
             GLint logLength { 0 };
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
 
-            auto infoLog = new char[logLength]();
+            auto infoLog = new char[logLength + 1]();
             glGetShaderInfoLog(shader, logLength, nullptr, infoLog);
             std::clog << "---------------------------------------\n" << infoLog << '\n';
             delete[] infoLog;
@@ -302,7 +302,7 @@ private:
             GLint logLength { 0 };
             glGetProgramiv(m_program, GL_INFO_LOG_LENGTH, &logLength);
 
-            auto infoLog = new char[logLength]();
+            auto infoLog = new char[logLength + 1]();
             glGetProgramInfoLog(m_program, logLength, nullptr, infoLog);
             std::clog << "---------------------------------------\n"
                       << "Link shader program failed\n"
