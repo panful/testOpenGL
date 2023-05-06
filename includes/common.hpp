@@ -539,11 +539,11 @@ public:
         glBindVertexArray(0);
     }
 
-    Renderer(const std::vector<GLfloat>& vertices, std::initializer_list<GLuint>&& layout)
+    Renderer(const std::vector<GLfloat>& vertices, std::initializer_list<GLsizei>&& layout)
         : m_vao(0)
         , m_vbo(0)
         , m_ebo(0)
-        , m_count(static_cast<GLsizei>(vertices.size()))
+        , m_count(0)
         , m_drawType(DrawType::Arrays)
     {
         glGenVertexArrays(1, &m_vao);
@@ -555,7 +555,8 @@ public:
 
         glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 
-        GLuint stride = std::accumulate(layout.begin(), layout.end(), 0);
+        auto stride = std::accumulate(layout.begin(), layout.end(), 0);
+        m_count     = static_cast<GLsizei>(vertices.size()) / stride;
         GLuint index { 0 }, offset { 0 };
         for (auto& elem : layout)
         {
