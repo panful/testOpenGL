@@ -409,7 +409,7 @@ public:
         return m_texture;
     }
 
-    void Bind(GLuint textureUnit = 0) const
+    void Bind() const
     {
         Active(m_textureUnit);
         glBindTexture(GL_TEXTURE_2D, m_texture);

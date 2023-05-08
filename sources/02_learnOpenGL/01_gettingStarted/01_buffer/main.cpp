@@ -1284,14 +1284,14 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_01_01_TEST8.vs", "resources/02_01_01_TEST8.fs");
+    ShaderProgram program("resources/02_01_01_TEST9.vs", "resources/02_01_01_TEST9.fs");
 
     // clang-format off
     std::vector<GLfloat> vertices {
-        -0.5f,  -0.5f,
-         0.5f,  -0.5f,
-         0.5f,   0.5f,
-        -0.5f,   0.5f,
+        -0.5f,  -0.5f,      1.0f, 0.0f, 0.0f,
+         0.5f,  -0.5f,      0.0f, 1.0f, 0.0f,
+         0.5f,   0.5f,      0.0f, 0.0f, 1.0f,
+        -0.5f,   0.5f,      1.0f, 1.0f, 1.0f,
     };
     std::vector<GLuint> indices {
         0, 1, 2,
@@ -1299,15 +1299,15 @@ int main()
     };
 
     std::vector<GLfloat> vertices2{
-        -0.8f,  0.8f,
-         0.8f,  0.8f,
-        -0.8f, -0.8f,
-         0.8f, -0.8f
+        -0.8f,  0.8f,       1.0f, 0.0f, 0.0f,
+         0.8f,  0.8f,       1.0f, 0.0f, 0.0f,
+        -0.8f, -0.8f,       0.0f, 1.0f, 0.0f,
+         0.8f, -0.8f,       0.0f, 1.0f, 0.0f,
     };
     // clang-format on
 
-    Renderer triangle(vertices, indices, { 2 });
-    Renderer line(vertices2, { 2 });
+    Renderer triangle(vertices, indices, { 2,3 });
+    Renderer line(vertices2, { 2,3 });
 
     while (!glfwWindowShouldClose(window))
     {

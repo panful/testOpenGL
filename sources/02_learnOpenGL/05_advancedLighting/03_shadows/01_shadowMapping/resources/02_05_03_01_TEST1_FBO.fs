@@ -24,5 +24,5 @@ void main()
     // 正交投影
     FragColor = vec4(vec3(depthValue), 1.0f);
     // 透视投影
-    // FragColor = vec4(vec3(LinearizeDepth(depthValue) / far_plane), 1.0);
+    //FragColor = vec4(vec3(LinearizeDepth(depthValue) / far_plane), 1.0);
 }
