@@ -177,8 +177,9 @@ void cursorPosCB(GLFWwindow* window, double xpos, double ypos)
 uint32_t windowWidth { 800 };
 uint32_t windowHeight { 600 };
 // FBO纹理的大小
-constexpr uint32_t textureWidth { 2048 };
-constexpr uint32_t textureHeight { 2048 };
+// 深度贴图（纹理）的大小影响阴影的质量，深度贴图太小就会出现走样
+constexpr uint32_t textureWidth { 4096 };
+constexpr uint32_t textureHeight { 4096 };
 // 鼠标的位置
 double mouse_x { 0.0 };
 double mouse_y { 0.0 };
@@ -306,6 +307,8 @@ int main()
 
     //----------------------------------------------------------------------------------
     // 按S开启阴影，按F关闭阴影
+    // 阴影贴图只能实现硬阴影，不能实现软阴影
+    // 只能处理点光源的阴影
 
     while (!glfwWindowShouldClose(window))
     {

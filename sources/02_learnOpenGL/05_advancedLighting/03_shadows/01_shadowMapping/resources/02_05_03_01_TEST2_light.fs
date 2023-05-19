@@ -27,8 +27,12 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     float closestDepth = texture(shadowMap, projCoords.xy).r; 
     // 取得当前片段在光源视角下的深度
     float currentDepth = projCoords.z;
+    
     // 检查当前片段是否在阴影中
-    float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+    // 减0.005是为了解决阴影失真的问题，因为距离是一个浮点数，不容易比较
+    // 需要引入一个比较误差，这是数值精度的问题，不能从本质解决问题
+    // 这个值需要根据具体场景进行微调
+    float shadow = (currentDepth - 0.005) > closestDepth  ? 1.0 : 0.0;
 
     return shadow;
 }
