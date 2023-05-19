@@ -19,6 +19,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <stb_image.h>
 
+#include <array>
 #include <filesystem>
 #include <fstream>
 #include <initializer_list>
@@ -30,14 +31,74 @@
 #include <string_view>
 #include <vector>
 
+class InteractorStyle
+{
+#define Print_Func_Name std::cout << __func__ << '\n';
+
+    friend class InitOpenGL;
+
+protected:
+    void OnLeftButtonDown()
+    {
+        Print_Func_Name;
+    }
+
+    void OnLeftButtonUp()
+    {
+        Print_Func_Name;
+    }
+
+    void OnRightButtonDown()
+    {
+        Print_Func_Name;
+    }
+
+    void OnRightButtonUp()
+    {
+        Print_Func_Name;
+    }
+
+    void OnMiddleButtonDown()
+    {
+        Print_Func_Name;
+    }
+
+    void OnMiddleButtonUp()
+    {
+        Print_Func_Name;
+    }
+
+    void OnMouseMove()
+    {
+        Print_Func_Name;
+    }
+
+    void OnMouseWheelForward()
+    {
+        Print_Func_Name;
+    }
+
+    void OnMouseWheelBackward()
+    {
+        Print_Func_Name;
+    }
+
+    void OnChar()
+    {
+        Print_Func_Name;
+    }
+
+    void SetCursorPosition()
+    {
+        Print_Func_Name;
+    }
+};
+
 class InitOpenGL
 {
 public:
     InitOpenGL(const std::string_view& name = "Learn OpenGL", uint32_t w = 800, uint32_t h = 600)
-        : m_windowName(name)
-        , m_windowWidth(w)
-        , m_windowHeight(h)
-        , m_window(nullptr)
+        : m_windowName(name), m_windowWidth(w), m_windowHeight(h), m_window(nullptr)
     {
         Init(m_windowName, m_windowWidth, m_windowHeight);
     }
@@ -48,33 +109,113 @@ public:
     }
 
     // 窗口缩放
-    void SetFramebufferSizeCB(GLFWframebuffersizefun fun) const
+    [[deprecated]] void SetFramebufferSizeCB(GLFWframebuffersizefun fun) const
     {
         glfwSetFramebufferSizeCallback(m_window, fun);
     }
 
     // 光标位置
-    void SetCursorPosCB(GLFWcursorposfun fun) const
+    [[deprecated]] void SetCursorPosCB(GLFWcursorposfun fun) const
     {
         glfwSetCursorPosCallback(m_window, fun);
     }
 
     // 键盘按下抬起
-    void SetKeyCB(GLFWkeyfun fun) const
+    [[deprecated]] void SetKeyCB(GLFWkeyfun fun) const
     {
         glfwSetKeyCallback(m_window, fun);
     }
 
     // 鼠标滚轮
-    void SetScrollCB(GLFWscrollfun fun) const
+    [[deprecated]] void SetScrollCB(GLFWscrollfun fun) const
     {
         glfwSetScrollCallback(m_window, fun);
     }
 
     // 鼠标按下抬起
-    void SetMouseCB(GLFWmousebuttonfun fun) const
+    [[deprecated]] void SetMouseCB(GLFWmousebuttonfun fun) const
     {
         glfwSetMouseButtonCallback(m_window, fun);
+    }
+
+public:
+    void SetInteractorStyle(const InteractorStyle& style)
+    {
+        m_interactorStyle = style;
+        InitEvent();
+    }
+
+private:
+    // 绑定默认的事件处理函数
+    void InitEvent() const
+    {
+        glfwSetCursorPosCallback(m_window, CursorPosCallback);
+        glfwSetKeyCallback(m_window, KeyCallback);
+        glfwSetScrollCallback(m_window, ScrollCallback);
+        glfwSetMouseButtonCallback(m_window, MouseButtonCallback);
+    }
+
+    static void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
+    {
+        m_interactorStyle.OnMouseMove();
+    }
+
+    static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+    {
+        m_interactorStyle.OnChar();
+    }
+
+    static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+    {
+        if (yoffset > 0.0)
+        {
+            m_interactorStyle.OnMouseWheelForward();
+        }
+        else if (yoffset < 0.0)
+        {
+            m_interactorStyle.OnMouseWheelBackward();
+        }
+    }
+
+    static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+    {
+        switch (action)
+        {
+        case GLFW_PRESS:
+            switch (button)
+            {
+            case GLFW_MOUSE_BUTTON_LEFT:
+                m_interactorStyle.OnLeftButtonDown();
+                break;
+            case GLFW_MOUSE_BUTTON_MIDDLE:
+                m_interactorStyle.OnMiddleButtonDown();
+                break;
+            case GLFW_MOUSE_BUTTON_RIGHT:
+                m_interactorStyle.OnRightButtonDown();
+                break;
+            default:
+                break;
+            }
+            break;
+        case GLFW_RELEASE:
+            switch (button)
+            {
+            case GLFW_MOUSE_BUTTON_LEFT:
+                m_interactorStyle.OnLeftButtonUp();
+                break;
+            case GLFW_MOUSE_BUTTON_MIDDLE:
+                m_interactorStyle.OnMiddleButtonUp();
+                break;
+            case GLFW_MOUSE_BUTTON_RIGHT:
+                m_interactorStyle.OnRightButtonUp();
+                break;
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+        }
     }
 
 private:
@@ -106,6 +247,7 @@ private:
     uint32_t m_windowWidth;
     uint32_t m_windowHeight;
     GLFWwindow* m_window;
+    inline static InteractorStyle m_interactorStyle {};
 };
 
 class Shader
@@ -119,8 +261,7 @@ public:
     };
 
 public:
-    Shader(const std::string_view& filePath, ShaderType type)
-        : m_shader(0)
+    Shader(const std::string_view& filePath, ShaderType type) : m_shader(0)
     {
         CreateShader(filePath, type);
     }
@@ -198,8 +339,7 @@ private:
 class ShaderProgram
 {
 public:
-    ShaderProgram(const std::string_view& vsPath, const std::string_view& fsPath, const std::string_view& gsPath = std::string_view())
-        : m_program(0)
+    ShaderProgram(const std::string_view& vsPath, const std::string_view& fsPath, const std::string_view& gsPath = std::string_view()) : m_program(0)
     {
         CreateProgram();
         AttachShader(vsPath, Shader::ShaderType::Vertex);
@@ -340,11 +480,7 @@ class Texture
 {
 public:
     Texture(const std::string_view& path, GLuint textureUnit = 0)
-        : m_texture(0)
-        , m_width(0)
-        , m_height(0)
-        , m_colorFormat(0)
-        , m_textureUnit(textureUnit)
+        : m_texture(0), m_width(0), m_height(0), m_colorFormat(0), m_textureUnit(textureUnit)
     {
         glGenTextures(1, &m_texture);
 
@@ -366,11 +502,7 @@ public:
     }
 
     Texture(GLsizei w, GLsizei h, GLenum format = GL_RGB, GLuint textureUnit = 0)
-        : m_texture(0)
-        , m_width(w)
-        , m_height(h)
-        , m_colorFormat(format)
-        , m_textureUnit(textureUnit)
+        : m_texture(0), m_width(w), m_height(h), m_colorFormat(format), m_textureUnit(textureUnit)
     {
         glGenTextures(1, &m_texture);
 
@@ -508,11 +640,7 @@ private:
 
 public:
     Renderer(const std::vector<GLfloat>& vertices, const std::vector<GLuint>& indices, std::initializer_list<GLuint>&& layout)
-        : m_vao(0)
-        , m_vbo(0)
-        , m_ebo(0)
-        , m_count(static_cast<GLsizei>(indices.size()))
-        , m_drawType(DrawType::Elements)
+        : m_vao(0), m_vbo(0), m_ebo(0), m_count(static_cast<GLsizei>(indices.size())), m_drawType(DrawType::Elements)
     {
         glGenVertexArrays(1, &m_vao);
 
@@ -540,11 +668,7 @@ public:
     }
 
     Renderer(const std::vector<GLfloat>& vertices, std::initializer_list<GLsizei>&& layout)
-        : m_vao(0)
-        , m_vbo(0)
-        , m_ebo(0)
-        , m_count(0)
-        , m_drawType(DrawType::Arrays)
+        : m_vao(0), m_vbo(0), m_ebo(0), m_count(0), m_drawType(DrawType::Arrays)
     {
         glGenVertexArrays(1, &m_vao);
 
@@ -604,6 +728,55 @@ private:
     GLuint m_ebo;
     GLsizei m_count;
     DrawType m_drawType;
+};
+
+class Camera
+{
+public:
+    constexpr Camera() noexcept = default;
+    ~Camera()                   = default;
+
+    constexpr Camera(const std::array<float, 3>& pos, const std::array<float, 3>& vp, const std::array<float, 3>& fp) noexcept
+        : m_position(pos), m_viewUp(vp), m_focalPoint(fp)
+    {
+    }
+
+    constexpr Camera(const float* pos, const float* vp, const float* fp) noexcept
+        : m_position({ pos[0], pos[1], pos[2] }), m_viewUp({ vp[0], vp[1], vp[2] }), m_focalPoint({ fp[0], fp[1], fp[2] })
+    {
+    }
+
+    void Zoom(float value)
+    {
+    }
+
+    void Dolly(float value)
+    {
+    }
+
+    // 绕z轴旋转
+    void Roll(float value)
+    {
+    }
+
+    void Azimuth()
+    {
+    }
+
+    // 绕y轴旋转
+    void Yaw()
+    {
+    }
+
+    // 绕x旋转
+    void Pitch()
+    {
+    }
+
+private:
+    std::array<float, 3> m_position { 0.f, 0.f, 1.f };
+    std::array<float, 3> m_viewUp { 0.f, 1.f, 0.f };
+    std::array<float, 3> m_focalPoint { 0.f, 0.f, 0.f };
 };
 
 namespace ErrorImpl {
