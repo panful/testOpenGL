@@ -22,85 +22,407 @@
 #include <array>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <initializer_list>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <numeric>
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
 #include <vector>
 
-class InteractorStyle
+class Camera
 {
-#define Print_Func_Name std::cout << __func__ << '\n';
+public:
+    constexpr Camera() noexcept = default;
+    ~Camera() noexcept          = default;
 
+    Camera(const std::array<float, 3>& pos, const std::array<float, 3>& vp, const std::array<float, 3>& fp) noexcept
+        : m_position({ pos[0], pos[1], pos[2] })
+        , m_viewUp({ vp[0], vp[1], vp[2] })
+        , m_focalPoint({ fp[0], fp[1], fp[2] })
+        , m_resetPosition({ pos[0], pos[1], pos[2] })
+        , m_resetViewUp({ vp[0], vp[1], vp[2] })
+        , m_resetFocalPoint({ fp[0], fp[1], fp[2] })
+    {
+    }
+
+    Camera(const float* pos, const float* vp, const float* fp) noexcept
+        : m_position({ pos[0], pos[1], pos[2] })
+        , m_viewUp({ vp[0], vp[1], vp[2] })
+        , m_focalPoint({ fp[0], fp[1], fp[2] })
+        , m_resetPosition({ pos[0], pos[1], pos[2] })
+        , m_resetViewUp({ vp[0], vp[1], vp[2] })
+        , m_resetFocalPoint({ fp[0], fp[1], fp[2] })
+    {
+    }
+
+    Camera(const std::array<float, 3>& pos) noexcept
+        : m_position({ pos[0], pos[1], pos[2] })
+        , m_resetPosition({ pos[0], pos[1], pos[2] })
+    {
+    }
+
+    Camera(const float* pos) noexcept
+        : m_position({ pos[0], pos[1], pos[2] })
+        , m_resetPosition({ pos[0], pos[1], pos[2] })
+    {
+    }
+
+    // 缩放（拉近或拉远相机）
+    void Dolly(float value)
+    {
+        if (value <= 0.f)
+        {
+            return;
+        }
+
+        auto direction = glm::normalize(m_position - m_focalPoint);
+        auto distance  = direction * (value - 1.f);
+        auto x         = m_position[0] + distance.x;
+        auto y         = m_position[1] + distance.y;
+        auto z         = m_position[2] + distance.z;
+
+        this->SetPosition({ x, y, z });
+    }
+
+    // 绕viewUp旋转（y轴）
+    void Azimuth(float angle)
+    {
+        auto mat   = glm::translate(glm::mat4(1.f), m_focalPoint);
+        mat        = glm::rotate(mat, glm::radians(angle), m_viewUp);
+        mat        = glm::translate(mat, -m_focalPoint);
+        auto pos   = mat * glm::vec4(m_position, 1.f);
+        m_position = glm::vec3(pos);
+    }
+
+    // 绕viewUp和相机位置到焦点的向量的正交轴旋转（x轴）
+    void Elevation(float angle)
+    {
+        auto axis = glm::normalize(glm::cross(m_viewUp, m_position - m_focalPoint));
+        auto mat  = glm::translate(glm::mat4(1.f), m_focalPoint);
+        mat       = glm::rotate(mat, glm::radians(angle), axis);
+        mat       = glm::translate(mat, -m_focalPoint);
+
+        auto pos   = mat * glm::vec4(m_position, 1.f);
+        m_position = glm::vec3(pos);
+
+        // 调整viewUp，不能使用矩阵对viewUp做变换
+        m_viewUp = glm::normalize(glm::cross(axis, m_focalPoint - m_position));
+
+        // 使用矩阵变换viewUp的错误示例
+        // auto vp = mat * glm::vec4(m_viewUp, 1.f);
+        // m_viewUp = -glm::normalize(glm::vec3(vp));
+    }
+
+    void Reset()
+    {
+        m_position   = m_resetPosition;
+        m_focalPoint = m_resetFocalPoint;
+        m_viewUp     = m_resetViewUp;
+    }
+
+    std::array<float, 3> GetPosition() const
+    {
+        return { m_position.x, m_position.y, m_position.z };
+    }
+
+    void SetPosition(const std::array<float, 3>& pos)
+    {
+        m_position = { pos[0], pos[1], pos[2] };
+    }
+
+    std::array<float, 3> GetViewUp() const
+    {
+        return { m_viewUp.x, m_viewUp.y, m_viewUp.z };
+    }
+
+    void SetViewUp(const std::array<float, 3>& vp)
+    {
+        m_viewUp = { vp[0], vp[1], vp[2] };
+    }
+
+    std::array<float, 3> GetFocalPoint() const
+    {
+        return { m_focalPoint[0], m_focalPoint[1], m_focalPoint[2] };
+    }
+
+    void SetFocalPoint(const std::array<float, 3>& fp)
+    {
+        m_focalPoint = { fp[0], fp[1], fp[2] };
+    }
+
+    void SetAspect(float aspect)
+    {
+        m_aspect = aspect;
+    }
+
+    glm::mat4 GetVPMatrix() const
+    {
+        auto view       = glm::lookAt(m_position, m_focalPoint, m_viewUp);
+        auto projection = glm::perspective(glm::radians(m_viewAngle), m_aspect, m_nearPlane, m_farPlane);
+
+        // std::cout << "---------------------------------------------\n"
+        //           << "position:\t" << m_position.x << '\t' << m_position.x << '\t' << m_position.x << '\n'
+        //           << "focalPoint:\t" << m_focalPoint.x << '\t' << m_focalPoint.x << '\t' << m_focalPoint.x << '\n'
+        //           << "viewUp:\t" << m_viewUp.x << '\t' << m_viewUp.x << '\t' << m_viewUp.x << '\n'
+        //           << "viewAngle:\t" << m_viewAngle << '\n'
+        //           << "aspect:\t" << m_aspect << '\n'
+        //           << "nearFarPlane:\t" << m_nearPlane << '\t' << m_farPlane << '\n';
+
+        return projection * view;
+    }
+
+    glm::mat4 GetViewMatrix() const
+    {
+        return glm::lookAt(m_position, m_focalPoint, m_viewUp);
+    }
+
+    glm::mat4 GetProjectionMatrix() const
+    {
+        return glm::perspective(glm::radians(m_viewAngle), m_aspect, m_nearPlane, m_farPlane);
+    }
+
+private:
+    glm::vec3 m_position { 0.f, 0.f, 1.f };
+    glm::vec3 m_viewUp { 0.f, 1.f, 0.f };
+    glm::vec3 m_focalPoint { 0.f, 0.f, 0.f };
+
+    glm::vec3 m_resetPosition { 0.f, 0.f, 1.f };
+    glm::vec3 m_resetFocalPoint { 0.f, 0.f, 0.f };
+    glm::vec3 m_resetViewUp { 0.f, 1.f, 0.f };
+
+    float m_nearPlane { 0.1f };
+    float m_farPlane { 100.0f };
+    float m_aspect { 1.f };
+    float m_viewAngle { 30.f };
+};
+
+class Interactor
+{
     friend class InitOpenGL;
+
+private:
+    enum class Interaction
+    {
+        NONE     = 0,
+        PANNING  = 1,
+        ZOOMING  = 2,
+        ROTATING = 3,
+    };
 
 protected:
     void OnLeftButtonDown()
     {
-        Print_Func_Name;
+        if (Interaction::NONE == m_interaction)
+        {
+            m_interaction = Interaction::PANNING;
+        }
     }
 
     void OnLeftButtonUp()
     {
-        Print_Func_Name;
+        m_interaction = Interaction::NONE;
     }
 
     void OnRightButtonDown()
     {
-        Print_Func_Name;
+        if (Interaction::NONE == m_interaction)
+        {
+            m_interaction = Interaction::ROTATING;
+        }
     }
 
     void OnRightButtonUp()
     {
-        Print_Func_Name;
+        m_interaction = Interaction::NONE;
     }
 
     void OnMiddleButtonDown()
     {
-        Print_Func_Name;
+        m_midButtonCallback(m_cursorPosition[0], m_cursorPosition[1]);
     }
 
     void OnMiddleButtonUp()
     {
-        Print_Func_Name;
     }
 
     void OnMouseMove()
     {
-        Print_Func_Name;
+        auto dx = m_cursorPosition[0] - m_lastCursorPosition[0];
+        auto dy = m_cursorPosition[1] - m_lastCursorPosition[1];
+
+        switch (m_interaction)
+        {
+        case Interaction::PANNING:
+        {
+            auto viewMat = m_camera.GetViewMatrix();
+
+            // 平移的距离
+            auto x = static_cast<float>(dx) / static_cast<float>(m_windowSize[0]) * 2.f;
+            auto y = static_cast<float>(dy) / static_cast<float>(m_windowSize[1]) * 2.f;
+
+            // 平移只对x和y进行变化（当+x朝右、+y朝上、+z朝外时直接对x和y进行加减就行）
+            // 当朝向不是默认方向时，需要先求出改变朝向后的平移方向
+            auto xVec = glm::vec4(1.f, 0.f, 0.f, 1.f) * viewMat;
+            auto yVec = glm::vec4(0.f, 1.f, 0.f, 1.f) * viewMat;
+
+            auto xx = xVec * x;
+            auto yy = yVec * y;
+
+            auto lastPosition   = m_camera.GetPosition();
+            auto lastFocalPoint = m_camera.GetFocalPoint();
+
+            m_camera.SetPosition({ lastPosition[0] - xx.x + yy.x, lastPosition[1] - xx.y + yy.y, lastPosition[2] - xx.z + yy.z });
+            m_camera.SetFocalPoint({ lastFocalPoint[0] - xx.x + yy.x, lastFocalPoint[1] - xx.y + yy.y, lastFocalPoint[2] - xx.z + yy.z });
+        }
+        break;
+        case Interaction::ROTATING:
+        {
+            auto delta_elevation = -20.f / m_windowSize[1];
+            auto delta_azimuth   = -20.f / m_windowSize[0];
+            auto rx              = dx * delta_azimuth * m_motionFactor;
+            auto ry              = dy * delta_elevation * m_motionFactor;
+
+            m_camera.Azimuth(rx);
+            m_camera.Elevation(ry);
+        }
+        break;
+        case Interaction::ZOOMING:
+            break;
+        default:
+            break;
+        }
     }
 
     void OnMouseWheelForward()
     {
-        Print_Func_Name;
+        m_camera.Dolly(1.1f);
     }
 
     void OnMouseWheelBackward()
     {
-        Print_Func_Name;
+        m_camera.Dolly(0.9f);
     }
 
     void OnChar()
     {
-        Print_Func_Name;
+        switch (m_keyCode)
+        {
+        case 'r':
+        case 'R':
+            m_camera.Reset();
+            break;
+        default:
+            break;
+        }
+
+        if (m_keyCallback)
+        {
+            m_keyCallback(m_keyCode);
+        }
     }
 
-    void SetCursorPosition()
+    void SetCursorPosition(const std::array<int, 2>& pos)
     {
-        Print_Func_Name;
+        static std::once_flag initLastPos;
+        std::call_once(initLastPos,
+            [this, pos]()
+            {
+                this->m_lastCursorPosition = pos;
+                this->m_cursorPosition     = pos;
+            });
+
+        m_lastCursorPosition = m_cursorPosition;
+        m_cursorPosition     = pos;
     }
+
+    void SetKeyCode(char key)
+    {
+        m_keyCode = key;
+    }
+
+    void SetWindowSize(const std::array<int, 2>& size)
+    {
+        assert(0 != size[1]);
+
+        m_windowSize = size;
+        m_camera.SetAspect(static_cast<float>(size[0]) / static_cast<float>(size[1]));
+    }
+
+    Camera GetCamera() const
+    {
+        return m_camera;
+    }
+
+    void SetCamera(const Camera& camera)
+    {
+        m_camera = camera;
+    }
+
+    void SetKeyCallback(std::function<void(char)>&& cb)
+    {
+        m_keyCallback = cb;
+    }
+
+    void SetMiddleButtonCallback(std::function<void(int, int)>&& cb)
+    {
+        m_midButtonCallback = cb;
+    }
+
+private:
+    Camera m_camera {};
+    Interaction m_interaction { Interaction::NONE };
+    std::array<int, 2> m_lastCursorPosition { 0, 0 };
+    std::array<int, 2> m_cursorPosition { 0, 0 };
+    std::array<int, 2> m_windowSize { 0, 0 };
+    float m_motionFactor { 10.f };
+    char m_keyCode { 0 };
+    std::function<void(char)> m_keyCallback {};
+    std::function<void(int, int)> m_midButtonCallback {};
 };
 
 class InitOpenGL
 {
 public:
-    InitOpenGL(const std::string_view& name = "Learn OpenGL", uint32_t w = 800, uint32_t h = 600)
-        : m_windowName(name), m_windowWidth(w), m_windowHeight(h), m_window(nullptr)
+    InitOpenGL() noexcept
     {
+        m_interactor.SetCamera(Camera());
+        m_interactor.SetWindowSize({ m_windowWidth, m_windowHeight });
         Init(m_windowName, m_windowWidth, m_windowHeight);
+        InitEvent();
+    }
+
+    InitOpenGL(const Camera& camera) noexcept
+    {
+        m_interactor.SetCamera(camera);
+        m_interactor.SetWindowSize({ m_windowWidth, m_windowHeight });
+        Init(m_windowName, m_windowWidth, m_windowHeight);
+        InitEvent();
+    }
+
+    InitOpenGL(const std::string_view& name, uint32_t w, uint32_t h) noexcept
+        : m_windowName(name)
+        , m_windowWidth(w)
+        , m_windowHeight(h)
+    {
+        m_interactor.SetCamera(Camera());
+        m_interactor.SetWindowSize({ m_windowWidth, m_windowHeight });
+        Init(m_windowName, m_windowWidth, m_windowHeight);
+        InitEvent();
+    }
+
+    InitOpenGL(const std::string_view& name, uint32_t w, uint32_t h, const Camera& camera) noexcept
+        : m_windowName(name)
+        , m_windowWidth(w)
+        , m_windowHeight(h)
+    {
+        m_interactor.SetCamera(camera);
+        m_interactor.SetWindowSize({ m_windowWidth, m_windowHeight });
+        Init(m_windowName, m_windowWidth, m_windowHeight);
+        InitEvent();
     }
 
     GLFWwindow* GetWindow() const
@@ -138,11 +460,37 @@ public:
         glfwSetMouseButtonCallback(m_window, fun);
     }
 
-public:
-    void SetInteractorStyle(const InteractorStyle& style)
+    glm::mat4 GetVPMatrix() const
     {
-        m_interactorStyle = style;
-        InitEvent();
+        return m_interactor.GetCamera().GetVPMatrix();
+    }
+
+    glm::mat4 GetViewMatrix() const
+    {
+        return m_interactor.GetCamera().GetViewMatrix();
+    }
+
+    glm::mat4 GetProjectionMatrix() const
+    {
+        return m_interactor.GetCamera().GetProjectionMatrix();
+    }
+
+    glm::vec3 GetViewPosition() const
+    {
+        return glm::vec3(
+            m_interactor.GetCamera().GetPosition()[0], m_interactor.GetCamera().GetPosition()[1], m_interactor.GetCamera().GetPosition()[2]);
+    }
+
+    // 临时用来测试交互
+    // 后面可以考虑将Interactor作为基类，重写此类实现自定义交互
+    void SetKeyCallback(std::function<void(char)>&& cb) const
+    {
+        m_interactor.SetKeyCallback(std::move(cb));
+    }
+
+    void SetMiddleButtonCallback(std::function<void(int, int)>&& cb) const
+    {
+        m_interactor.SetMiddleButtonCallback(std::move(cb));
     }
 
 private:
@@ -153,27 +501,77 @@ private:
         glfwSetKeyCallback(m_window, KeyCallback);
         glfwSetScrollCallback(m_window, ScrollCallback);
         glfwSetMouseButtonCallback(m_window, MouseButtonCallback);
+        glfwSetFramebufferSizeCallback(m_window, FrameBufferSizeCallback);
     }
 
     static void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
     {
-        m_interactorStyle.OnMouseMove();
+        m_interactor.SetCursorPosition({ static_cast<int>(xpos), static_cast<int>(ypos) });
+        m_interactor.OnMouseMove();
     }
 
     static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
-        m_interactorStyle.OnChar();
+        switch (key)
+        {
+        case GLFW_KEY_0:
+        case GLFW_KEY_1:
+        case GLFW_KEY_2:
+        case GLFW_KEY_3:
+        case GLFW_KEY_4:
+        case GLFW_KEY_5:
+        case GLFW_KEY_6:
+        case GLFW_KEY_7:
+        case GLFW_KEY_8:
+        case GLFW_KEY_9:
+            m_interactor.SetKeyCode(key);
+            break;
+        case GLFW_KEY_A:
+        case GLFW_KEY_B:
+        case GLFW_KEY_C:
+        case GLFW_KEY_D:
+        case GLFW_KEY_E:
+        case GLFW_KEY_F:
+        case GLFW_KEY_G:
+        case GLFW_KEY_H:
+        case GLFW_KEY_I:
+        case GLFW_KEY_J:
+        case GLFW_KEY_K:
+        case GLFW_KEY_L:
+        case GLFW_KEY_M:
+        case GLFW_KEY_N:
+        case GLFW_KEY_O:
+        case GLFW_KEY_P:
+        case GLFW_KEY_Q:
+        case GLFW_KEY_R:
+        case GLFW_KEY_S:
+        case GLFW_KEY_T:
+        case GLFW_KEY_U:
+        case GLFW_KEY_V:
+        case GLFW_KEY_W:
+        case GLFW_KEY_X:
+        case GLFW_KEY_Y:
+        case GLFW_KEY_Z:
+            m_interactor.SetKeyCode(mods == GLFW_MOD_CAPS_LOCK ? key : key + 32);
+            break;
+        default:
+            // 只对数字和大小写字母进行处理，其他字符一律按'#'处理
+            m_interactor.SetKeyCode('#');
+            break;
+        }
+
+        m_interactor.OnChar();
     }
 
     static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
     {
         if (yoffset > 0.0)
         {
-            m_interactorStyle.OnMouseWheelForward();
+            m_interactor.OnMouseWheelForward();
         }
         else if (yoffset < 0.0)
         {
-            m_interactorStyle.OnMouseWheelBackward();
+            m_interactor.OnMouseWheelBackward();
         }
     }
 
@@ -185,13 +583,13 @@ private:
             switch (button)
             {
             case GLFW_MOUSE_BUTTON_LEFT:
-                m_interactorStyle.OnLeftButtonDown();
+                m_interactor.OnLeftButtonDown();
                 break;
             case GLFW_MOUSE_BUTTON_MIDDLE:
-                m_interactorStyle.OnMiddleButtonDown();
+                m_interactor.OnMiddleButtonDown();
                 break;
             case GLFW_MOUSE_BUTTON_RIGHT:
-                m_interactorStyle.OnRightButtonDown();
+                m_interactor.OnRightButtonDown();
                 break;
             default:
                 break;
@@ -201,13 +599,13 @@ private:
             switch (button)
             {
             case GLFW_MOUSE_BUTTON_LEFT:
-                m_interactorStyle.OnLeftButtonUp();
+                m_interactor.OnLeftButtonUp();
                 break;
             case GLFW_MOUSE_BUTTON_MIDDLE:
-                m_interactorStyle.OnMiddleButtonUp();
+                m_interactor.OnMiddleButtonUp();
                 break;
             case GLFW_MOUSE_BUTTON_RIGHT:
-                m_interactorStyle.OnRightButtonUp();
+                m_interactor.OnRightButtonUp();
                 break;
             default:
                 break;
@@ -216,6 +614,12 @@ private:
         default:
             break;
         }
+    }
+
+    static void FrameBufferSizeCallback(GLFWwindow* window, int width, int height)
+    {
+        m_interactor.SetWindowSize({ width, height });
+        glViewport(0, 0, width, height);
     }
 
 private:
@@ -243,11 +647,11 @@ private:
     }
 
 private:
-    std::string_view m_windowName;
-    uint32_t m_windowWidth;
-    uint32_t m_windowHeight;
-    GLFWwindow* m_window;
-    inline static InteractorStyle m_interactorStyle {};
+    std::string_view m_windowName { "Test" };
+    int m_windowWidth { 800 };
+    int m_windowHeight { 600 };
+    GLFWwindow* m_window { nullptr };
+    inline static Interactor m_interactor {};
 };
 
 class Shader
@@ -261,7 +665,8 @@ public:
     };
 
 public:
-    Shader(const std::string_view& filePath, ShaderType type) : m_shader(0)
+    Shader(const std::string_view& filePath, ShaderType type)
+        : m_shader(0)
     {
         CreateShader(filePath, type);
     }
@@ -339,7 +744,8 @@ private:
 class ShaderProgram
 {
 public:
-    ShaderProgram(const std::string_view& vsPath, const std::string_view& fsPath, const std::string_view& gsPath = std::string_view()) : m_program(0)
+    ShaderProgram(const std::string_view& vsPath, const std::string_view& fsPath, const std::string_view& gsPath = std::string_view())
+        : m_program(0)
     {
         CreateProgram();
         AttachShader(vsPath, Shader::ShaderType::Vertex);
@@ -480,7 +886,11 @@ class Texture
 {
 public:
     Texture(const std::string_view& path, GLuint textureUnit = 0)
-        : m_texture(0), m_width(0), m_height(0), m_colorFormat(0), m_textureUnit(textureUnit)
+        : m_texture(0)
+        , m_width(0)
+        , m_height(0)
+        , m_colorFormat(0)
+        , m_textureUnit(textureUnit)
     {
         glGenTextures(1, &m_texture);
 
@@ -502,7 +912,11 @@ public:
     }
 
     Texture(GLsizei w, GLsizei h, GLenum format = GL_RGB, GLuint textureUnit = 0)
-        : m_texture(0), m_width(w), m_height(h), m_colorFormat(format), m_textureUnit(textureUnit)
+        : m_texture(0)
+        , m_width(w)
+        , m_height(h)
+        , m_colorFormat(format)
+        , m_textureUnit(textureUnit)
     {
         glGenTextures(1, &m_texture);
 
@@ -640,7 +1054,11 @@ private:
 
 public:
     Renderer(const std::vector<GLfloat>& vertices, const std::vector<GLuint>& indices, std::initializer_list<GLuint>&& layout)
-        : m_vao(0), m_vbo(0), m_ebo(0), m_count(static_cast<GLsizei>(indices.size())), m_drawType(DrawType::Elements)
+        : m_vao(0)
+        , m_vbo(0)
+        , m_ebo(0)
+        , m_count(static_cast<GLsizei>(indices.size()))
+        , m_drawType(DrawType::Elements)
     {
         glGenVertexArrays(1, &m_vao);
 
@@ -668,7 +1086,11 @@ public:
     }
 
     Renderer(const std::vector<GLfloat>& vertices, std::initializer_list<GLsizei>&& layout)
-        : m_vao(0), m_vbo(0), m_ebo(0), m_count(0), m_drawType(DrawType::Arrays)
+        : m_vao(0)
+        , m_vbo(0)
+        , m_ebo(0)
+        , m_count(0)
+        , m_drawType(DrawType::Arrays)
     {
         glGenVertexArrays(1, &m_vao);
 
@@ -728,55 +1150,6 @@ private:
     GLuint m_ebo;
     GLsizei m_count;
     DrawType m_drawType;
-};
-
-class Camera
-{
-public:
-    constexpr Camera() noexcept = default;
-    ~Camera()                   = default;
-
-    constexpr Camera(const std::array<float, 3>& pos, const std::array<float, 3>& vp, const std::array<float, 3>& fp) noexcept
-        : m_position(pos), m_viewUp(vp), m_focalPoint(fp)
-    {
-    }
-
-    constexpr Camera(const float* pos, const float* vp, const float* fp) noexcept
-        : m_position({ pos[0], pos[1], pos[2] }), m_viewUp({ vp[0], vp[1], vp[2] }), m_focalPoint({ fp[0], fp[1], fp[2] })
-    {
-    }
-
-    void Zoom(float value)
-    {
-    }
-
-    void Dolly(float value)
-    {
-    }
-
-    // 绕z轴旋转
-    void Roll(float value)
-    {
-    }
-
-    void Azimuth()
-    {
-    }
-
-    // 绕y轴旋转
-    void Yaw()
-    {
-    }
-
-    // 绕x旋转
-    void Pitch()
-    {
-    }
-
-private:
-    std::array<float, 3> m_position { 0.f, 0.f, 1.f };
-    std::array<float, 3> m_viewUp { 0.f, 1.f, 0.f };
-    std::array<float, 3> m_focalPoint { 0.f, 0.f, 0.f };
 };
 
 namespace ErrorImpl {
