@@ -242,7 +242,10 @@ protected:
 
     void OnMiddleButtonDown()
     {
-        m_midButtonCallback(m_cursorPosition[0], m_cursorPosition[1]);
+        if (m_midButtonCallback)
+        {
+            m_midButtonCallback(m_cursorPosition[0], m_cursorPosition[1]);
+        }
     }
 
     void OnMiddleButtonUp()

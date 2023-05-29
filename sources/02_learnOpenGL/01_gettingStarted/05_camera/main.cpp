@@ -9,6 +9,8 @@
  * 8. 测试自定义相机
  */
 
+// 万向节死锁 https://zhuanlan.zhihu.com/p/344050856
+
 #define TEST8
 
 #ifdef TEST1
