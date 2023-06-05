@@ -12,12 +12,6 @@ in VS_OUT {
 uniform sampler2D diffuseMap;
 uniform sampler2D normalMap;
 
-uniform vec3 lightPos;
-uniform vec3 viewPos;
-
-//uniform bool blinnSwitch;
-//uniform bool normalSwitch;
-
 void main()
 {           
     vec3 normal = texture(normalMap, fs_in.TexCoords).rgb;
