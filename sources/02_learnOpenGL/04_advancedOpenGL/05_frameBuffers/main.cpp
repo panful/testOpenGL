@@ -9,9 +9,10 @@
  * 08. 对帧缓冲的纹理进行后期处理，核效果
  * 09. 获取FBO指定位置的像素数据
  * 10. 窗口的右上角绘制一个小窗口
+ * 11. 测试自定义FrameBufferObject类
  */
 
-#define TEST4
+#define TEST11
 
 #ifdef TEST1
 
@@ -150,8 +151,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         // 随时间绕y轴旋转
-        auto modelMat = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(0.f, 1.f, 0.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(0.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         customFBOProgram.Use();
@@ -181,8 +182,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
-    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -309,8 +308,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         // 随时间绕y轴旋转
-        auto modelMat = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(0.f, 1.f, 0.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(0.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         customFBOProgram.Use();
@@ -340,8 +339,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
-    
 
     delete texColorBuffer;
     texColorBuffer = nullptr;
@@ -490,8 +487,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         // 随时间绕y轴旋转
-        auto modelMat = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(0.f, 1.f, 0.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(0.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         customFBOProgram.Use();
@@ -522,8 +519,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
-    
 
     delete texColorBuffer;
     texColorBuffer = nullptr;
@@ -546,7 +541,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // 在这里不需要再调用glViewport，因为glViewport只对当前绑定的FBO生效
     // 应该在默认的FBO绑定到当前窗口后调用glViewport
 
-    windowWidth = width;
+    windowWidth  = width;
     windowHeight = height;
 }
 
@@ -687,7 +682,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -716,8 +710,7 @@ void mouseCB(GLFWwindow* window, int button, int action, int mods)
         {
         case GLFW_MOUSE_BUTTON_LEFT:
         {
-            std::cout << "-------------------------------------\n"
-                      << mouse_x << '\t' << mouse_y << '\n';
+            std::cout << "-------------------------------------\n" << mouse_x << '\t' << mouse_y << '\n';
 
             GLint level = 0; // 细节级别，0是基本图像级别
 
@@ -920,8 +913,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // 随时间绕xy轴旋转
-        auto modelMat = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         customFBOProgram.Use();
@@ -954,8 +947,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
-    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -1145,8 +1136,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // 随时间绕xy轴旋转
-        auto modelMat = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         customFBOProgram.Use();
@@ -1179,8 +1170,6 @@ int main()
     }
 
     // remember to delete the buffers
-    
-    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -1361,8 +1350,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // 随时间绕xy轴旋转
-        auto modelMat = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         customFBOProgram.Use();
@@ -1395,8 +1384,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
-    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -1595,8 +1582,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // 随时间绕xy轴旋转
-        auto modelMat = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         customFBOProgram.Use();
@@ -1630,8 +1617,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
-    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -1818,8 +1803,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // 随时间绕y轴旋转
-        auto modelMat = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         customFBOProgram.Use();
@@ -1851,8 +1836,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
-    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -1887,8 +1870,7 @@ void mouseCB(GLFWwindow* window, int button, int action, int mods)
         {
         case GLFW_MOUSE_BUTTON_LEFT:
         {
-            std::cout << "-------------------------------------\n"
-                      << mouse_x << '\t' << mouse_y << '\t';
+            std::cout << "-------------------------------------\n" << mouse_x << '\t' << mouse_y << '\t';
 
             // 指定后续的操作对自定义的帧缓冲生效
             glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO);
@@ -1905,10 +1887,8 @@ void mouseCB(GLFWwindow* window, int button, int action, int mods)
             glReadPixels(int(mouse_x), (int)(windowHeight - mouse_y), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
 
             // 获取alpha值需要在附加帧缓冲纹理时数据格式设置为GL_RGBA
-            std::cout << "r: " << (int)pixel[0] << '\t'
-                      << "g: " << (int)pixel[1] << '\t'
-                      << "b: " << (int)pixel[2] << '\t'
-                      << "a: " << (int)pixel[3] << '\n';
+            std::cout << "r: " << (int)pixel[0] << '\t' << "g: " << (int)pixel[1] << '\t' << "b: " << (int)pixel[2] << '\t' << "a: " << (int)pixel[3]
+                      << '\n';
 
             glReadBuffer(GL_NONE);
             glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -1935,10 +1915,8 @@ void mouseCB(GLFWwindow* window, int button, int action, int mods)
             // 像素数据的索引
             int index = (int)(windowHeight - mouse_y) * width + (int)mouse_x;
 
-            std::cout << "r: " << (int)pixels[index * 4 + 0] << '\t'
-                      << "g: " << (int)pixels[index * 4 + 1] << '\t'
-                      << "b: " << (int)pixels[index * 4 + 2] << '\t'
-                      << "a: " << (int)pixels[index * 4 + 3] << '\n';
+            std::cout << "r: " << (int)pixels[index * 4 + 0] << '\t' << "g: " << (int)pixels[index * 4 + 1] << '\t'
+                      << "b: " << (int)pixels[index * 4 + 2] << '\t' << "a: " << (int)pixels[index * 4 + 3] << '\n';
 
             delete[] pixels;
             pixels = nullptr;
@@ -1967,6 +1945,7 @@ GLuint windowHeight { 600 };
 
 Texture* myTexture { nullptr };
 unsigned int RBO;
+
 int main()
 {
     InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
@@ -2092,8 +2071,8 @@ int main()
         processInput(window);
 
         // 随时间绕xy轴旋转
-        auto modelMat = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         //----------------------------------------------------------------------------------
@@ -2143,8 +2122,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
-    
 
     // 删除帧缓冲
     glDeleteFramebuffers(1, &FBO);
@@ -2163,7 +2140,7 @@ void processInput(GLFWwindow* window)
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    windowWidth = width;
+    windowWidth  = width;
     windowHeight = height;
 
     // 当窗口大小改变时，纹理大小和渲染缓冲大小都需要更改
@@ -2176,3 +2153,126 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST10
+
+#ifdef TEST11
+
+#include <common.hpp>
+
+uint32_t windowWidth { 800 };
+uint32_t windowHeight { 600 };
+
+constexpr uint32_t texWidth { 1920 };
+constexpr uint32_t texHeight { 1080 };
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
+int main()
+{
+    InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
+    auto window = initOpenGL.GetWindow();
+    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
+    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST1_Default_FBO.vs", "resources/02_04_05_TEST1_Default_FBO.fs");
+    ShaderProgram customFBOProgram("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST1_Custom_FBO.fs");
+
+    // clang-format off
+    // 8个顶点
+    std::vector<GLfloat> verticesCube{
+        // pos                  // color
+        -0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左下
+         0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前右下
+         0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前右上
+        -0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左上
+
+        -0.5f, -0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后左下
+         0.5f, -0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后右下
+         0.5f,  0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后右上
+        -0.5f,  0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后左上
+    };
+    // 6个面，12个三角形
+    std::vector<GLuint> indicesCube{
+        0, 1, 3,        1, 2, 3,
+        1, 5, 2,        5, 6, 2,
+        5, 4, 6,        4, 7, 6,
+        4, 0, 7,        0, 3, 7,
+        3, 2, 7,        2, 6, 7,
+        0, 1, 4,        1, 5, 4,
+    };
+
+    // 矩形，绘制到默认帧缓冲
+    std::vector<GLfloat> vertices_quad {
+        // pos                     // texCoords
+        -0.8f,   0.8f,   0.0f,     0.0f, 1.0f,
+        -0.8f,  -0.8f,   0.0f,     0.0f, 0.0f,
+         0.8f,  -0.8f,   0.0f,     1.0f, 0.0f,
+
+        -0.8f,   0.8f,   0.0f,     0.0f, 1.0f,
+         0.8f,  -0.8f,   0.0f,     1.0f, 0.0f,
+         0.8f,   0.8f,   0.0f,     1.0f, 1.0f
+    };
+    // clang-format on
+
+    Renderer cube(verticesCube, indicesCube, { 3, 3 });
+    Renderer quad(vertices_quad, { 3, 2 });
+
+    Texture texture(texWidth, texHeight, GL_RGBA);
+    RenderBufferObject rbo(GL_DEPTH_COMPONENT, texWidth, texHeight);
+
+    FrameBufferObject fbo;
+    fbo.AddAttachment(GL_COLOR_ATTACHMENT0, texture, 0);
+    fbo.AddAttachment(GL_DEPTH_ATTACHMENT, rbo);
+    if (!fbo.Check())
+    {
+        std::clog << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n";
+        return -1;
+    }
+
+    //----------------------------------------------------------------------------------
+
+    while (!glfwWindowShouldClose(window))
+    {
+        //----------------------------------------------------------------------------------
+        // 立方体
+        fbo.Bind();
+        glViewport(0, 0, texWidth, texHeight);
+        glEnable(GL_DEPTH_TEST);
+
+        glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
+
+        customFBOProgram.Use();
+        customFBOProgram.SetUniformMat4("transform", projectiongMat * viewMat * modelMat);
+        cube.Draw(GL_TRIANGLES);
+
+        glDisable(GL_DEPTH_TEST);
+        fbo.Release();
+
+        //----------------------------------------------------------------------------------
+        // 四边形
+        glViewport(0, 0, windowWidth, windowHeight);
+        glClearColor(0.0f, 0.5f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        defaultFBOProgram.Use();
+        texture.Bind();
+        quad.Draw(GL_TRIANGLES);
+        texture.Release();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    windowWidth  = width;
+    windowHeight = height;
+}
+
+#endif // TEST11

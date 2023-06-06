@@ -1034,6 +1034,12 @@ public:
         return m_colorFormat;
     }
 
+    GLenum GetTarget() const
+    {
+        // 暂时先只做2D，1D和3D后面再扩展
+        return GL_TEXTURE_2D;
+    }
+
 private:
     void CreateNullTexture() const
     {
@@ -1153,6 +1159,99 @@ private:
     GLuint m_ebo;
     GLsizei m_count;
     DrawType m_drawType;
+};
+
+class RenderBufferObject
+{
+public:
+    constexpr RenderBufferObject(GLenum format, GLsizei w, GLsizei h) noexcept
+        : m_format(format)
+    {
+        glGenRenderbuffers(1, &m_rbo);
+        Bind();
+        glRenderbufferStorage(GL_RENDERBUFFER, format, w, h);
+        Release();
+    }
+
+    ~RenderBufferObject() noexcept
+    {
+        glDeleteRenderbuffers(1, &m_rbo);
+    }
+
+    constexpr GLuint GetHandle() const noexcept
+    {
+        return m_rbo;
+    }
+
+    constexpr void Resize(GLsizei w, GLsizei h) const noexcept
+    {
+        Bind();
+        glRenderbufferStorage(GL_RENDERBUFFER, m_format, w, h);
+        Release();
+    }
+
+private:
+    constexpr void Bind() const noexcept
+    {
+        glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
+    }
+
+    constexpr void Release() const noexcept
+    {
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    }
+
+private:
+    GLuint m_rbo { 0 };
+    GLenum m_format { 0 };
+};
+
+class FrameBufferObject
+{
+public:
+    constexpr FrameBufferObject() noexcept
+    {
+        glGenFramebuffers(1, &m_fbo);
+    }
+
+    ~FrameBufferObject() noexcept
+    {
+        glDeleteFramebuffers(1, &m_fbo);
+    }
+
+    constexpr void AddAttachment(GLuint attachment, const Texture& texture, GLint level) const
+    {
+        Bind();
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, texture.GetTarget(), texture.Get(), level);
+        Release();
+    }
+
+    constexpr void AddAttachment(GLuint attachment, const RenderBufferObject& rbo) const
+    {
+        Bind();
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rbo.GetHandle());
+        Release();
+    }
+
+    constexpr void Bind() const
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    }
+
+    constexpr void Release() const
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    constexpr bool Check() const
+    {
+        Bind();
+        return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+        Release();
+    }
+
+private:
+    GLuint m_fbo { 0 };
 };
 
 namespace ErrorImpl {
