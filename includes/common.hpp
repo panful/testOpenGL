@@ -888,12 +888,14 @@ private:
 class Texture
 {
 public:
-    Texture(const std::string_view& path, GLuint textureUnit = 0)
+    Texture(const std::string_view& path, GLuint textureUnit = 0, bool gamma = false)
         : m_texture(0)
         , m_width(0)
         , m_height(0)
         , m_colorFormat(0)
+        , m_internalFormat(0)
         , m_textureUnit(textureUnit)
+        , m_gamma(gamma)
     {
         glGenTextures(1, &m_texture);
 
@@ -914,11 +916,12 @@ public:
         Release();
     }
 
-    Texture(GLsizei w, GLsizei h, GLenum format = GL_RGB, GLuint textureUnit = 0)
+    Texture(GLsizei w, GLsizei h, GLenum internalformat = GL_RGB, GLenum format = GL_RGB, GLuint textureUnit = 0)
         : m_texture(0)
         , m_width(w)
         , m_height(h)
         , m_colorFormat(format)
+        , m_internalFormat(internalformat)
         , m_textureUnit(textureUnit)
     {
         glGenTextures(1, &m_texture);
@@ -950,7 +953,9 @@ private:
     GLsizei m_width;
     GLsizei m_height;
     GLenum m_colorFormat;
+    GLenum m_internalFormat;
     GLuint m_textureUnit;
+    bool m_gamma;
 
 public:
     GLuint Get() const
@@ -977,18 +982,20 @@ public:
         {
             if (channels == 3)
             {
-                m_colorFormat = GL_RGB;
+                m_internalFormat = m_gamma ? GL_SRGB : GL_RGB;
+                m_colorFormat    = GL_RGB;
             }
             else if (channels == 4)
             {
-                m_colorFormat = GL_RGBA;
+                m_internalFormat = m_gamma ? GL_SRGB_ALPHA : GL_RGBA;
+                m_colorFormat    = GL_RGBA;
             }
             else
             {
                 std::clog << "Image channels error!\n";
             }
 
-            glTexImage2D(GL_TEXTURE_2D, 0, m_colorFormat, m_width, m_height, 0, m_colorFormat, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
 
             stbi_image_free(data);
@@ -1029,10 +1036,10 @@ public:
         return m_height;
     }
 
-    GLenum GetColorFormat() const
-    {
-        return m_colorFormat;
-    }
+    // GLenum GetColorFormat() const
+    // {
+    //     return m_colorFormat;
+    // }
 
     GLenum GetTarget() const
     {
@@ -1043,7 +1050,7 @@ public:
 private:
     void CreateNullTexture() const
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, m_colorFormat, m_width, m_height, 0, m_colorFormat, GL_UNSIGNED_BYTE, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, GL_UNSIGNED_BYTE, NULL);
     }
 
     void Active(GLuint texUnit) const
