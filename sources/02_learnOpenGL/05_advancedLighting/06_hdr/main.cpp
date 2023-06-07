@@ -1,5 +1,5 @@
 /*
- * 1.
+ * 1. HDR(High Dynamic Range)高动态范围，亮的东西变得非常亮，暗的东西变得非常暗
  */
 
 #define TEST1
@@ -84,7 +84,7 @@ int main()
     Renderer quad(vertices_quad, { 3, 2 });
 
     Texture texture("resources/wood.png", 0, true);
-    Texture fboTexture(windowWidth, windowHeight, GL_RGBA16F, GL_RGBA);
+    Texture fboTexture(windowWidth, windowHeight, GL_RGBA16F, GL_RGBA, GL_FLOAT);
     RenderBufferObject rbo(GL_DEPTH_COMPONENT, windowWidth, windowHeight);
 
     FrameBufferObject fbo;

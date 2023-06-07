@@ -894,6 +894,7 @@ public:
         , m_height(0)
         , m_colorFormat(0)
         , m_internalFormat(0)
+        , m_dataType(GL_UNSIGNED_BYTE)
         , m_textureUnit(textureUnit)
         , m_gamma(gamma)
     {
@@ -916,12 +917,13 @@ public:
         Release();
     }
 
-    Texture(GLsizei w, GLsizei h, GLenum internalformat = GL_RGB, GLenum format = GL_RGB, GLuint textureUnit = 0)
+    Texture(GLsizei w, GLsizei h, GLenum internalformat = GL_RGB, GLenum format = GL_RGB, GLenum type = GL_UNSIGNED_BYTE, GLuint textureUnit = 0)
         : m_texture(0)
         , m_width(w)
         , m_height(h)
         , m_colorFormat(format)
         , m_internalFormat(internalformat)
+        , m_dataType(type)
         , m_textureUnit(textureUnit)
     {
         glGenTextures(1, &m_texture);
@@ -954,6 +956,7 @@ private:
     GLsizei m_height;
     GLenum m_colorFormat;
     GLenum m_internalFormat;
+    GLenum m_dataType;
     GLuint m_textureUnit;
     bool m_gamma;
 
@@ -995,7 +998,7 @@ public:
                 std::clog << "Image channels error!\n";
             }
 
-            glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, m_dataType, data);
             glGenerateMipmap(GL_TEXTURE_2D);
 
             stbi_image_free(data);
@@ -1050,7 +1053,7 @@ public:
 private:
     void CreateNullTexture() const
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, GL_UNSIGNED_BYTE, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, m_dataType, NULL);
     }
 
     void Active(GLuint texUnit) const
@@ -1226,7 +1229,7 @@ public:
         glDeleteFramebuffers(1, &m_fbo);
     }
 
-    constexpr void AddAttachment(GLuint attachment, const Texture& texture, GLint level) const
+    constexpr void AddAttachment(GLuint attachment, const Texture& texture, GLint level = 0) const
     {
         Bind();
         glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, texture.GetTarget(), texture.Get(), level);
@@ -1237,6 +1240,13 @@ public:
     {
         Bind();
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rbo.GetHandle());
+        Release();
+    }
+
+    constexpr void SetDrawBuffers(const std::vector<GLenum> buffers) const
+    {
+        Bind();
+        glDrawBuffers(static_cast<GLsizei>(buffers.size()), buffers.data());
         Release();
     }
 
