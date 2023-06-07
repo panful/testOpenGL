@@ -10,9 +10,10 @@
  * 09. 获取FBO指定位置的像素数据
  * 10. 窗口的右上角绘制一个小窗口
  * 11. 测试自定义FrameBufferObject类
+ * 12. MRT(Multiple Render Targets)多渲染目标，一个片段着色器输出到多个颜色附件
  */
 
-#define TEST11
+#define TEST12
 
 #ifdef TEST1
 
@@ -2276,3 +2277,129 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST11
+
+#ifdef TEST12
+
+#include <array>
+#include <common.hpp>
+
+constexpr uint32_t windowWidth { 800 };
+constexpr uint32_t windowHeight { 600 };
+
+int main()
+{
+    InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST1_Default_FBO.vs", "resources/02_04_05_TEST1_Default_FBO.fs");
+    ShaderProgram customFBOProgram("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST12_Custom_FBO.fs");
+
+    // clang-format off
+    std::vector<GLfloat> vertices{
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f,
+    };
+
+    std::vector<GLfloat> vertices_quad1 {
+        -0.9f, -0.9f, 0.f,  0.f, 0.f,
+        -0.1f, -0.9f, 0.f,  1.f, 0.f,
+        -0.9f, -0.1f, 0.f,  0.f, 1.f,
+        -0.1f, -0.1f, 0.f,  1.f, 1.f
+    };
+    std::vector<GLfloat> vertices_quad2 {
+         0.1f,  0.1f, 0.f,  0.f, 0.f,
+         0.9f,  0.1f, 0.f,  1.f, 0.f,
+         0.1f,  0.9f, 0.f,  0.f, 1.f,
+         0.9f,  0.9f, 0.f,  1.f, 1.f
+    };
+    // clang-format on
+
+    Renderer triangle(vertices, { 3 });
+    Renderer quad1(vertices_quad1, { 3, 2 });
+    Renderer quad2(vertices_quad2, { 3, 2 });
+
+    //----------------------------------------------------------------------------------
+    // 纹理
+    unsigned int texColorBuffer;
+    glGenTextures(1, &texColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, windowWidth, windowHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    unsigned int texColorBuffer1;
+    glGenTextures(1, &texColorBuffer1);
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, windowWidth, windowHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // FBO帧缓冲对象
+    unsigned int FBO;
+    glGenFramebuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texColorBuffer1, 0);
+
+    // 设置OpenGL渲染到多个（此处为2）颜色缓存，否则只会渲染到帧缓冲的第一个颜色附件
+    // 需要在绑定FBO之后使用，否则渲染到的是默认的帧缓冲
+    // GL_COLOR_ATTACHMENT0 对应于片段着色器中的 layout (location = 0) 其他附件类似
+    unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, attachments);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::clog << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n";
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    //----------------------------------------------------------------------------------
+    while (!glfwWindowShouldClose(window))
+    {
+        //----------------------------------------------------------------------------------
+        // 绑定自定义FBO
+        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+        glClearColor(0.5f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // 随时间绕y轴旋转
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(0.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
+
+        customFBOProgram.Use();
+        customFBOProgram.SetUniformMat4("transform", projectiongMat * viewMat * modelMat);
+
+        triangle.Draw(GL_TRIANGLES);
+
+        //----------------------------------------------------------------------------------
+        // 绑定默认的FBO
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glClearColor(0.0f, 0.5f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        defaultFBOProgram.Use();
+
+        glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+        quad1.Draw(GL_TRIANGLE_STRIP);
+        glBindTexture(GL_TEXTURE_2D, texColorBuffer1);
+        quad2.Draw(GL_TRIANGLE_STRIP);
+
+        //----------------------------------------------------------------------------------
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteFramebuffers(1, &FBO);
+    glDeleteTextures(1, &texColorBuffer);
+    glDeleteTextures(1, &texColorBuffer1);
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST12
