@@ -1267,6 +1267,11 @@ public:
         Release();
     }
 
+    constexpr GLuint GetHandle() const
+    {
+        return m_fbo;
+    }
+
 private:
     GLuint m_fbo { 0 };
 };

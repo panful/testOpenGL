@@ -3,9 +3,10 @@
  * 2. 延迟着色
  * 3. 正向着色
  * 4. 延迟渲染的背景色光照问题
+ * 5. 延迟渲染与正向渲染结合
  */
 
-#define TEST4
+#define TEST5
 
 #ifdef TEST1
 
@@ -791,3 +792,232 @@ int main()
 }
 
 #endif // TEST4
+
+#ifdef TEST5
+
+#include <common.hpp>
+
+constexpr uint32_t windowWidth { 800 };
+constexpr uint32_t windowHeight { 600 };
+
+void DrawCube(const Renderer& cube, const ShaderProgram& shader)
+{
+    glm::mat4 scale, rotate, translate;
+
+    scale     = glm::scale(glm::mat4(1.f), glm::vec3(1.f, 1.f, 1.f));
+    rotate    = glm::rotate(glm::mat4(1.f), glm::radians(0.f), glm::vec3(1.f, 1.f, 1.f));
+    translate = glm::translate(glm::mat4(1.f), glm::vec3(-3.f, 3.f, 0.f));
+
+    shader.SetUniformMat4("model", translate * rotate * scale);
+    cube.Draw(GL_TRIANGLES);
+
+    scale     = glm::scale(glm::mat4(1.f), glm::vec3(1.f, 1.f, 1.f));
+    rotate    = glm::rotate(glm::mat4(1.f), glm::radians(45.f), glm::vec3(1.f, 1.f, 1.f));
+    translate = glm::translate(glm::mat4(1.f), glm::vec3(-3.f, -3.f, 0.f));
+
+    shader.SetUniformMat4("model", translate * rotate * scale);
+    cube.Draw(GL_TRIANGLES);
+
+    scale     = glm::scale(glm::mat4(1.f), glm::vec3(2.f, 2.f, 2.f));
+    rotate    = glm::rotate(glm::mat4(1.f), glm::radians(30.f), glm::vec3(1.f, 1.f, 0.f));
+    translate = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, 0.f));
+
+    shader.SetUniformMat4("model", translate * rotate * scale);
+    cube.Draw(GL_TRIANGLES);
+
+    scale     = glm::scale(glm::mat4(1.f), glm::vec3(1.f, 1.f, 1.f));
+    rotate    = glm::rotate(glm::mat4(1.f), glm::radians(0.f), glm::vec3(1.f, 1.f, 0.f));
+    translate = glm::translate(glm::mat4(1.f), glm::vec3(1.f, 1.f, 3.f));
+
+    shader.SetUniformMat4("model", translate * rotate * scale);
+    cube.Draw(GL_TRIANGLES);
+
+    scale     = glm::scale(glm::mat4(1.f), glm::vec3(1.f, 1.f, 1.f));
+    rotate    = glm::rotate(glm::mat4(1.f), glm::radians(45.f), glm::vec3(0.f, 1.f, 0.f));
+    translate = glm::translate(glm::mat4(1.f), glm::vec3(1.f, -1.f, 5.f));
+
+    shader.SetUniformMat4("model", translate * rotate * scale);
+    cube.Draw(GL_TRIANGLES);
+
+    scale     = glm::scale(glm::mat4(1.f), glm::vec3(1.f, 1.f, 1.f));
+    rotate    = glm::rotate(glm::mat4(1.f), glm::radians(45.f), glm::vec3(1.f, 0.f, 0.f));
+    translate = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -5.f));
+
+    shader.SetUniformMat4("model", translate * rotate * scale);
+    cube.Draw(GL_TRIANGLES);
+}
+
+void DrawCubeDepth(const Renderer& cube, const ShaderProgram& shader)
+{
+    glm::mat4 scale, rotate, translate;
+
+    scale     = glm::scale(glm::mat4(1.f), glm::vec3(1.f, 1.f, 1.f));
+    rotate    = glm::rotate(glm::mat4(1.f), glm::radians(30.f), glm::vec3(0.f, 1.f, 1.f));
+    translate = glm::translate(glm::mat4(1.f), glm::vec3(2.f, 2.f, 0.f));
+
+    shader.SetUniformMat4("model", translate * rotate * scale);
+    cube.Draw(GL_TRIANGLES);
+}
+
+int main()
+{
+    InitOpenGL init("Deferred Rendering", windowWidth, windowHeight, Camera({ 0.f, 0.f, 20.f }, { 0.f, 1.f, 0.f }, { 0.f, 0.f, 0.f }));
+    auto window = init.GetWindow();
+
+    // clang-format off
+    std::vector<GLfloat> verticesCube {
+        // back face
+        -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+         1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+         1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+         1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+        -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+        -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+        // front face
+        -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+         1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+         1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+         1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+        -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+        -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+        // left face
+        -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+        -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+        -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+        -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+        -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+        -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+        // right face
+         1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+         1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+         1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+         1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+         1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+         1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+        // bottom face
+        -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+         1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+         1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+         1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+        -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+        -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+        // top face
+        -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+         1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+         1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+         1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+        -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+        -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+    };
+
+    std::vector<GLfloat> verticesQuad {
+        // pos                 // texCoords
+        -1.f,   1.f,  0.f,     0.f, 1.f,
+        -1.f,  -1.f,  0.f,     0.f, 0.f,
+         1.f,   1.f,  0.f,     1.f, 1.f,
+         1.f,  -1.f,  0.f,     1.f, 0.f,
+    };
+    // clang-format on
+
+    ShaderProgram programGBuffer("resources/02_05_08_TEST1_gbuffer.vs", "resources/02_05_08_TEST1_gbuffer.fs");
+    ShaderProgram programDeferred("resources/02_05_08_TEST1_deferred.vs", "resources/02_05_08_TEST2_deferred.fs");
+    ShaderProgram programDeferredDepth("resources/02_05_08_TEST5_deferred_depth.vs", "resources/02_05_08_TEST5_deferred_depth.fs");
+
+    Renderer cube(verticesCube, { 3, 3, 2 });
+    Renderer quad(verticesQuad, { 3, 2 });
+
+    Texture woodTex("resources/wood.png");
+    Texture rect_poly("resources/rect_poly.jpg");
+
+    //---------------------------------------------------------------------------------------
+    // 三个纹理分别保存位置向量、法向量、颜色和镜面反光度
+    Texture gPosition(windowWidth, windowHeight, GL_RGB16F, GL_RGB, GL_FLOAT, 0);
+    Texture gNormal(windowWidth, windowHeight, GL_RGB16F, GL_RGB, GL_FLOAT, 1);
+    Texture gAlbedoSpec(windowWidth, windowHeight, GL_RGBA, GL_RGBA, GL_FLOAT, 2);
+
+    RenderBufferObject rbo(GL_DEPTH_COMPONENT, windowWidth, windowHeight);
+
+    FrameBufferObject fboQuad;
+    fboQuad.AddAttachment(GL_COLOR_ATTACHMENT0, gPosition);
+    fboQuad.AddAttachment(GL_COLOR_ATTACHMENT1, gNormal);
+    fboQuad.AddAttachment(GL_COLOR_ATTACHMENT2, gAlbedoSpec);
+    fboQuad.AddAttachment(GL_DEPTH_ATTACHMENT, rbo);
+    fboQuad.SetDrawBuffers({ GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 });
+    if (!fboQuad.Check())
+    {
+        std::cerr << "Frame buffer object error\n";
+        return -1;
+    }
+
+    // 八个光源
+    std::vector<std::pair<glm::vec3, glm::vec3>> lights {
+        { glm::vec3(-5.f, -5.f, -5.f), glm::vec3(1.f, 0.f, 0.f) },
+        { glm::vec3(5.f, 5.f, -5.f), glm::vec3(1.f, 1.f, 0.f) },
+        { glm::vec3(-5.f, 5.f, -5.f), glm::vec3(1.f, 1.f, 1.f) },
+        { glm::vec3(5.f, -5.f, -5.f), glm::vec3(1.f, 1.f, 1.f) },
+        { glm::vec3(5.f, 5.f, 5.f), glm::vec3(0.f, 1.f, 0.f) },
+        { glm::vec3(-5.f, -5.f, 5.f), glm::vec3(0.f, 0.f, 1.f) },
+        { glm::vec3(-5.f, 5.f, 5.f), glm::vec3(1.f, 1.f, 1.f) },
+        { glm::vec3(5.f, -5.f, 5.f), glm::vec3(1.f, 1.f, 1.f) },
+    };
+
+    //---------------------------------------------------------------------------------------
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        fboQuad.Bind();
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+        programGBuffer.Use();
+        programGBuffer.SetUniformMat4("view", init.GetViewMatrix());
+        programGBuffer.SetUniformMat4("projection", init.GetProjectionMatrix());
+        programGBuffer.SetUniform1f("specular", 2.f);
+        woodTex.Bind();
+        DrawCube(cube, programGBuffer);
+        woodTex.Release();
+        fboQuad.Release();
+
+        //---------------------------------------------------------------------------------------
+        glClearColor(1.0, 1.0, 1.0, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        programDeferred.Use();
+        programDeferred.SetUniform1i("gPosition", 0);
+        programDeferred.SetUniform1i("gNormal", 1);
+        programDeferred.SetUniform1i("gAlbedoSpec", 2);
+        programDeferred.SetUniform3fv("viewPos", init.GetViewPosition());
+        for (size_t i = 0; i < lights.size(); ++i)
+        {
+            programDeferred.SetUniform3fv("lights[" + std::to_string(i) + "].Position", lights.at(i).first);
+            programDeferred.SetUniform3fv("lights[" + std::to_string(i) + "].Color", lights.at(i).second);
+            programDeferred.SetUniform1f("lights[" + std::to_string(i) + "].Linear", 0.01f);
+            programDeferred.SetUniform1f("lights[" + std::to_string(i) + "].Quadratic", 0.1f);
+        }
+        gPosition.Bind();
+        gNormal.Bind();
+        gAlbedoSpec.Bind();
+        quad.Draw(GL_TRIANGLE_STRIP);
+
+        // 必须是在执行完光照阶段才拷贝深度信息
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, fboQuad.GetHandle()); // 从gBuffer读
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);                   // 写入到默认帧缓冲
+        glBlitFramebuffer(0, 0, windowWidth, windowHeight, 0, 0, windowWidth, windowHeight, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+        //---------------------------------------------------------------------------------------
+        // 在延迟渲染之后再绘制开启深度测试的图元
+        programDeferredDepth.Use();
+        programDeferredDepth.SetUniformMat4("view", init.GetViewMatrix());
+        programDeferredDepth.SetUniformMat4("projection", init.GetProjectionMatrix());
+        rect_poly.Bind();
+        DrawCubeDepth(cube, programDeferredDepth);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST5
