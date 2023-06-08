@@ -1144,7 +1144,7 @@ public:
         }
     }
 
-    void Draw(GLenum mode)
+    void Draw(GLenum mode) const
     {
         glBindVertexArray(m_vao);
 
