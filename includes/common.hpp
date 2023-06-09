@@ -945,6 +945,35 @@ public:
         Release();
     }
 
+    Texture(const void* image, GLsizei w, GLsizei h, GLenum internalformat = GL_RGB, GLenum format = GL_RGB, GLenum type = GL_UNSIGNED_BYTE,
+        GLuint textureUnit = 0, bool gamma = false)
+        : m_texture(0)
+        , m_width(w)
+        , m_height(h)
+        , m_colorFormat(format)
+        , m_internalFormat(internalformat)
+        , m_dataType(type)
+        , m_textureUnit(textureUnit)
+        , m_gamma(gamma)
+    {
+        glGenTextures(1, &m_texture);
+
+        // 默认激活纹理单元0
+        Active(m_textureUnit);
+
+        // 默认2D纹理
+        Bind();
+
+        // 默认环绕、过滤方式
+        SetWarpParameter(GL_REPEAT, GL_REPEAT);
+        SetFilterParameter(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
+
+        LoadImageData(image);
+
+        // 取消纹理绑定
+        Release();
+    }
+
     ~Texture()
     {
         glDeleteTextures(1, &m_texture);
@@ -969,6 +998,12 @@ public:
     void Bind() const
     {
         Active(m_textureUnit);
+        glBindTexture(GL_TEXTURE_2D, m_texture);
+    }
+
+    void Use(GLuint unit = 0) const
+    {
+        glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_2D, m_texture);
     }
 
@@ -1054,6 +1089,11 @@ private:
     void CreateNullTexture() const
     {
         glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, m_dataType, NULL);
+    }
+
+    void LoadImageData(const void* data) const
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, m_dataType, data);
     }
 
     void Active(GLuint texUnit) const
