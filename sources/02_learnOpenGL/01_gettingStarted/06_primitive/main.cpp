@@ -3,9 +3,10 @@
  * 2. 对多个图元设置不同的填充方式
  * 3. glDrawArrays glDrawElements 绘制方式：点、线、三角形等
  * 4. 图元重启
+ * 5. 自定义创建球体数据的函数
  */
 
-#define TEST4
+#define TEST5
 
 #ifdef TEST1
 
@@ -96,7 +97,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -236,8 +236,6 @@ int main()
     glDeleteBuffers(1, &VBO2);
     glDeleteBuffers(1, &EBO2);
 
-    
-
     glfwTerminate();
     return 0;
 }
@@ -344,7 +342,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -464,7 +461,6 @@ int main()
     // remember to delete buffers
 
     glDeleteVertexArrays(1, &VAO);
-    
 
     glfwTerminate();
     return 0;
@@ -482,3 +478,149 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST4
+
+#ifdef TEST5
+
+#include <common.hpp>
+#include <numbers>
+
+// @brief 创建一个球心在(0,0,0)的球体
+// @param [in] longitude 经线上的顶点个数
+// @param [in] latitude 纬线上的顶点个数
+// @param [in] radius 半径
+Renderer CreateSphere(uint32_t longitude = 32, uint32_t latitude = 32, float radius = 1.f)
+{
+    longitude = longitude > 3 ? longitude : 3;
+    latitude  = latitude > 3 ? latitude : 3;
+
+    std::vector<float> vertices;
+    vertices.reserve((latitude * (longitude - 2) + 2) * 3);
+    std::vector<uint32_t> indices;
+    indices.reserve((longitude - 2) * latitude * 2);
+
+    auto deltaLatitude  = (2 * std::numbers::pi_v<float> / latitude);
+    auto deltaLongitude = (std::numbers::pi_v<float> / (longitude - 1));
+
+    // 最上面单独的一个点
+    vertices.emplace_back(0.f);
+    vertices.emplace_back(radius);
+    vertices.emplace_back(0.f);
+    // 法线
+    vertices.emplace_back(0.f);
+    vertices.emplace_back(radius);
+    vertices.emplace_back(0.f);
+
+    // 每一层，即纬线所在的圈
+    for (size_t i = 1; i < longitude - 1; ++i)
+    {
+        auto r = radius * std::sin(i * deltaLongitude);
+        auto y = radius * std::cos(i * deltaLongitude);
+
+        // 每一层上的每一个点（纬线上的每一个点）
+        for (size_t j = 0; j < latitude; ++j)
+        {
+            auto x = r * std::sin(j * deltaLatitude);
+            auto z = r * std::cos(j * deltaLatitude);
+
+            vertices.emplace_back(x);
+            vertices.emplace_back(y);
+            vertices.emplace_back(z);
+            // 法线
+            vertices.emplace_back(x);
+            vertices.emplace_back(y);
+            vertices.emplace_back(z);
+        }
+    }
+
+    // 最下面单独的一个点
+    vertices.emplace_back(0.f);
+    vertices.emplace_back(-radius);
+    vertices.emplace_back(0.f);
+    // 法线
+    vertices.emplace_back(0.f);
+    vertices.emplace_back(-radius);
+    vertices.emplace_back(0.f);
+
+    //---------------------------------------------------
+    // 北极圈
+    for (unsigned int j = 1; j < latitude; ++j)
+    {
+        indices.emplace_back(0);
+        indices.emplace_back(j);
+        indices.emplace_back(j + 1);
+    }
+    indices.emplace_back(0);
+    indices.emplace_back(latitude);
+    indices.emplace_back(1);
+
+    // 中间
+    for (unsigned int i = 1; i + 2 < longitude; ++i)
+    {
+        auto start = (1 + (i - 1) * latitude);
+
+        for (unsigned int j = 0; j + 1 < latitude; ++j)
+        {
+            indices.emplace_back(start + j);
+            indices.emplace_back(start + j + latitude);
+            indices.emplace_back(start + j + latitude + 1);
+
+            indices.emplace_back(start + j);
+            indices.emplace_back(start + j + latitude + 1);
+            indices.emplace_back(start + j + 1);
+        }
+
+        indices.emplace_back(start + latitude - 1);
+        indices.emplace_back(start + latitude - 1 + latitude);
+        indices.emplace_back(start + latitude);
+
+        indices.emplace_back(start + latitude - 1);
+        indices.emplace_back(start + latitude);
+        indices.emplace_back(start);
+    }
+
+    // 南极圈
+    auto south = (longitude - 2) * latitude + 1;
+    assert(south > latitude);
+    for (unsigned int i = 1; i < latitude; ++i)
+    {
+        indices.emplace_back(south);
+        indices.emplace_back(south - i);
+        indices.emplace_back(south - i - 1);
+    }
+    indices.emplace_back(south);
+    indices.emplace_back(south - latitude);
+    indices.emplace_back(south - 1);
+
+    return Renderer(vertices, indices, { 3, 3 });
+}
+
+int main()
+{
+    InitOpenGL init(Camera({ 0.f, 0.f, 5.f }, { 0.f, 1.f, 0.f }, { 0.f, 0.f, 0.f }));
+    auto window = init.GetWindow();
+
+    ShaderProgram program("resources/02_01_06_TEST1.vs", "resources/02_01_06_TEST1.fs");
+
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_DEPTH_TEST);
+
+    auto sphere = CreateSphere();
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+        program.SetUniformMat4("transform", init.GetProjectionMatrix() * init.GetViewMatrix() * glm::mat4(1.f));
+        sphere.Draw(GL_TRIANGLES);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST5
