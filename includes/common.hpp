@@ -831,6 +831,11 @@ public:
         glUniformMatrix4fv(Location(name), 1, GL_FALSE, glm::value_ptr(m));
     }
 
+    void SetUniformMat3(const std::string_view& name, const glm::mat3& m) const
+    {
+        glUniformMatrix3fv(Location(name), 1, GL_FALSE, glm::value_ptr(m));
+    }
+
 private:
     void CreateProgram()
     {
