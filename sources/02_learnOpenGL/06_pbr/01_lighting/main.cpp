@@ -1,8 +1,9 @@
 /*
  * 1. PBR(Physically Based Rendering)基于物理的渲染
+ * 2. 带贴图的PBR
  */
 
-#define TEST1
+#define TEST2
 
 #ifdef TEST1
 
@@ -209,3 +210,170 @@ int main()
 }
 
 #endif // TEST1
+
+#ifdef TEST2
+
+#include <common.hpp>
+#include <numbers>
+
+Renderer CreateSphere(uint32_t longitude = 10, uint32_t latitude = 10, float radius = 1.0f)
+{
+    auto M_PI = std::numbers::pi_v<float>;
+
+    std::vector<float> vertices;
+    std::vector<uint32_t> indices;
+
+    // Generate vertices
+    for (uint32_t lat = 0; lat <= latitude; ++lat)
+    {
+        float theta    = lat * M_PI / latitude;
+        float sinTheta = std::sin(theta);
+        float cosTheta = std::cos(theta);
+
+        for (uint32_t lon = 0; lon <= longitude; ++lon)
+        {
+            float phi    = lon * 2 * M_PI / longitude;
+            float sinPhi = std::sin(phi);
+            float cosPhi = std::cos(phi);
+
+            // Vertex position
+            float x = radius * cosPhi * sinTheta;
+            float y = radius * cosTheta;
+            float z = radius * sinPhi * sinTheta;
+
+            // Vertex normal (same as position)
+            float nx = x;
+            float ny = y;
+            float nz = z;
+
+            // Vertex UV coordinates (spherical mapping)
+            float u = 1.0f - static_cast<float>(lon) / longitude;
+            float v = 1.0f - static_cast<float>(lat) / latitude;
+
+            // Add vertex attributes to the vector
+            vertices.push_back(x);
+            vertices.push_back(y);
+            vertices.push_back(z);
+            vertices.push_back(nx);
+            vertices.push_back(ny);
+            vertices.push_back(nz);
+            vertices.push_back(u);
+            vertices.push_back(v);
+        }
+    }
+
+    // Generate indices
+    for (uint32_t lat = 0; lat < latitude; ++lat)
+    {
+        for (uint32_t lon = 0; lon < longitude; ++lon)
+        {
+            uint32_t curr = lat * (longitude + 1) + lon;
+            uint32_t next = curr + longitude + 1;
+
+            // Add indices for the two triangles forming each quad
+            indices.push_back(curr);
+            indices.push_back(next);
+            indices.push_back(curr + 1);
+            indices.push_back(next);
+            indices.push_back(next + 1);
+            indices.push_back(curr + 1);
+        }
+    }
+
+    std::cout << "points: " << vertices.size() / 8 << "\tindices: " << indices.size() / 3 << '\n';
+    return Renderer(vertices, indices, { 3, 3, 2 });
+}
+
+int main()
+{
+    InitOpenGL init(Camera({ 0.f, 0.f, 30.f }, { 0.f, 1.f, 0.f }, { 0.f, 0.f, 0.f }));
+    auto window = init.GetWindow();
+
+    auto sphere = CreateSphere(64, 64);
+
+    Texture texAlbedo("resources/02_06_01_albedo.png");
+    Texture texNormal("resources/02_06_01_normal.png");
+    Texture texMetallic("resources/02_06_01_metallic.png");
+    Texture texRoughness("resources/02_06_01_roughness.png");
+    Texture texAo("resources/02_06_01_ao.png");
+
+    ShaderProgram program("resources/02_06_01_TEST1.vs", "resources/02_06_01_TEST2.fs");
+    program.Use();
+    program.SetUniform1i("albedoMap", 0);
+    program.SetUniform1i("normalMap", 1);
+    program.SetUniform1i("metallicMap", 2);
+    program.SetUniform1i("roughnessMap", 3);
+    program.SetUniform1i("aoMap", 4);
+
+    // 光源的位置和颜色
+    // clang-format off
+    glm::vec3 lightPositions[] = {
+        glm::vec3(-5.0f,  5.0f, 10.0f),
+        glm::vec3( 5.0f,  5.0f, 10.0f),
+        glm::vec3(-5.0f, -5.0f, 10.0f),
+        glm::vec3( 5.0f, -5.0f, 10.0f),
+    };
+
+    glm::vec3 lightColors[] = { 
+        glm::vec3(300.0f, 300.0f, 300.0f), 
+        glm::vec3(300.0f, 300.0f, 300.0f), 
+        glm::vec3(300.0f, 300.0f, 300.0f),
+        glm::vec3(300.0f, 300.0f, 300.0f) 
+    };
+    // clang-format on
+
+    // 用来控制生成7*7=49个球
+    int nrRows      = 7;
+    int nrColumns   = 7;
+    float spacing   = 3.0f;
+    glm::mat4 model = glm::mat4(1.f);
+
+    glEnable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+        program.SetUniform3fv("camPos", init.GetViewPosition());
+        program.SetUniformMat4("view", init.GetViewMatrix());
+        program.SetUniformMat4("projection", init.GetProjectionMatrix());
+        texAlbedo.Use(0);
+        texNormal.Use(1);
+        texMetallic.Use(2);
+        texRoughness.Use(3);
+        texAo.Use(4);
+
+        // 渲染共 7*7=49个球
+        for (int row = 0; row < nrRows; ++row)
+        {
+            for (int col = 0; col < nrColumns; ++col)
+            {
+                auto x = (col - (nrColumns / 2)) * spacing;
+                auto y = (row - (nrRows / 2)) * spacing;
+
+                model = glm::mat4(1.f);
+                model = glm::translate(model, glm::vec3(x, y, 0.0f));
+                program.SetUniformMat4("model", model);
+                program.SetUniformMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+
+                sphere.Draw(GL_TRIANGLES);
+            }
+        }
+
+        // 光源
+        for (size_t i = 0; i < 4; ++i)
+        {
+            program.SetUniform3fv("lightPositions[" + std::to_string(i) + "]", lightPositions[i]);
+            program.SetUniform3fv("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+        }
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST2

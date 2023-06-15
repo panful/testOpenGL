@@ -4,9 +4,10 @@
  * 3. glDrawArrays glDrawElements 绘制方式：点、线、三角形等
  * 4. 图元重启
  * 5. 自定义创建球体数据的函数
+ * 6. 带有纹理坐标的球体
  */
 
-#define TEST5
+#define TEST6
 
 #ifdef TEST1
 
@@ -624,3 +625,111 @@ int main()
 }
 
 #endif // TEST5
+
+#ifdef TEST6
+
+#include <cmath>
+#include <common.hpp>
+#include <numbers>
+#include <utility>
+
+// latitude  经线一圈的顶点个数的一半，连接南北极的是经线
+// longitude 纬线一圈的顶点个数，赤道是纬线
+Renderer CreateSphere(uint32_t longitude = 10, uint32_t latitude = 10, float radius = 1.0f)
+{
+    auto M_PI = std::numbers::pi_v<float>;
+
+    std::vector<float> vertices;
+    std::vector<uint32_t> indices;
+
+    // Generate vertices
+    for (uint32_t lat = 0; lat <= latitude; ++lat)
+    {
+        float theta    = lat * M_PI / latitude;
+        float sinTheta = std::sin(theta);
+        float cosTheta = std::cos(theta);
+
+        for (uint32_t lon = 0; lon <= longitude; ++lon)
+        {
+            float phi    = lon * 2 * M_PI / longitude;
+            float sinPhi = std::sin(phi);
+            float cosPhi = std::cos(phi);
+
+            // Vertex position
+            float x = radius * cosPhi * sinTheta;
+            float y = radius * cosTheta;
+            float z = radius * sinPhi * sinTheta;
+
+            // Vertex normal (same as position)
+            float nx = x;
+            float ny = y;
+            float nz = z;
+
+            // Vertex UV coordinates (spherical mapping)
+            float u = 1.0f - static_cast<float>(lon) / longitude;
+            float v = 1.0f - static_cast<float>(lat) / latitude;
+
+            // Add vertex attributes to the vector
+            vertices.push_back(x);
+            vertices.push_back(y);
+            vertices.push_back(z);
+            vertices.push_back(nx);
+            vertices.push_back(ny);
+            vertices.push_back(nz);
+            vertices.push_back(u);
+            vertices.push_back(v);
+        }
+    }
+
+    // Generate indices
+    for (uint32_t lat = 0; lat < latitude; ++lat)
+    {
+        for (uint32_t lon = 0; lon < longitude; ++lon)
+        {
+            uint32_t curr = lat * (longitude + 1) + lon;
+            uint32_t next = curr + longitude + 1;
+
+            // Add indices for the two triangles forming each quad
+            indices.push_back(curr);
+            indices.push_back(next);
+            indices.push_back(curr + 1);
+            indices.push_back(next);
+            indices.push_back(next + 1);
+            indices.push_back(curr + 1);
+        }
+    }
+
+    std::cout << "points: " << vertices.size() / 8 << "\tindices: " << indices.size() / 3 << '\n';
+    return Renderer(vertices, indices, { 3, 3, 2 });
+}
+
+int main()
+{
+    InitOpenGL init(Camera({ 0.f, 0.f, 5.f }, { 0.f, 1.f, 0.f }, { 0.f, 0.f, 0.f }));
+    auto window = init.GetWindow();
+
+    ShaderProgram program("resources/02_01_06_TEST1.vs", "resources/02_01_06_TEST1.fs");
+
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_DEPTH_TEST);
+
+    auto sphere = CreateSphere();
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+        program.SetUniformMat4("transform", init.GetProjectionMatrix() * init.GetViewMatrix() * glm::mat4(1.f));
+        sphere.Draw(GL_TRIANGLES);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST6

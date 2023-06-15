@@ -1023,7 +1023,12 @@ public:
         int channels { 0 };
         if (auto data = stbi_load(path.data(), &m_width, &m_height, &channels, 0))
         {
-            if (channels == 3)
+            if (channels == 1 && !m_gamma)
+            {
+                m_internalFormat = GL_RED;
+                m_colorFormat    = GL_RED;
+            }
+            else if (channels == 3)
             {
                 m_internalFormat = m_gamma ? GL_SRGB : GL_RGB;
                 m_colorFormat    = GL_RGB;
@@ -1035,7 +1040,7 @@ public:
             }
             else
             {
-                std::clog << "Image channels error!\n";
+                std::clog << "Image channels error: " << channels << '\t' << path << '\n';
             }
 
             glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, m_dataType, data);
