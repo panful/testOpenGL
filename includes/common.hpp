@@ -893,13 +893,13 @@ private:
 class Texture
 {
 public:
-    Texture(const std::string_view& path, GLuint textureUnit = 0, bool gamma = false)
+    Texture(const std::string_view& path, GLuint textureUnit = 0, bool gamma = false, GLenum internalformat = 0, GLenum format = 0, GLenum type = 0)
         : m_texture(0)
         , m_width(0)
         , m_height(0)
-        , m_colorFormat(0)
-        , m_internalFormat(0)
-        , m_dataType(GL_UNSIGNED_BYTE)
+        , m_colorFormat(format)
+        , m_internalFormat(internalformat)
+        , m_dataType(type)
         , m_textureUnit(textureUnit)
         , m_gamma(gamma)
     {
@@ -922,7 +922,8 @@ public:
         Release();
     }
 
-    Texture(GLsizei w, GLsizei h, GLenum internalformat = GL_RGB, GLenum format = GL_RGB, GLenum type = GL_UNSIGNED_BYTE, GLuint textureUnit = 0)
+    Texture(GLsizei w, GLsizei h, GLenum internalformat = GL_RGB, GLenum format = GL_RGB, GLenum type = GL_UNSIGNED_BYTE, GLuint textureUnit = 0,
+        bool cubeMap = false)
         : m_texture(0)
         , m_width(w)
         , m_height(h)
@@ -930,6 +931,7 @@ public:
         , m_internalFormat(internalformat)
         , m_dataType(type)
         , m_textureUnit(textureUnit)
+        , m_cubeMap(cubeMap)
     {
         glGenTextures(1, &m_texture);
 
@@ -993,6 +995,7 @@ private:
     GLenum m_dataType;
     GLuint m_textureUnit;
     bool m_gamma;
+    bool m_cubeMap { false };
 
 public:
     GLuint Get() const
@@ -1003,7 +1006,14 @@ public:
     void Bind() const
     {
         Active(m_textureUnit);
-        glBindTexture(GL_TEXTURE_2D, m_texture);
+        if (m_cubeMap)
+        {
+            glBindTexture(GL_TEXTURE_CUBE_MAP, m_texture);
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, m_texture);
+        }
     }
 
     void Use(GLuint unit = 0) const
@@ -1021,26 +1031,42 @@ public:
     {
         stbi_set_flip_vertically_on_load(bFlip);
         int channels { 0 };
-        if (auto data = stbi_load(path.data(), &m_width, &m_height, &channels, 0))
+        void* data = nullptr;
+        if (m_dataType == GL_FLOAT)
         {
-            if (channels == 1 && !m_gamma)
+            data = stbi_loadf(path.data(), &m_width, &m_height, &channels, 0);
+        }
+        else
+        {
+            data = stbi_load(path.data(), &m_width, &m_height, &channels, 0);
+        }
+
+        if (data)
+        {
+            // 如果这三个值都为0，使用纹理图片的格式，否则使用指定的格式
+            if (m_internalFormat == 0 && m_colorFormat == 0 && m_dataType == 0)
             {
-                m_internalFormat = GL_RED;
-                m_colorFormat    = GL_RED;
-            }
-            else if (channels == 3)
-            {
-                m_internalFormat = m_gamma ? GL_SRGB : GL_RGB;
-                m_colorFormat    = GL_RGB;
-            }
-            else if (channels == 4)
-            {
-                m_internalFormat = m_gamma ? GL_SRGB_ALPHA : GL_RGBA;
-                m_colorFormat    = GL_RGBA;
-            }
-            else
-            {
-                std::clog << "Image channels error: " << channels << '\t' << path << '\n';
+                m_dataType = GL_UNSIGNED_BYTE;
+
+                if (channels == 1 && !m_gamma)
+                {
+                    m_internalFormat = GL_RED;
+                    m_colorFormat    = GL_RED;
+                }
+                else if (channels == 3)
+                {
+                    m_internalFormat = m_gamma ? GL_SRGB : GL_RGB;
+                    m_colorFormat    = GL_RGB;
+                }
+                else if (channels == 4)
+                {
+                    m_internalFormat = m_gamma ? GL_SRGB_ALPHA : GL_RGBA;
+                    m_colorFormat    = GL_RGBA;
+                }
+                else
+                {
+                    std::clog << "Image channels error: " << channels << '\t' << path << '\n';
+                }
             }
 
             glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, m_dataType, data);
@@ -1056,14 +1082,31 @@ public:
 
     void SetWarpParameter(GLint s, GLint t) const
     {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, s);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, t);
+        if (m_cubeMap)
+        {
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        }
+        else
+        {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, s);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, t);
+        }
     }
 
     void SetFilterParameter(GLint min, GLint mag) const
     {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+        if (m_cubeMap)
+        {
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        }
+        else
+        {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+        }
     }
 
     void ResetSize(GLsizei w, GLsizei h)
@@ -1091,14 +1134,24 @@ public:
 
     GLenum GetTarget() const
     {
-        // 暂时先只做2D，1D和3D后面再扩展
+        // 暂时先只做2D，1D和3D,cube_map后面再扩展
         return GL_TEXTURE_2D;
     }
 
 private:
     void CreateNullTexture() const
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, m_dataType, NULL);
+        if (m_cubeMap)
+        {
+            for (uint32_t i = 0; i < 6; ++i)
+            {
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, m_dataType, nullptr);
+            }
+        }
+        else
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, m_dataType, NULL);
+        }
     }
 
     void LoadImageData(const void* data) const
