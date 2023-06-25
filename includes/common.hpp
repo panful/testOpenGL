@@ -1019,7 +1019,15 @@ public:
     void Use(GLuint unit = 0) const
     {
         glActiveTexture(GL_TEXTURE0 + unit);
-        glBindTexture(GL_TEXTURE_2D, m_texture);
+
+        if (m_cubeMap)
+        {
+            glBindTexture(GL_TEXTURE_CUBE_MAP, m_texture);
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, m_texture);
+        }
     }
 
     void Release() const
@@ -1303,7 +1311,6 @@ public:
         Release();
     }
 
-private:
     constexpr void Bind() const noexcept
     {
         glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
