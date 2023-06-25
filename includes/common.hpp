@@ -945,7 +945,7 @@ public:
         CreateNullTexture();
 
         // 默认环绕、过滤方式
-        SetWarpParameter(GL_REPEAT, GL_REPEAT);
+        SetWarpParameter(GL_REPEAT, GL_REPEAT, m_cubeMap ? GL_REPEAT : 0);
         SetFilterParameter(GL_LINEAR, GL_LINEAR);
 
         // 取消纹理绑定
@@ -1088,13 +1088,13 @@ public:
         }
     }
 
-    void SetWarpParameter(GLint s, GLint t) const
+    void SetWarpParameter(GLint s, GLint t, GLint r = 0) const
     {
-        if (m_cubeMap)
+        if (m_cubeMap && 0 != r)
         {
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, s);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, t);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, r);
         }
         else
         {
@@ -1107,8 +1107,8 @@ public:
     {
         if (m_cubeMap)
         {
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, min);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, mag);
         }
         else
         {
@@ -1144,6 +1144,18 @@ public:
     {
         // 暂时先只做2D，1D和3D,cube_map后面再扩展
         return GL_TEXTURE_2D;
+    }
+
+    void GenerateMipmap() const
+    {
+        if (m_cubeMap)
+        {
+            glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+        }
+        else
+        {
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
     }
 
 private:

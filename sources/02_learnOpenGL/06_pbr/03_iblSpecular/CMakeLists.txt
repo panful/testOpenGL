@@ -1,4 +1,4 @@
-set(target_name "02_06_02_ibl")
+set(target_name "02_06_03_iblSpecular")
 
 add_executable (${target_name} "main.cpp")
 
