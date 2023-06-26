@@ -130,8 +130,12 @@ int main()
     //---------------------------------------------------------------------------------------
     // 三个纹理分别保存位置向量、法向量、颜色和镜面反光度
     Texture gPosition(windowWidth, windowHeight, GL_RGB16F, GL_RGB, GL_FLOAT, 0);
+    gPosition.SetWarpParameter(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+    gPosition.SetFilterParameter(GL_NEAREST, GL_NEAREST);
     Texture gNormal(windowWidth, windowHeight, GL_RGB16F, GL_RGB, GL_FLOAT, 1);
+    gNormal.SetFilterParameter(GL_NEAREST, GL_NEAREST);
     Texture gAlbedo(windowWidth, windowHeight, GL_RGB, GL_RGB, GL_FLOAT, 2);
+    gAlbedo.SetFilterParameter(GL_NEAREST, GL_NEAREST);
 
     RenderBufferObject rbo(GL_DEPTH_COMPONENT, windowWidth, windowHeight);
 
@@ -143,7 +147,9 @@ int main()
     fboQuad.SetDrawBuffers({ GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 });
 
     Texture ssaoTex(windowWidth, windowHeight, GL_RED, GL_RED, GL_FLOAT);
+    ssaoTex.SetFilterParameter(GL_NEAREST, GL_NEAREST);
     Texture ssaoBlurTex(windowWidth, windowHeight, GL_RED, GL_RED, GL_FLOAT);
+    ssaoBlurTex.SetFilterParameter(GL_NEAREST, GL_NEAREST);
 
     FrameBufferObject fboSsao;
     fboSsao.AddAttachment(GL_COLOR_ATTACHMENT0, ssaoTex);
@@ -181,6 +187,7 @@ int main()
     }
 
     Texture noiseTex(&ssaoNoise[0], 4, 4, GL_RGBA32F, GL_RGB, GL_FLOAT);
+    noiseTex.SetFilterParameter(GL_NEAREST, GL_NEAREST);
 
     // 光源
     std::pair<glm::vec3, glm::vec3> light { glm::vec3(0.f, 0.f, 10.f), glm::vec3(1.f, 1.f, 1.f) };
@@ -235,9 +242,9 @@ int main()
         programDeferred.SetUniform1f("light.Linear", 0.09f);
         programDeferred.SetUniform1f("light.Quadratic", 0.032f);
 
-        gPosition.Bind();
-        gNormal.Bind();
-        gAlbedo.Bind();
+        gPosition.Use(0);
+        gNormal.Use(1);
+        gAlbedo.Use(2);
         ssaoBlurTex.Use(3);
         quad.Draw(GL_TRIANGLE_STRIP);
 

@@ -1090,6 +1090,7 @@ public:
 
     void SetWarpParameter(GLint s, GLint t, GLint r = 0) const
     {
+        Bind();
         if (m_cubeMap && 0 != r)
         {
             glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, s);
@@ -1101,10 +1102,12 @@ public:
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, s);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, t);
         }
+        Release();
     }
 
     void SetFilterParameter(GLint min, GLint mag) const
     {
+        Bind();
         if (m_cubeMap)
         {
             glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, min);
@@ -1115,6 +1118,7 @@ public:
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
         }
+        Release();
     }
 
     void ResetSize(GLsizei w, GLsizei h)
@@ -1148,6 +1152,7 @@ public:
 
     void GenerateMipmap() const
     {
+        Bind();
         if (m_cubeMap)
         {
             glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
@@ -1156,6 +1161,7 @@ public:
         {
             glGenerateMipmap(GL_TEXTURE_2D);
         }
+        Release();
     }
 
 private:
