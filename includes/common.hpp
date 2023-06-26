@@ -1177,6 +1177,7 @@ private:
     void LoadImageData(const void* data) const
     {
         glTexImage2D(GL_TEXTURE_2D, 0, m_internalFormat, m_width, m_height, 0, m_colorFormat, m_dataType, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
 
     void Active(GLuint texUnit) const

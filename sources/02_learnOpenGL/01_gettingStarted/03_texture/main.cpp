@@ -7,9 +7,10 @@
  * 06. 一个采样器应用到多个纹理
  * 07. 读取纹理的像素数据
  * 08. 自定义纹理数据，1D纹理的使用
+ * 09. 使用纹理设置窗口背景，可以将背景设置为任意颜色：渐变色、图片等等
  */
 
-#define TEST8
+#define TEST9
 
 #ifdef TEST1
 
@@ -110,7 +111,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -264,7 +264,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -421,7 +420,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -485,8 +483,8 @@ int main()
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // 图2 -> 三角形
     //-------------------------------------------------------------------------
@@ -510,8 +508,8 @@ int main()
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     //-------------------------------------------------------------------------
     // 纹理1
@@ -593,7 +591,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -657,8 +654,8 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     //----------------------------------------------------------------------------------
 
@@ -738,7 +735,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -802,8 +798,8 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // 图2 右边
     float vertices2[] = {
@@ -830,8 +826,8 @@ int main()
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     //----------------------------------------------------------------------------------
 
@@ -932,7 +928,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -1060,7 +1055,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     stbi_image_free(data);
 
@@ -1094,8 +1088,7 @@ void mouseCB(GLFWwindow* window, int button, int action, int mods)
         {
         case GLFW_MOUSE_BUTTON_LEFT:
         {
-            std::cout << "-------------------------------------\n"
-                      << mouse_x << '\t' << mouse_y << '\t';
+            std::cout << "-------------------------------------\n" << mouse_x << '\t' << mouse_y << '\t';
 
             GLint level { 0 };        // 细节级别。0是基本图像级别
             GLint format { GL_RGBA }; // 像素数据的格式
@@ -1264,7 +1257,6 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    
 
     glfwTerminate();
     return 0;
@@ -1282,3 +1274,163 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST8
+
+#ifdef TEST9
+
+#include <array>
+#include <common.hpp>
+
+Renderer CreateCube()
+{
+    std::vector<float> vertices {
+        // back face
+        -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // bottom-left
+        1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,   // top-right
+        1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,  // bottom-right
+        1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,   // top-right
+        -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // bottom-left
+        -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,  // top-left
+
+        // front face
+        -1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
+        1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // bottom-right
+        1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // top-right
+        1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // top-right
+        -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // top-left
+        -1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
+
+        // left face
+        -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,   // top-right
+        -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,  // top-left
+        -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // bottom-left
+        -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // bottom-left
+        -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,  // bottom-right
+        -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,   // top-right
+
+        // right face
+        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,   // top-left
+        1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 0.0f, // bottom-right
+        1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 0.0f,  // top-right
+        1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 0.0f, // bottom-right
+        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,   // top-left
+        1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 0.0f,  // bottom-left
+
+        // bottom face
+        -1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top-right
+        1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f,  // top-left
+        1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,   // bottom-left
+        1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,   // bottom-left
+        -1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  // bottom-right
+        -1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top-right
+
+        // top face
+        -1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, // top-left
+        1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,   // bottom-right
+        1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f,  // top-right
+        1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,   // bottom-right
+        -1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, // top-left
+        -1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,  // bottom-left
+    };
+
+    return Renderer(vertices, { 3, 3 });
+}
+
+Renderer CreateQuad()
+{
+    // clang-format off
+    std::vector<float> vertices {
+        -1.f,   1.0f,   0.0f,     0.0f, 1.0f,
+        -1.f,  -1.0f,   0.0f,     0.0f, 0.0f,
+         1.f,   1.0f,   0.0f,     1.0f, 1.0f,
+         1.f,  -1.0f,   0.0f,     1.0f, 0.0f,
+    };
+    // clang-format on
+
+    return Renderer(vertices, { 3, 2 });
+}
+
+int main()
+{
+    InitOpenGL init(Camera({ 0, 0, 5 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    auto window = init.GetWindow();
+    auto cube   = CreateCube();
+    auto quad   = CreateQuad();
+
+    constexpr size_t numOfPixels { 10 };
+    std::array<GLubyte, numOfPixels * 4> imageData;
+    for (size_t i = 0; i < numOfPixels; i++)
+    {
+        GLubyte r, g, b;
+        // clang-format off
+        switch (i)
+        {
+        case 0:
+        case 1:
+            { r = 255; g = 0; b = 0; } break;
+        case 2:
+        case 3:
+            { r = 255; g = 255; b = 0; } break;
+        case 4:
+        case 5:
+            { r = 0; g = 255; b = 0; } break;
+        case 6:
+        case 7:
+            { r = 0; g = 255; b = 255; } break;
+        case 8:
+        case 9:
+            { r = 0; g = 0; b = 255; } break;
+        default:
+            break;
+        }
+        // clang-format on
+
+        imageData[i * 4 + 0] = r;
+        imageData[i * 4 + 1] = g;
+        imageData[i * 4 + 2] = b;
+        imageData[i * 4 + 3] = 255;
+
+        std::cout << (int)r << '\t' << (int)g << '\t' << (int)b << '\n';
+    }
+
+    Texture background(imageData.data(), 10, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+    background.Bind();
+    background.SetWarpParameter(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+
+    ShaderProgram shaderCube("resources/02_01_03_TEST9.vs", "resources/02_01_03_TEST9.fs");
+    ShaderProgram shaderBackground("resources/02_01_03_TEST9_back.vs", "resources/02_01_03_TEST9_back.fs");
+
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.f, 0.f, 0.f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto view       = init.GetViewMatrix();
+        auto projection = init.GetProjectionMatrix();
+
+        //---------------------------------------------------------------------
+        // 将深度测试函数设置为默认值，根据具体情况设置
+        glDepthFunc(GL_LESS);
+
+        shaderCube.Use();
+        shaderCube.SetUniformMat4("transform", projection * view);
+        cube.Draw(GL_TRIANGLES);
+
+        //---------------------------------------------------------------------
+        // 背景，深度值小于等于深度缓存中的都通过
+        glDepthFunc(GL_LEQUAL);
+
+        shaderBackground.Use();
+        background.Use();
+        quad.Draw(GL_TRIANGLE_STRIP);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST9
