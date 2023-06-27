@@ -7,9 +7,10 @@
  * 6. gl_Layer的使用，一般可以用于渲染3D纹理、立方体阴影映射、立方体环境映射等场景
  * 7. 几何着色器多次实例化、多视口 gl_ViewportIndex gl_InvocationID
  * 8. 使用几何着色器实现广告牌效果（物体始终朝向相机）
+ * 9. 在片段着色器中利用gl_PrimitiveID给每一个单元设置不同的颜色
  */
 
-#define TEST8
+#define TEST9
 
 #ifdef TEST1
 
@@ -768,3 +769,60 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST8
+
+#ifdef TEST9
+
+#include <array>
+#include <common.hpp>
+
+Renderer CreateTriangles()
+{
+    // clang-format off
+    std::vector<float> vertices {
+        -0.5f, -0.5f,  -0.5f, 0.5f,
+        -0.2f, -0.5f,  -0.2f, 0.5f,
+         0.0f, -0.5f,   0.0f, 0.5f,
+         0.2f, -0.5f,   0.2f, 0.5f,
+         0.5f, -0.5f,   0.5f, 0.5f,
+    };
+
+    std::vector<uint32_t> indices {
+        0,2,3,
+        0,3,1,
+        2,4,5,
+        2,5,3,
+        4,6,7,
+        4,7,5,
+        6,8,9,
+        6,9,7
+    };
+    // clang-format on
+
+    return Renderer(vertices, indices, { 2 });
+}
+
+int main()
+{
+    InitOpenGL init;
+    auto window    = init.GetWindow();
+    auto triangles = CreateTriangles();
+
+    ShaderProgram shader("resources/02_04_09_TEST9.vs", "resources/02_04_09_TEST9.fs");
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.f, 0.f, 0.f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.Use();
+        triangles.Draw(GL_TRIANGLES);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST9
