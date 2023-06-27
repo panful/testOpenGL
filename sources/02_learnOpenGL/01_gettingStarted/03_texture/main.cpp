@@ -8,9 +8,10 @@
  * 07. 读取纹理的像素数据
  * 08. 自定义纹理数据，1D纹理的使用
  * 09. 使用纹理设置窗口背景，可以将背景设置为任意颜色：渐变色、图片等等
+ * 10. TBO GL_TEXTURE_BUFFER的使用，通过纹理给每一个单元设置一个颜色
  */
 
-#define TEST9
+#define TEST10
 
 #ifdef TEST1
 
@@ -1434,3 +1435,116 @@ int main()
 }
 
 #endif // TEST9
+
+#ifdef TEST10
+
+#include <common.hpp>
+
+Renderer CreateTriangles()
+{
+    // clang-format off
+    std::vector<float> vertices {
+        -0.5f, -0.5f,  -0.5f, 0.5f,
+        -0.2f, -0.5f,  -0.2f, 0.5f,
+         0.0f, -0.5f,   0.0f, 0.5f,
+         0.2f, -0.5f,   0.2f, 0.5f,
+         0.5f, -0.5f,   0.5f, 0.5f,
+    };
+
+    std::vector<uint32_t> indices {
+        0,3,1,  0,2,3,
+        2,5,3,  2,4,5,
+        4,7,5,  4,6,7,
+        6,9,7,  6,8,9,
+    };
+    // clang-format on
+
+    return Renderer(vertices, indices, { 2 });
+}
+
+int main()
+{
+    InitOpenGL init;
+    auto window    = init.GetWindow();
+    auto triangles = CreateTriangles();
+
+    ShaderProgram shader("resources/02_01_03_TEST10.vs", "resources/02_01_03_TEST10.fs");
+
+    // clang-format off
+
+    // GL_RGB32F
+    // std::vector<float> data {
+    //     1.f, 0.f, 0.f, 
+    //     0.f, 1.f, 0.f, 
+    //     0.f, 0.f, 1.f, 
+    //     1.f, 0.f, 0.f, 
+    //     0.f, 1.f, 0.f, 
+    //     0.f, 0.f, 1.f, 
+    //     1.f, 0.f, 0.f, 
+    //     0.f, 1.f, 0.f,
+    //     0.f, 0.f, 1.f,
+    // };
+
+    // GL_RGBA8 不支持 GL_RGB8
+    std::vector<uint8_t> data { 
+        255,    0,      0,      255,
+        0,      255,    0,      255,
+        0,      0,      255,    255,
+        255,    0,      0,      255,
+        0,      255,    0,      255,
+        0,      0,      255,    255,
+        255,    0,      0,      255,
+        0,      255,    0,      255,
+        0,      0,      255,    255,
+    };
+    
+    // clang-format on
+
+    // 创建texture buffer object
+    unsigned int TBO;
+    glGenBuffers(1, &TBO);
+    glBindBuffer(GL_TEXTURE_BUFFER, TBO);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(data), data.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_TEXTURE_BUFFER, 0);
+
+    // 创建并绑定纹理对象
+    // 只有将TBO绑定到一个纹理上才可以使用
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_BUFFER, texture);
+    // 绑定TBO到纹理，第二个参数是TBO的数据类型
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA8, TBO);
+    glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+    CheckError();
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.f, 0.f, 0.f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.Use();
+
+        // 默认激活纹理单元GL_TEXTURE0
+        // shader.SetUniform1i("colorTexture", 0);
+        // glActiveTexture(GL_TEXTURE0);
+
+        // 绑定纹理
+        // 注意第二个参数是纹理ID，不是TBO
+        glBindTexture(GL_TEXTURE_BUFFER, texture);
+
+        // 绘制三角面
+        triangles.Draw(GL_TRIANGLES);
+
+        // 解绑
+        glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST10

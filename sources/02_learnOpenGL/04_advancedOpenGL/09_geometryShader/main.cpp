@@ -772,7 +772,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #ifdef TEST9
 
-#include <array>
 #include <common.hpp>
 
 Renderer CreateTriangles()
