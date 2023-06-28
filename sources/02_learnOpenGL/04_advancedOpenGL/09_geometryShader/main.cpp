@@ -1,16 +1,17 @@
 /*
  * 1. 使用几何着色器将输入的顶点绘制成三角形
  * 2. 将顶点着色器的变量传入到几何着色器再到片段着色器
- * 3. 利用几何着色器在给定位置生成立方体并开启深度测试
+ * 3. 利用几何着色器在给定位置生成立方体并开启深度测试，透视除法在几何着色器之后
  * 4. 将三角形带（GL_TRIANGLE_STRIP）传入几何着色器
  * 5. 几何着色器中变量 gl_PrimitiveIDIn 和 gl_PrimitiveID 的使用
  * 6. gl_Layer的使用，一般可以用于渲染3D纹理、立方体阴影映射、立方体环境映射等场景
  * 7. 几何着色器多次实例化、多视口 gl_ViewportIndex gl_InvocationID
  * 8. 使用几何着色器实现广告牌效果（物体始终朝向相机）
  * 9. 在片段着色器中利用gl_PrimitiveID给每一个单元设置不同的颜色
+ * 10.利用几何着色器生成三角形的边缘方程，给实体多边形图元添加边框
  */
 
-#define TEST9
+#define TEST10
 
 #ifdef TEST1
 
@@ -74,7 +75,6 @@ int main()
     // remember to delete buffers
 
     glDeleteVertexArrays(1, &VAO);
-    
 
     glfwTerminate();
     return 0;
@@ -163,7 +163,6 @@ int main()
     // remember to delete buffers
 
     glDeleteVertexArrays(1, &VAO);
-    
 
     glfwTerminate();
     return 0;
@@ -227,7 +226,6 @@ int main()
 
     //-----------------------------------------------------------------------
     // 给两个顶点，在这两个顶点处各生成一个立方体，开启深度测试
-    // 透视除法在几何着色器之后
 
     glEnable(GL_DEPTH_TEST);
 
@@ -238,8 +236,8 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto modleMat = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(0.f, 1.f, 0.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 10.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modleMat       = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(0.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 10.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         program.Use();
@@ -258,7 +256,6 @@ int main()
     // remember to delete buffers
 
     glDeleteVertexArrays(1, &VAO);
-    
 
     glfwTerminate();
     return 0;
@@ -341,7 +338,6 @@ int main()
     // remember to delete buffers
 
     glDeleteVertexArrays(1, &VAO);
-    
 
     glfwTerminate();
     return 0;
@@ -430,7 +426,6 @@ int main()
     // remember to delete buffers
 
     glDeleteVertexArrays(1, &VAO);
-    
 
     glfwTerminate();
     return 0;
@@ -514,7 +509,6 @@ int main()
     // remember to delete buffers
 
     glDeleteVertexArrays(1, &VAO);
-    
 
     glfwTerminate();
     return 0;
@@ -538,10 +532,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 #include <array>
 #include <common.hpp>
 
-constexpr int width = 800;
+constexpr int width  = 800;
 constexpr int height = 600;
-constexpr float wot = 400.f;
-constexpr float hot = 300.f;
+constexpr float wot  = 400.f;
+constexpr float hot  = 300.f;
 
 int main()
 {
@@ -629,7 +623,6 @@ int main()
     // remember to delete buffers
 
     glDeleteVertexArrays(1, &VAO);
-    
 
     glfwTerminate();
     return 0;
@@ -719,10 +712,10 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        auto time = static_cast<float>(glfwGetTime());
-        auto radius = 5.f;
-        auto cameraPos = glm::vec3(radius * std::sin(time), 0, radius * std::cos(time));
-        auto viewMat = glm::lookAt(cameraPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+        auto time          = static_cast<float>(glfwGetTime());
+        auto radius        = 5.f;
+        auto cameraPos     = glm::vec3(radius * std::sin(time), 0, radius * std::cos(time));
+        auto viewMat       = glm::lookAt(cameraPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
         auto projectionMat = glm::perspective(glm::radians(30.f), 8.f / 6.f, 0.f, 1000.f);
 
         //-----------------------------------------------------------------
@@ -751,7 +744,6 @@ int main()
     // remember to delete buffers
 
     glDeleteVertexArrays(1, &VAO);
-    
 
     glfwTerminate();
     return 0;
@@ -825,3 +817,86 @@ int main()
 }
 
 #endif // TEST9
+
+#ifdef TEST10
+
+#include <common.hpp>
+
+Renderer CreateGrid()
+{
+    // clang-format off
+    std::vector<float> vertices {
+        -1.0, 0.0, 0.0,
+         0.0, 0.0, 0.0,
+         1.0, 0.0, 0.0,
+         1.0, 1.0, 0.0,
+         0.0, 1.0, 0.0,
+        -1.0, 1.0, 0.0,
+    };
+
+    std::vector<uint32_t> indices {
+        0,4,5,
+        0,1,4,
+        1,3,4,
+        1,2,3,
+    };
+    // clang-format on
+
+    return Renderer(vertices, indices, { 3 });
+}
+
+int main()
+{
+    InitOpenGL init(Camera({ 0, 0, 5 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    init.SetMiddleButtonCallback([](int x, int y) { std::cout << x << '\t' << y << '\n'; });
+    auto window = init.GetWindow();
+    auto grid   = CreateGrid();
+
+    ShaderProgram shader("resources/02_04_09_TEST10.vs", "resources/02_04_09_TEST10.fs", "resources/02_04_09_TEST10.gs");
+
+    // 用二进制表示三角形的三条边是不是多边形的边框
+    // 例如四边形由两个三角形构成，两个三角形重合的边并不是四边形的边框
+    // 二进制000，第1个数字为0表示三角形的第1条边不是四边形的边框，为1则是四边形的边框，其余类似
+    // 111 = 7 则表示三角形的三条边都是多边形的边框
+    unsigned char data[] { 6, 3, 6, 3 };
+
+    GLuint TBO { 0 };
+    glGenBuffers(1, &TBO);
+    glBindBuffer(GL_TEXTURE_BUFFER, TBO);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+    glBindBuffer(GL_TEXTURE_BUFFER, TBO);
+
+    GLuint edgeTexture { 0 };
+    glGenTextures(1, &edgeTexture);
+    glBindTexture(GL_TEXTURE_BUFFER, edgeTexture);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_R8, TBO);
+    glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.f, 0.f, 0.f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.Use();
+        shader.SetUniformMat4("model", glm::mat4(1.f));
+        shader.SetUniformMat4("view", init.GetViewMatrix());
+        shader.SetUniformMat4("projection", init.GetProjectionMatrix());
+
+        shader.SetUniform1f("lineWidth", 5.f);
+        shader.SetUniform4f("vpDims", 0.f, 0.f, 800.f, 600.f);
+        shader.SetUniform1i("edgeTexture", 0);
+        shader.SetUniform3f("edgeColor", 1.f, 0.f, 0.f);
+        shader.SetUniform3f("primColor", 0.f, 1.f, 0.f);
+
+        glBindTexture(GL_TEXTURE_BUFFER, edgeTexture);
+
+        grid.Draw(GL_TRIANGLES);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+#endif // TEST10
