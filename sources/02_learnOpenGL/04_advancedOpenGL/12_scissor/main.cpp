@@ -2,7 +2,7 @@
  * 1. 使用glViewport设置视口，在窗口的不同位置绘制指定图元
  */
 
-#define TEST1
+#define TEST2
 
 #ifdef TEST1
 
@@ -11,7 +11,7 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-GLint windowWidth = 800;
+GLint windowWidth  = 800;
 GLint windowHeight = 600;
 
 int main()
@@ -81,7 +81,7 @@ int main()
     // 使用glViewport在4个窗口分别绘制不同的图元
 
     glm::mat4 model(1.f);
-    glm::mat4 view = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+    glm::mat4 view       = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
     glm::mat4 projection = glm::perspective(glm::radians(30.f), 8.f / 6.f, 0.f, 100.f);
 
     while (!glfwWindowShouldClose(window))
@@ -156,8 +156,72 @@ int main()
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    windowWidth = width;
+    windowWidth  = width;
     windowHeight = height;
 }
 
 #endif // TEST1
+
+#ifdef TEST2
+
+#include <common.hpp>
+
+Renderer CreateGrid()
+{
+    // clang-format off
+    std::vector<float> vertices {
+        -0.5f, -0.5f,  0.0f,     1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f,  0.0f,     0.0f, 1.0f, 0.0f,
+         0.0f,  0.5f,  0.0f,     0.0f, 0.0f, 1.0f,
+    };
+    // clang-format on
+
+    return Renderer(vertices, { 3, 3 });
+}
+
+int main()
+{
+    InitOpenGL init(Camera({ 0, 0, 5 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    auto window = init.GetWindow();
+    auto grid   = CreateGrid();
+
+    ShaderProgram shader("resources/02_04_12_TEST1.vs", "resources/02_04_12_TEST1.fs");
+
+    glEnable(GL_SCISSOR_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glScissor(50, 50, 300, 200);
+        glViewport(50, 50, 300, 200);
+        glClearColor(0.f, .5f, .5f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.Use();
+        auto m = glm::rotate(glm::mat4(1.f), (float)glfwGetTime(), glm::vec3(0.f, 1.f, 0.f));
+        auto v = init.GetViewMatrix();
+        auto p = init.GetProjectionMatrix();
+        shader.SetUniformMat4("transform", p * v * m);
+
+        grid.Draw(GL_TRIANGLES);
+
+        //----------------------------------------------------------------------------
+        // 前两个参数表示左下角起始位置，后两个表示宽度和高度
+        // 裁剪区域以外的区域不会被绘制，即片段会被丢弃
+        glScissor(450, 350, 300, 200);
+        glViewport(450, 350, 300, 200);
+        glClearColor(.5f, .5f, 0.f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.Use();
+        shader.SetUniformMat4("transform", p * v * m);
+
+        grid.Draw(GL_TRIANGLES);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+#endif // TEST2
