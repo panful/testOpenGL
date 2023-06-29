@@ -1,5 +1,6 @@
 /*
  * 1. 使用glViewport设置视口，在窗口的不同位置绘制指定图元
+ * 2. 裁剪测试 GL_SCISSOR_TEST
  */
 
 #define TEST2

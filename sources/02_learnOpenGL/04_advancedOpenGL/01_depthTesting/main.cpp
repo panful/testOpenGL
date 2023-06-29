@@ -6,9 +6,10 @@
  * 5. 提前深度测试演示
  * 6. glDepthRange设置深度值映射范围
  * 7. GL_DEPTH_CLAMP 将视锥体内的所有顶点都显示，不考虑近裁剪平面
+ * 8. 图层，后面绘制的图层始终在之前的图层上面
  */
 
-#define TEST7
+#define TEST8
 
 #ifdef TEST1
 
@@ -147,8 +148,8 @@ int main()
 
         program.Use();
 
-        auto modleMat = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1, 1, 0));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modleMat       = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1, 1, 0));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         program.SetUniformMat4("transform", projectiongMat * viewMat * modleMat);
@@ -168,7 +169,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;
@@ -310,8 +310,8 @@ int main()
 
         program.Use();
 
-        auto modleMat = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1, 1, 0));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modleMat       = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1, 1, 0));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         program.SetUniformMat4("transform", projectiongMat * viewMat * modleMat);
@@ -341,7 +341,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;
@@ -483,8 +482,8 @@ int main()
 
         program.Use();
 
-        auto modleMat = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1, 1, 0));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modleMat       = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1, 1, 0));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         program.SetUniformMat4("transform", projectiongMat * viewMat * modleMat);
@@ -508,7 +507,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;
@@ -596,10 +594,10 @@ int main()
 
         // 使用modelMat让物体随着时间远离相机，即z值越来越大
         auto modelMat = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, 5.f - glfwGetTime() / 2.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto viewMat  = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         // 从观察坐标到裁剪坐标（应用投影矩阵）的过程就已经将变换z值的非线性方程嵌入进去了，即透视投影矩阵已经包含了这个非线性方程
         auto perspectiveMat = glm::perspective(glm::radians(30.f), 800.f / 800.f, 0.1f, 100.f);
-        auto orthoMat = glm::ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
+        auto orthoMat       = glm::ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
 
         // 透视投影
         program.SetUniformMat4("transform", perspectiveMat * viewMat * modelMat);
@@ -614,7 +612,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;
@@ -710,7 +707,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;
@@ -860,8 +856,8 @@ int main()
 
         program.Use();
 
-        auto modleMat = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1, 1, 0));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modleMat       = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1, 1, 0));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         program.SetUniformMat4("transform", projectiongMat * viewMat * modleMat);
@@ -887,7 +883,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;
@@ -969,7 +964,7 @@ int main()
         program.Use();
 
         auto modelMat = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(0, 1, 0));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto viewMat  = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         // 距离相机2.7到3.3之间的片段才可以显示，启用GL_DEPTH_CLAMP之后，0.0到3.3之间的都可以显示
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 2.7f, 3.3f);
         program.SetUniformMat4("transform", projectiongMat * viewMat * modelMat);
@@ -989,7 +984,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;
@@ -1007,3 +1001,76 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST7
+
+#ifdef TEST8
+
+#include <common.hpp>
+
+Renderer CreateAboveGrid()
+{
+    // clang-format off
+    std::vector<float> vertices {
+        -0.5f, -0.5f,  0.0f,     1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f,  0.0f,     1.0f, 0.0f, 0.0f,
+         0.0f,  0.5f,  0.0f,     1.0f, 0.0f, 0.0f,
+    };
+    // clang-format on
+
+    return Renderer(vertices, { 3, 3 });
+}
+
+Renderer CreateBelowGrid()
+{
+    // clang-format off
+    std::vector<float> vertices {
+        -0.5f, -0.5f,  0.1f,     0.0f, 1.0f, 0.0f,
+         0.5f, -0.5f,  0.1f,     0.0f, 1.0f, 0.0f,
+         0.0f,  0.5f,  0.1f,     0.0f, 1.0f, 0.0f,
+    };
+    // clang-format on
+
+    return Renderer(vertices, { 3, 3 });
+}
+
+int main()
+{
+    InitOpenGL init(Camera({ 0, 0, 5 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    auto window = init.GetWindow();
+    auto above  = CreateAboveGrid();
+    auto below  = CreateBelowGrid();
+
+    ShaderProgram shader("resources/02_04_01_TEST1.vs", "resources/02_04_01_TEST1.fs");
+
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        //----------------------------------------------------------------------------
+        // 图层1
+        glClearColor(0.f, .5f, .5f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        shader.Use();
+        auto m = glm::mat4(1.f);
+        auto v = init.GetViewMatrix();
+        auto p = init.GetProjectionMatrix();
+        shader.SetUniformMat4("transform", p * v * m);
+        below.Draw(GL_TRIANGLES);
+
+        //----------------------------------------------------------------------------
+        // 图层2
+        // 将深度缓冲清除，颜色缓冲保留，后面绘制的图元就会显示在之前绘制的图元上面
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        shader.Use();
+        shader.SetUniformMat4("transform", p * v * m);
+        above.Draw(GL_TRIANGLES);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+#endif // TEST8
