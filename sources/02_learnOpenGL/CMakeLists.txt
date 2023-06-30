@@ -1,6 +1,7 @@
 add_subdirectory("00_other")
 add_subdirectory("01_gettingStarted")
 add_subdirectory("02_lighting")
+add_subdirectory("03_modelLoading")
 add_subdirectory("04_advancedOpenGL")
 add_subdirectory("05_advancedLighting")
 add_subdirectory("06_pbr")

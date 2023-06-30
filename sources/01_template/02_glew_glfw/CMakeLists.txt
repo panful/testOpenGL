@@ -21,7 +21,7 @@ target_link_libraries(${target_name} PRIVATE glfw3 glew32d opengl32)
 add_custom_command(TARGET ${target_name}
     POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E
-    copy_directory ${PROJECT_SOURCE_DIR}/3rdparty/bin $<TARGET_FILE_DIR:${target_name}>
+    copy_if_different ${PROJECT_SOURCE_DIR}/3rdparty/bin/glew32d.dll $<TARGET_FILE_DIR:${target_name}>/glew32d.dll
 )
 
 install(TARGETS ${target_name} RUNTIME DESTINATION .)
