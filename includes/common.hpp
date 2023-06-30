@@ -679,6 +679,9 @@ public:
         glDeleteShader(m_shader);
     }
 
+    Shader(const Shader&)            = delete;
+    Shader& operator=(const Shader&) = delete;
+
     GLuint GetShader() const
     {
         return m_shader;
@@ -762,6 +765,9 @@ public:
     {
         glDeleteProgram(m_program);
     }
+
+    ShaderProgram(const ShaderProgram&)            = delete;
+    ShaderProgram& operator=(const ShaderProgram&) = delete;
 
     GLuint GetProgram() const
     {
@@ -986,6 +992,9 @@ public:
         glDeleteTextures(1, &m_texture);
     }
 
+    Texture(const Texture&)            = delete;
+    Texture& operator=(const Texture&) = delete;
+
 private:
     GLuint m_texture;
     GLsizei m_width;
@@ -1202,10 +1211,11 @@ private:
     };
 
 public:
-    Renderer(const std::vector<GLfloat>& vertices, const std::vector<GLuint>& indices, std::initializer_list<GLuint>&& layout)
+    Renderer(const std::vector<GLfloat>& vertices, const std::vector<GLuint>& indices, std::initializer_list<GLuint>&& layout, GLenum mode = 0)
         : m_vao(0)
         , m_vbo(0)
         , m_ebo(0)
+        , m_mode(mode)
         , m_count(static_cast<GLsizei>(indices.size()))
         , m_drawType(DrawType::Elements)
     {
@@ -1234,11 +1244,12 @@ public:
         glBindVertexArray(0);
     }
 
-    Renderer(const std::vector<GLfloat>& vertices, std::initializer_list<GLsizei>&& layout)
+    Renderer(const std::vector<GLfloat>& vertices, std::initializer_list<GLsizei>&& layout, GLenum mode = 0)
         : m_vao(0)
         , m_vbo(0)
         , m_ebo(0)
         , m_count(0)
+        , m_mode(mode)
         , m_drawType(DrawType::Arrays)
     {
         glGenVertexArrays(1, &m_vao);
@@ -1263,7 +1274,7 @@ public:
 
         glBindVertexArray(0);
     }
-
+    
     ~Renderer()
     {
         glDeleteVertexArrays(1, &m_vao);
@@ -1274,17 +1285,20 @@ public:
         }
     }
 
-    void Draw(GLenum mode) const
+    Renderer(const Renderer&)            = delete;
+    Renderer& operator=(const Renderer&) = delete;
+
+    void Draw(GLenum mode = 0) const
     {
         glBindVertexArray(m_vao);
 
         switch (m_drawType)
         {
         case DrawType::Arrays:
-            glDrawArrays(mode, 0, m_count);
+            glDrawArrays(0 != m_mode ? m_mode : mode, 0, m_count);
             break;
         case DrawType::Elements:
-            glDrawElements(mode, m_count, GL_UNSIGNED_INT, 0);
+            glDrawElements(0 != m_mode ? m_mode : mode, m_count, GL_UNSIGNED_INT, 0);
             break;
         default:
             assert(false);
@@ -1299,6 +1313,7 @@ private:
     GLuint m_ebo;
     GLsizei m_count;
     DrawType m_drawType;
+    GLenum m_mode;
 };
 
 class RenderBufferObject
@@ -1312,6 +1327,9 @@ public:
         glRenderbufferStorage(GL_RENDERBUFFER, format, w, h);
         Release();
     }
+
+    RenderBufferObject(const RenderBufferObject&)            = delete;
+    RenderBufferObject& operator=(const RenderBufferObject&) = delete;
 
     ~RenderBufferObject() noexcept
     {
@@ -1357,6 +1375,9 @@ public:
     {
         glDeleteFramebuffers(1, &m_fbo);
     }
+
+    FrameBufferObject(const FrameBufferObject&)            = delete;
+    FrameBufferObject& operator=(const FrameBufferObject&) = delete;
 
     constexpr void AddAttachment(GLuint attachment, const Texture& texture, GLint level = 0) const
     {

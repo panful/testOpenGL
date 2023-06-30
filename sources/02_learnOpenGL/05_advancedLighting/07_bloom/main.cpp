@@ -114,7 +114,7 @@ int main()
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer quad(vertices_quad, { 3, 2 });
 
-    Texture texture("resources/wood.png", 0, true);
+    Texture texture(std::string_view("resources/wood.png"), 0, true);
 
     Texture fboTexture0(windowWidth, windowHeight, GL_RGBA16F, GL_RGBA, GL_FLOAT, 0);
     Texture fboTexture1(windowWidth, windowHeight, GL_RGBA16F, GL_RGBA, GL_FLOAT);
