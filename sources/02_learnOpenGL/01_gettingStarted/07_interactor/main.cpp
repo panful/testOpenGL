@@ -1,8 +1,9 @@
 /*
  * 1. 鼠标左键按下绘制一个四边形
+ * 2. 3D图元的拾取
  */
 
-#define TEST1
+#define TEST2
 
 #ifdef TEST1
 
@@ -138,3 +139,210 @@ int main()
     return 0;
 }
 #endif // TEST1
+
+#ifdef TEST2
+
+#include <chrono>
+#include <common.hpp>
+#include <numbers>
+#include <random>
+#include <memory>
+
+InitOpenGL init(Camera({ 0, 0, 25 }, { 0, 1, 0 }, { 0, 0, 0 }));
+
+ShaderProgram shader("resources/02_01_07_TEST2.vs", "resources/02_01_07_TEST2.fs");
+
+// 用来拾取的FBO
+GLuint pick_fbo { 0 };
+
+// 窗口的大小
+constexpr int window_width { 800 };
+constexpr int window_height { 600 };
+
+// 绘制5*5=25个球
+std::vector<std::tuple<std::unique_ptr<Renderer>, glm::mat4, glm::vec3>> primitives;
+constexpr int nRow      = 5;
+constexpr int nCol      = 5;
+constexpr float spacing = 3.f;
+
+// 用来访问primitives的std::tuple
+enum
+{
+    N_Primitive = 0, // Renderer
+    N_Model     = 1, // 模型矩阵
+    N_Color     = 2  // 颜色RGB
+};
+
+void Draw(bool pick = false)
+{
+    if (pick)
+    {
+        glClearColor(0.f, 0.f, 0.f, 1.f);
+    }
+    else
+    {
+        glClearColor(.1f, .2f, .3f, 1.f);
+    }
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    shader.Use();
+    shader.SetUniformMat4("view", init.GetViewMatrix());
+    shader.SetUniformMat4("projection", init.GetProjectionMatrix());
+
+    for (uint32_t i = 0; i < primitives.size(); ++i)
+    {
+        shader.SetUniformMat4("model", std::get<N_Model>(primitives.at(i)));
+        if (pick)
+        {
+            // 0xAABBGGRR
+            // 背景色是(0,0,0,1)，所以图元id从1开始
+            auto r = (i + 1) & 0xFF;
+            auto g = (i + 1) >> 8 & 0xFF;
+            auto b = (i + 1) >> 16 & 0xFF;
+            auto a = (i + 1) >> 24 & 0xFF;
+
+            // 在独立的帧缓冲中将所有的图元再绘制一次，每个图元的颜色设置为图元的ID
+            shader.SetUniform3f("uColor", r / 255.f, g / 255.f, b / 255.f);
+        }
+        else
+        {
+            shader.SetUniform3fv("uColor", std::get<N_Color>(primitives.at(i)));
+        }
+        std::get<N_Primitive>(primitives.at(i))->Draw(GL_TRIANGLES);
+    }
+}
+
+std::unique_ptr<Renderer> CreateSphere()
+{
+    uint32_t longitude = 32;
+    uint32_t latitude  = 32;
+    float radius       = 1.0f;
+    auto M_PI          = std::numbers::pi_v<float>;
+
+    std::vector<float> vertices;
+    std::vector<uint32_t> indices;
+
+    // Generate vertices
+    for (uint32_t lat = 0; lat <= latitude; ++lat)
+    {
+        float theta    = lat * M_PI / latitude;
+        float sinTheta = std::sin(theta);
+        float cosTheta = std::cos(theta);
+
+        for (uint32_t lon = 0; lon <= longitude; ++lon)
+        {
+            float phi    = lon * 2 * M_PI / longitude;
+            float sinPhi = std::sin(phi);
+            float cosPhi = std::cos(phi);
+
+            // Vertex position
+            float x = radius * cosPhi * sinTheta;
+            float y = radius * cosTheta;
+            float z = radius * sinPhi * sinTheta;
+
+            // Add vertex attributes to the vector
+            vertices.push_back(x);
+            vertices.push_back(y);
+            vertices.push_back(z);
+        }
+    }
+
+    // Generate indices
+    for (uint32_t lat = 0; lat < latitude; ++lat)
+    {
+        for (uint32_t lon = 0; lon < longitude; ++lon)
+        {
+            uint32_t curr = lat * (longitude + 1) + lon;
+            uint32_t next = curr + longitude + 1;
+
+            // Add indices for the two triangles forming each quad
+            indices.push_back(curr);
+            indices.push_back(next);
+            indices.push_back(curr + 1);
+            indices.push_back(next);
+            indices.push_back(next + 1);
+            indices.push_back(curr + 1);
+        }
+    }
+
+    return std::make_unique<Renderer>(vertices, indices, std::initializer_list<unsigned int>{ 3 });
+}
+
+int main()
+{
+    auto window = init.GetWindow();
+    init.SetMiddleButtonCallback(
+        [](int x, int y)
+        {
+            if (0 != pick_fbo)
+            {
+                // 将左下角设置为(0, 0)
+                int p_x = x;
+                int p_y = window_height - y;
+
+                std::cout << "Pick: (" << p_x << ",\t" << p_y << ")\t";
+
+                // 使用glReadPixels读取光标所在位置的像素，并将它转换为ID
+                // ID=0时，拾取的是背景色
+                glBindFramebuffer(GL_FRAMEBUFFER, pick_fbo);
+                Draw(true);
+                glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+                unsigned char pixel[4] { 0 };
+                glReadPixels(p_x, p_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+
+                // 将RGB转换为unsigned int类型的ID，此处不使用alpha
+                unsigned int index = 0;
+                index |= pixel[0];
+                index |= pixel[1] << 8;
+                index |= pixel[2] << 16;
+
+                std::cout << "ID: " << index << '\n';
+
+                glReadBuffer(GL_NONE);
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            }
+        });
+
+    // 使用随机数生成颜色
+    std::default_random_engine randomEngine(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
+    std::uniform_real_distribution<float> randomColor(0.f, 1.f);
+
+    for (int row = 0; row < nRow; ++row)
+    {
+        for (int col = 0; col < nCol; ++col)
+        {
+            auto x = row - (nRow / 2);
+            auto y = col - (nCol / 2);
+
+            auto prim  = CreateSphere();
+            auto model = glm::translate(glm::mat4(1.f), glm::vec3(spacing * x, spacing * y, 0.f));
+            auto color = glm::vec3(randomColor(randomEngine), randomColor(randomEngine), randomColor(randomEngine));
+
+            primitives.emplace_back(std::forward_as_tuple(std::move(prim), model, color));
+        }
+    }
+
+    FrameBufferObject fbo;
+    Texture tex(window_width, window_height, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+    RenderBufferObject rbo(GL_DEPTH_COMPONENT24, window_width, window_height);
+    fbo.AddAttachment(GL_DEPTH_ATTACHMENT, rbo);
+    fbo.AddAttachment(GL_COLOR_ATTACHMENT0, tex);
+    pick_fbo = fbo.GetHandle();
+
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        Draw(false);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST2
