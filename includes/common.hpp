@@ -25,11 +25,13 @@
 #include <functional>
 #include <initializer_list>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <numeric>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -349,7 +351,11 @@ protected:
 
     void SetWindowSize(const std::array<int, 2>& size)
     {
-        assert(0 != size[1]);
+        // 最小化窗口
+        if (size[1] == 0)
+        {
+            return;
+        }
 
         m_windowSize = size;
         m_camera.SetAspect(static_cast<float>(size[0]) / static_cast<float>(size[1]));
@@ -1274,7 +1280,7 @@ public:
 
         glBindVertexArray(0);
     }
-    
+
     ~Renderer()
     {
         glDeleteVertexArrays(1, &m_vao);

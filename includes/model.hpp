@@ -7,6 +7,57 @@
 
 #define MAX_BONE_INFLUENCE 4
 
+struct BoneInfo
+{
+    /*id is index in finalBoneMatrices*/
+    int id;
+
+    /*offset matrix transforms vertex from model space to bone space*/
+    glm::mat4 offset;
+};
+
+class AssimpGLMHelpers
+{
+public:
+    static inline glm::mat4 ConvertMatrixToGLMFormat(const aiMatrix4x4& from)
+    {
+        glm::mat4 to;
+        // the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
+        to[0][0] = from.a1;
+        to[1][0] = from.a2;
+        to[2][0] = from.a3;
+        to[3][0] = from.a4;
+        to[0][1] = from.b1;
+        to[1][1] = from.b2;
+        to[2][1] = from.b3;
+        to[3][1] = from.b4;
+        to[0][2] = from.c1;
+        to[1][2] = from.c2;
+        to[2][2] = from.c3;
+        to[3][2] = from.c4;
+        to[0][3] = from.d1;
+        to[1][3] = from.d2;
+        to[2][3] = from.d3;
+        to[3][3] = from.d4;
+        return to;
+    }
+
+    static inline glm::vec2 AiVec3ToGLMVec2(const aiVector3D& vec)
+    {
+        return glm::vec2(vec.x, vec.y);
+    }
+
+    static inline glm::vec3 AiVec3ToGLMVec3(const aiVector3D& vec)
+    {
+        return glm::vec3(vec.x, vec.y, vec.z);
+    }
+
+    static inline glm::quat GetGLMQuat(const aiQuaternion& pOrientation)
+    {
+        return glm::quat(pOrientation.w, pOrientation.x, pOrientation.y, pOrientation.z);
+    }
+};
+
 namespace ModelLoading {
 struct Vertex
 {
@@ -125,10 +176,10 @@ private:
         // ids
         glEnableVertexAttribArray(5);
         glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, m_BoneIDs));
-
         // weights
         glEnableVertexAttribArray(6);
         glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_Weights));
+
         glBindVertexArray(0);
     }
 };
@@ -136,7 +187,11 @@ private:
 class Model
 {
 public:
-    Model(const std::string& path)
+    /// @brief 加载模型
+    /// @param path 模型的路径
+    /// @param flip 是否上下翻转纹理
+    Model(const std::string& path, bool flip = true)
+        : m_flip(flip)
     {
         LoadModel(path);
     }
@@ -149,21 +204,33 @@ public:
         }
     }
 
+    auto& GetBoneInfoMap()
+    {
+        return m_BoneInfoMap;
+    }
+
+    auto& GetBoneCount()
+    {
+        return m_BoneCounter;
+    }
+
 private:
     void LoadModel(const std::string& path)
     {
         Assimp::Importer import;
-        const aiScene* scene
-            = import.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+        const aiScene* scene = import.ReadFile(
+            path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes);
 
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+        if (!scene || !scene->mRootNode || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)
         {
             std::cerr << "ERROR::ASSIMP::" << import.GetErrorString() << '\n';
             return;
         }
 
-        m_directory = path.substr(0, path.find_last_of('/'));
+        std::cout << "RootNode Number of Meshs:\t" << scene->mRootNode->mNumMeshes << '\n'
+                  << "RootNode Number of Children:\t" << scene->mRootNode->mNumChildren << '\n';
 
+        m_directory = path.substr(0, path.find_last_of('/'));
         ProcessNode(scene->mRootNode, scene);
     }
 
@@ -183,75 +250,83 @@ private:
         }
     }
 
-    Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene)
+    void SetVertexBoneDataToDefault(Vertex& vertex)
     {
-        std::vector<Vertex> vertices;
-        std::vector<unsigned int> indices;
-        std::vector<Texture> textures;
-
-        for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+        for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
         {
-            Vertex vertex;
+            vertex.m_BoneIDs[i] = -1;
+            vertex.m_Weights[i] = 0.0f;
+        }
+    }
 
-            glm::vec3 vec3;
-
-            // position
-            vec3.x          = mesh->mVertices[i].x;
-            vec3.y          = mesh->mVertices[i].y;
-            vec3.z          = mesh->mVertices[i].z;
-            vertex.Position = vec3;
-
-            // normal
-            if (mesh->HasNormals())
+    void SetVertexBoneData(Vertex& vertex, int boneID, float weight)
+    {
+        for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+        {
+            if (vertex.m_BoneIDs[i] < 0)
             {
-                vec3.x        = mesh->mNormals[i].x;
-                vec3.y        = mesh->mNormals[i].y;
-                vec3.z        = mesh->mNormals[i].z;
-                vertex.Normal = vec3;
+                vertex.m_Weights[i] = weight;
+                vertex.m_BoneIDs[i] = boneID;
+                break;
             }
+        }
+    }
 
-            // texture coordinates
-            if (mesh->HasTextureCoords(0))
+    void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
+    {
+        auto& boneInfoMap = m_BoneInfoMap;
+        auto& boneCount   = m_BoneCounter;
+
+        static int index { 0 };
+        std::cout << "Mesh " << index++ << " Number of Bones: " << mesh->mNumBones << '\n';
+
+        for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+        {
+            int boneID           = -1;
+            std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+            if (boneInfoMap.find(boneName) == boneInfoMap.end())
             {
-                glm::vec2 uv;
-
-                // uv
-                uv.x             = mesh->mTextureCoords[0][i].x;
-                uv.y             = mesh->mTextureCoords[0][i].y;
-                vertex.TexCoords = uv;
-
-                if (mesh->HasTangentsAndBitangents())
-                {
-                    // tangent
-                    vec3.x         = mesh->mTangents[i].x;
-                    vec3.y         = mesh->mTangents[i].y;
-                    vec3.z         = mesh->mTangents[i].z;
-                    vertex.Tangent = vec3;
-
-                    // bitangent
-                    vec3.x           = mesh->mBitangents[i].x;
-                    vec3.y           = mesh->mBitangents[i].y;
-                    vec3.z           = mesh->mBitangents[i].z;
-                    vertex.Bitangent = vec3;
-                }
+                BoneInfo newBoneInfo;
+                newBoneInfo.id        = boneCount;
+                newBoneInfo.offset    = AssimpGLMHelpers::ConvertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
+                boneInfoMap[boneName] = newBoneInfo;
+                boneID                = boneCount;
+                boneCount++;
             }
             else
             {
-                vertex.TexCoords = glm::vec2(0.f);
+                boneID = boneInfoMap[boneName].id;
             }
 
-            vertices.push_back(vertex);
-        }
+            assert(boneID != -1);
 
-        // 处理索引
-        for (unsigned int i = 0; i < mesh->mNumFaces; i++)
-        {
-            aiFace face = mesh->mFaces[i];
-            for (unsigned int j = 0; j < face.mNumIndices; j++)
+            auto weights   = mesh->mBones[boneIndex]->mWeights;
+            int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+            if (numWeights > 0)
             {
-                indices.push_back(face.mIndices[j]);
+                // 骨骼的名称，骨骼影响的顶点个数
+                std::cout << "Bone " << boneIndex << " Bone Name: " << boneName << "\tNumber of vertices affected: " << numWeights << '\n';
+            }
+
+            // 提取将受此骨骼影响的顶点以及权重
+            for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+            {
+                int vertexId = weights[weightIndex].mVertexId;
+                float weight = weights[weightIndex].mWeight;
+
+                assert(vertexId <= vertices.size());
+
+                SetVertexBoneData(vertices[vertexId], boneID, weight);
             }
         }
+    }
+
+    Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, bool animation = true)
+    {
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
+        std::vector<Texture> textures;
 
         // 处理材质
         if (mesh->mMaterialIndex >= 0)
@@ -272,6 +347,66 @@ private:
             textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
         }
 
+        static int index { 0 };
+        std::cout << "Mesh " << index++ << ":\tNumber of Vertices: " << mesh->mNumVertices << "\tNumber of Indices: " << mesh->mNumFaces << '\n';
+
+        aiVector3D minCoords(FLT_MAX, FLT_MAX, FLT_MAX);
+        aiVector3D maxCoords(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+        {
+            // 求AABB包围盒，assimp自带的AABB返回的都是0
+            aiVector3D vertexAABB = mesh->mVertices[i];
+            minCoords.x           = std::min(minCoords.x, vertexAABB.x);
+            minCoords.y           = std::min(minCoords.y, vertexAABB.y);
+            minCoords.z           = std::min(minCoords.z, vertexAABB.z);
+
+            maxCoords.x = std::max(maxCoords.x, vertexAABB.x);
+            maxCoords.y = std::max(maxCoords.y, vertexAABB.y);
+            maxCoords.z = std::max(maxCoords.z, vertexAABB.z);
+
+            Vertex vertex;
+            SetVertexBoneDataToDefault(vertex);
+            vertex.Position = AssimpGLMHelpers::AiVec3ToGLMVec3(mesh->mVertices[i]);
+            vertex.Normal   = AssimpGLMHelpers::AiVec3ToGLMVec3(mesh->mNormals[i]);
+
+            // texture coordinates
+            if (mesh->HasTextureCoords(0))
+            {
+                // uv
+                vertex.TexCoords = AssimpGLMHelpers::AiVec3ToGLMVec2(mesh->mTextureCoords[0][i]);
+
+                if (mesh->HasTangentsAndBitangents())
+                {
+                    // tangent
+                    vertex.Tangent = AssimpGLMHelpers::AiVec3ToGLMVec3(mesh->mTangents[i]);
+                    // bitangent
+                    vertex.Bitangent = AssimpGLMHelpers::AiVec3ToGLMVec3(mesh->mBitangents[i]);
+                }
+            }
+            else
+            {
+                vertex.TexCoords = glm::vec2(0.f);
+            }
+
+            vertices.push_back(vertex);
+        }
+
+        std::cout << "AABB Max: " << maxCoords.x << ',' << maxCoords.y << ',' << maxCoords.z << "\tAABB Min: " << minCoords.x << ',' << minCoords.y
+                  << ',' << minCoords.z << '\n';
+
+        // 处理索引
+        for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+        {
+            aiFace face = mesh->mFaces[i];
+            for (unsigned int j = 0; j < face.mNumIndices; j++)
+            {
+                indices.push_back(face.mIndices[j]);
+            }
+        }
+
+        ExtractBoneWeightForVertices(vertices, mesh, scene);
+
         return Mesh(vertices, indices, textures);
     }
 
@@ -282,9 +417,9 @@ private:
         {
             aiString str;
             mat->GetTexture(type, i, &str);
+
             // check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
             bool skip = false;
-
             for (unsigned int j = 0; j < m_textures.size(); j++)
             {
                 if (std::strcmp(m_textures[j].path.data(), str.C_Str()) == 0)
@@ -309,7 +444,7 @@ private:
         return textures;
     }
 
-    unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false)
+    uint32_t TextureFromFile(const char* path, const std::string& directory, bool gamma = false)
     {
         std::string filename = std::string(path);
         filename             = directory + '/' + filename;
@@ -319,7 +454,8 @@ private:
 
         std::cout << "load texture: " << filename << '\n';
 
-        stbi_set_flip_vertically_on_load(true);
+        stbi_set_flip_vertically_on_load(m_flip);
+
         int width, height, nrComponents;
         unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
         if (data)
@@ -356,5 +492,8 @@ private:
     std::string m_directory;
     std::vector<Mesh> m_meshes;
     std::vector<Texture> m_textures;
+    std::map<std::string, BoneInfo> m_BoneInfoMap;
+    int m_BoneCounter { 0 };
+    bool m_flip { true };
 };
 }; // namespace ModelLoading
