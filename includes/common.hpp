@@ -404,6 +404,14 @@ public:
         InitEvent();
     }
 
+    InitOpenGL(int major, int minor, const Camera& camera = Camera()) noexcept
+    {
+        m_interactor.SetCamera(camera);
+        m_interactor.SetWindowSize({ m_windowWidth, m_windowHeight });
+        Init(m_windowName, m_windowWidth, m_windowHeight, major, minor);
+        InitEvent();
+    }
+
     InitOpenGL(const Camera& camera) noexcept
     {
         m_interactor.SetCamera(camera);
@@ -632,11 +640,11 @@ private:
     }
 
 private:
-    void Init(const std::string_view& name, uint32_t w, uint32_t h)
+    void Init(const std::string_view& name, uint32_t w, uint32_t h, int major = 3, int minor = 3)
     {
         glfwInit();
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         m_window = glfwCreateWindow(w, h, name.data(), nullptr, nullptr);
