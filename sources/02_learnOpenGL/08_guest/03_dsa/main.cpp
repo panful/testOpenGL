@@ -6,13 +6,7 @@
 
 #ifdef TEST1
 
-// clang-format off
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-// clang-format on
-#include <fstream>
-#include <iostream>
-#include <sstream>
+#include <common.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -22,7 +16,6 @@ const unsigned int SCR_HEIGHT = 600;
 
 int main()
 {
-
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -43,25 +36,11 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-
-    std::ifstream vsIFS("resources/02_08_03_TEST1.vs");
-    std::ifstream fsIFS("resources/02_08_03_TEST1.fs");
-
-    if (!vsIFS || !fsIFS)
-    {
-        std::cerr << "Failed to load shader files\n";
-        return -1;
-    }
-
-    std::ostringstream vsSS;
-    vsSS << vsIFS.rdbuf();
-    auto strVS = vsSS.str();
-    std::ostringstream fsSS;
-    fsSS << fsIFS.rdbuf();
-    auto strFS = fsSS.str();
-
-    auto vertexShaderSource   = strVS.c_str();
-    auto fragmentShaderSource = strFS.c_str();
+    
+    auto vs                   = ReadFile("resources/02_08_03_TEST1.vs");
+    auto fs                   = ReadFile("resources/02_08_03_TEST1.fs");
+    auto vertexShaderSource   = vs.c_str();
+    auto fragmentShaderSource = fs.c_str();
 
     std::cout << vertexShaderSource << '\n' << fragmentShaderSource << "\n";
 

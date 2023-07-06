@@ -35,6 +35,22 @@
 #include <string_view>
 #include <vector>
 
+std::string ReadFile(const std::string_view& path)
+{
+    std::ifstream IFS(path.data());
+
+    if (!IFS)
+    {
+        std::cerr << "Failed to load shader files\n";
+        return nullptr;
+    }
+
+    std::ostringstream ss;
+    ss << IFS.rdbuf();
+
+    return ss.str();
+}
+
 class Camera
 {
 public:

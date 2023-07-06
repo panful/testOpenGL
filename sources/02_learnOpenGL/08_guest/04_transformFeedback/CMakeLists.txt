@@ -1,4 +1,4 @@
-set(target_name "02_08_04_particles")
+set(target_name "02_08_04_transformFeedback")
 
 add_executable (${target_name} "main.cpp")
 
