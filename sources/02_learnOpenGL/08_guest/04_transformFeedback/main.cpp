@@ -3,9 +3,11 @@
  * 2. 将经过顶点着色器变换后的顶点信息，通过TF捕获并利用变换后的顶点绘制新的图元
  * 3. 两个TF来回切换
  * 4. 两个TF来回切换，绘制一个点绕屏幕中心运动
+ * 5. 向上移动的点阵
+ * 6. 一堆顶点落地弹起
  */
 
-#define TEST4
+#define TEST6
 
 #ifdef TEST1
 
@@ -781,3 +783,466 @@ int main()
 }
 
 #endif // TEST4
+
+#ifdef TEST5
+
+#include <common.hpp>
+#include <thread>
+
+int main()
+{
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Transform Feedback Example", nullptr, nullptr);
+    if (!window)
+    {
+        std::cerr << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cerr << "Failed to initialize GLAD" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+    //--------------------------------------------------------------------------------------------
+    auto vs                   = ReadFile("resources/02_08_04_TEST5.vs");
+    auto fs                   = ReadFile("resources/02_08_04_TEST2.fs");
+    auto vertexShaderSource   = vs.c_str();
+    auto fragmentShaderSource = fs.c_str();
+
+    GLint success { 0 };
+    char infoLog[512](0);
+
+    // vertex shader
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+    glCompileShader(vertexShader);
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+        std::cerr << "Vertex shader compilation failed: " << infoLog << std::endl;
+        return -1;
+    }
+
+    // fragment shader
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+    glCompileShader(fragmentShader);
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
+        std::cerr << "Vertex shader compilation failed: " << infoLog << std::endl;
+        return -1;
+    }
+
+    //--------------------------------------------------------------------------------------------
+    // shader program
+    GLuint shaderProgram = glCreateProgram();
+
+    GLchar const* varyings[] = { "nextPos" };
+    glTransformFeedbackVaryings(shaderProgram, 1, varyings, GL_INTERLEAVED_ATTRIBS);
+
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << std::endl;
+        return -1;
+    }
+
+    glDetachShader(shaderProgram, vertexShader);
+    glDetachShader(shaderProgram, fragmentShader);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    //--------------------------------------------------------------------------------------------
+    // clang-format off
+    float vertices[] = { 
+        -0.2f, -0.8f, 0.0f,
+        -0.1f, -0.8f, 0.0f,
+         0.0f, -0.8f, 0.0f,
+         0.1f, -0.8f, 0.0f,
+         0.2f, -0.8f, 0.0f,
+
+        -0.1f, -0.7f, 0.0f,
+         0.0f, -0.7f, 0.0f,
+         0.1f, -0.7f, 0.0f,
+         
+         0.0f, -0.6f, 0.0f,
+    };
+    // clang-format on
+
+    int numPoints = 9;
+    int dataSize  = numPoints * 3 * sizeof(float);
+
+    GLuint VAO[2] { 0 }, VBO[2] { 0 };
+    glGenVertexArrays(2, VAO);
+    glGenBuffers(2, VBO);
+
+    glBindVertexArray(VAO[0]);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+    glBufferData(GL_ARRAY_BUFFER, dataSize, vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
+
+    //--------------------------------------------------------------------------------------------
+    GLuint tfBuffer[2] { 0 };
+    glGenBuffers(2, tfBuffer);
+
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, tfBuffer[0]);
+    glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, dataSize, nullptr, GL_STATIC_READ);
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, tfBuffer[1]);
+    glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, dataSize, nullptr, GL_STATIC_READ);
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+
+    //--------------------------------------------------------------------------------------------
+    GLuint tfObject[2] { 0 };
+    glGenTransformFeedbacks(2, tfObject);
+
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tfObject[0]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tfBuffer[0]);
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+
+    //--------------------------------------------------------------------------------------------
+    // 使用vertices绘制一个起始点用来填充tfBuffer[0]，
+    // 因为如果不绘制，tfBuffer[0]还没有数据，第一次渲染循环时使用tfBuffer[0]绑定到VBO，点将出现在屏幕中心(0,0,0)
+    glUseProgram(shaderProgram);
+
+    glBindVertexArray(VAO[0]);
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tfObject[0]);
+
+    glEnable(GL_RASTERIZER_DISCARD);
+    glBeginTransformFeedback(GL_POINTS);
+    glDrawArrays(GL_POINTS, 0, numPoints);
+    glEndTransformFeedback();
+    glDisable(GL_RASTERIZER_DISCARD);
+
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+    glBindVertexArray(0);
+
+    //--------------------------------------------------------------------------------------------
+    bool flag         = true;
+    float lastTime    = 0.0f;
+    float deltaTime   = 0.0f;
+    float currentTime = 0.0f;
+
+    glPointSize(5.f);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        currentTime = static_cast<float>(glfwGetTime());
+        deltaTime   = currentTime - lastTime;
+        lastTime    = currentTime;
+
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(shaderProgram);
+        glUniform1f(glGetUniformLocation(shaderProgram, "uTime"), deltaTime);
+        glUniform1f(glGetUniformLocation(shaderProgram, "uSpeed"), 0.3f);
+
+        if (flag)
+        {
+            glBindVertexArray(VAO[1]);
+            glBindBuffer(GL_ARRAY_BUFFER, tfBuffer[0]);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(0);
+
+            glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, tfBuffer[1]);
+            glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tfObject[1]);
+            glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tfBuffer[1]);
+
+            glBeginTransformFeedback(GL_POINTS);
+            glDrawArrays(GL_POINTS, 0, numPoints);
+            glEndTransformFeedback();
+
+            glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+            glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
+        else
+        {
+            glBindVertexArray(VAO[0]);
+            glBindBuffer(GL_ARRAY_BUFFER, tfBuffer[1]);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(0);
+
+            glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, tfBuffer[0]);
+            glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tfObject[0]);
+            glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tfBuffer[0]);
+
+            glBeginTransformFeedback(GL_POINTS);
+            glDrawArrays(GL_POINTS, 0, numPoints);
+            glEndTransformFeedback();
+
+            glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+            glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
+
+        flag = !flag;
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete buffers
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST5
+
+#ifdef TEST6
+
+#include <common.hpp>
+#include <random>
+
+int main()
+{
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Transform Feedback Example", nullptr, nullptr);
+    if (!window)
+    {
+        std::cerr << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cerr << "Failed to initialize GLAD" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+    //--------------------------------------------------------------------------------------------
+    auto vs                   = ReadFile("resources/02_08_04_TEST6.vs");
+    auto fs                   = ReadFile("resources/02_08_04_TEST2.fs");
+    auto vertexShaderSource   = vs.c_str();
+    auto fragmentShaderSource = fs.c_str();
+
+    GLint success { 0 };
+    char infoLog[512](0);
+
+    // vertex shader
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+    glCompileShader(vertexShader);
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+        std::cerr << "Vertex shader compilation failed: " << infoLog << std::endl;
+        return -1;
+    }
+
+    // fragment shader
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+    glCompileShader(fragmentShader);
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
+        std::cerr << "Vertex shader compilation failed: " << infoLog << std::endl;
+        return -1;
+    }
+
+    //--------------------------------------------------------------------------------------------
+    // shader program
+    GLuint shaderProgram = glCreateProgram();
+
+    GLchar const* varyings[] = { "nextPos", "nextVelocity" };
+    glTransformFeedbackVaryings(shaderProgram, 2, varyings, GL_INTERLEAVED_ATTRIBS);
+
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << std::endl;
+        return -1;
+    }
+
+    glDetachShader(shaderProgram, vertexShader);
+    glDetachShader(shaderProgram, fragmentShader);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    //--------------------------------------------------------------------------------------------
+    std::vector<float> vertices;
+    int numPoints = 1000;
+    int dataSize  = numPoints * 4 * sizeof(float);
+    std::default_random_engine engine(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
+    std::uniform_real_distribution<float> velocity(0.1f, 0.5f);
+
+    for (int i = 0; i < numPoints; ++i)
+    {
+        vertices.emplace_back(1.0f / static_cast<float>(numPoints) * static_cast<float>(i) - 0.5f);
+        vertices.emplace_back(0.8f);
+        vertices.emplace_back(0.0f);
+        vertices.emplace_back(velocity(engine));
+    }
+
+    GLuint VAO[2] { 0 }, VBO[2] { 0 };
+    glGenVertexArrays(2, VAO);
+    glGenBuffers(2, VBO);
+
+    glBindVertexArray(VAO[0]);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+    glBufferData(GL_ARRAY_BUFFER, dataSize, vertices.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(sizeof(float) * 3));
+
+    glBindVertexArray(0);
+
+    //--------------------------------------------------------------------------------------------
+    GLuint tfBuffer[2] { 0 };
+    glGenBuffers(2, tfBuffer);
+
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, tfBuffer[0]);
+    glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, dataSize, nullptr, GL_STATIC_READ);
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, tfBuffer[1]);
+    glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, dataSize, nullptr, GL_STATIC_READ);
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+
+    //--------------------------------------------------------------------------------------------
+    GLuint tfObject[2] { 0 };
+    glGenTransformFeedbacks(2, tfObject);
+
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tfObject[0]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tfBuffer[0]);
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+
+    //--------------------------------------------------------------------------------------------
+    // 使用vertices绘制一个起始点用来填充tfBuffer[0]，
+    // 因为如果不绘制，tfBuffer[0]还没有数据，第一次渲染循环时使用tfBuffer[0]绑定到VBO，点将出现在屏幕中心(0,0,0)
+    glUseProgram(shaderProgram);
+
+    glBindVertexArray(VAO[0]);
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tfObject[0]);
+
+    glEnable(GL_RASTERIZER_DISCARD);
+    glBeginTransformFeedback(GL_POINTS);
+    glDrawArrays(GL_POINTS, 0, numPoints);
+    glEndTransformFeedback();
+    glDisable(GL_RASTERIZER_DISCARD);
+
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+    glBindVertexArray(0);
+
+    //--------------------------------------------------------------------------------------------
+    bool flag         = true;
+    float lastTime    = 0.0f;
+    float deltaTime   = 0.0f;
+    float currentTime = 0.0f;
+
+    glPointSize(3.f);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        currentTime = static_cast<float>(glfwGetTime());
+        deltaTime   = currentTime - lastTime;
+        lastTime    = currentTime;
+
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(shaderProgram);
+        glUniform1f(glGetUniformLocation(shaderProgram, "uTime"), deltaTime);
+        //glUniform1f(glGetUniformLocation(shaderProgram, "uSpeed"), 0.3f);
+
+        if (flag)
+        {
+            glBindVertexArray(VAO[1]);
+            glBindBuffer(GL_ARRAY_BUFFER, tfBuffer[0]);
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(sizeof(float) * 3));
+
+            glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, tfBuffer[1]);
+            glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tfObject[1]);
+            glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tfBuffer[1]);
+
+            glBeginTransformFeedback(GL_POINTS);
+            glDrawArrays(GL_POINTS, 0, numPoints);
+            glEndTransformFeedback();
+
+            glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+            glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
+        else
+        {
+            glBindVertexArray(VAO[0]);
+            glBindBuffer(GL_ARRAY_BUFFER, tfBuffer[1]);
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(sizeof(float) * 3));
+
+            glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, tfBuffer[0]);
+            glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tfObject[0]);
+            glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tfBuffer[0]);
+
+            glBeginTransformFeedback(GL_POINTS);
+            glDrawArrays(GL_POINTS, 0, numPoints);
+            glEndTransformFeedback();
+
+            glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+            glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
+
+        flag = !flag;
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete buffers
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST6
