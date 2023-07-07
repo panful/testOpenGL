@@ -242,7 +242,7 @@ int main()
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        std::cerr << "Vertex shader compilation failed: " << infoLog << std::endl;
+        std::cerr << "Fragment shader compilation failed: " << infoLog << std::endl;
         return -1;
     }
 
@@ -419,7 +419,7 @@ int main()
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        std::cerr << "Vertex shader compilation failed: " << infoLog << std::endl;
+        std::cerr << "Fragment shader compilation failed: " << infoLog << std::endl;
         return -1;
     }
 
@@ -635,7 +635,7 @@ int main()
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        std::cerr << "Vertex shader compilation failed: " << infoLog << std::endl;
+        std::cerr << "Fragment shader compilation failed: " << infoLog << std::endl;
         return -1;
     }
 
@@ -842,7 +842,7 @@ int main()
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        std::cerr << "Vertex shader compilation failed: " << infoLog << std::endl;
+        std::cerr << "Fragment shader compilation failed: " << infoLog << std::endl;
         return -1;
     }
 
@@ -1073,7 +1073,7 @@ int main()
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        std::cerr << "Vertex shader compilation failed: " << infoLog << std::endl;
+        std::cerr << "Fragment shader compilation failed: " << infoLog << std::endl;
         return -1;
     }
 

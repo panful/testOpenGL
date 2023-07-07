@@ -1,8 +1,9 @@
 /*
  * 1. 基于CPU的曲面细分
+ * 2. 细分着色器基础使用
  */
 
-#define TEST1
+#define TEST2
 
 #ifdef TEST1
 
@@ -115,10 +116,12 @@ int main()
     glBindVertexArray(0);
 
     //------------------------------------------------------------------------------
+    glEnable(GL_DEPTH_TEST);
+
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(.1f, .2f, .3f, 1.f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.Use();
         shader.SetUniformMat4("projection", opengl.GetProjectionMatrix());
@@ -143,3 +146,172 @@ int main()
 }
 
 #endif // TEST1
+
+#ifdef TEST2
+
+#include <common.hpp>
+#include <thread>
+
+int main()
+{
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Tessellation", nullptr, nullptr);
+    if (!window)
+    {
+        std::cerr << "Failed to create GLFW window\n";
+        glfwTerminate();
+        return -1;
+    }
+
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cerr << "Failed to initialize GLAD\n";
+        glfwTerminate();
+        return -1;
+    }
+
+    //--------------------------------------------------------------------------------------------
+    auto vert                 = ReadFile("resources/02_08_05_TEST2.vert");
+    auto frag                 = ReadFile("resources/02_08_05_TEST2.frag");
+    auto tesc                 = ReadFile("resources/02_08_05_TEST2.tesc"); // tessellation control
+    auto tese                 = ReadFile("resources/02_08_05_TEST2.tese"); // tessellation evaluation
+    auto vertexShaderSource   = vert.c_str();
+    auto fragmentShaderSource = frag.c_str();
+    auto tescShaderSource     = tesc.c_str();
+    auto teseShaderSource     = tese.c_str();
+
+    GLint success { 0 };
+    char infoLog[512](0);
+
+    // vertex shader
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+    glCompileShader(vertexShader);
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+        std::cerr << "Vertex shader compilation failed: " << infoLog << '\n';
+        return -1;
+    }
+
+    // fragment shader
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+    glCompileShader(fragmentShader);
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
+        std::cerr << "Fragment shader compilation failed: " << infoLog << '\n';
+        return -1;
+    }
+
+    // tessellation control shader
+    GLuint tescShader = glCreateShader(GL_TESS_CONTROL_SHADER);
+    glShaderSource(tescShader, 1, &tescShaderSource, nullptr);
+    glCompileShader(tescShader);
+    glGetShaderiv(tescShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(tescShader, 512, nullptr, infoLog);
+        std::cerr << "Tesc shader compilation failed: " << infoLog << '\n';
+        return -1;
+    }
+
+    // tessellation evaluation shader
+    GLuint teseShader = glCreateShader(GL_TESS_EVALUATION_SHADER);
+    glShaderSource(teseShader, 1, &teseShaderSource, nullptr);
+    glCompileShader(teseShader);
+    glGetShaderiv(teseShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(teseShader, 512, nullptr, infoLog);
+        std::cerr << "Tese shader compilation failed: " << infoLog << '\n';
+        return -1;
+    }
+
+    //--------------------------------------------------------------------------------------------
+    // shader program
+    GLuint shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glAttachShader(shaderProgram, tescShader);
+    glAttachShader(shaderProgram, teseShader);
+    glLinkProgram(shaderProgram);
+
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n";
+        return -1;
+    }
+
+    glDetachShader(shaderProgram, vertexShader);
+    glDetachShader(shaderProgram, fragmentShader);
+    glDetachShader(shaderProgram, tescShader);
+    glDetachShader(shaderProgram, teseShader);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    glDeleteShader(tescShader);
+    glDeleteShader(teseShader);
+
+    //--------------------------------------------------------------------------------------------
+    // clang-format off
+    float vertices[] = {
+         -.5f,  -.5f,   1.0f, 0.0f, 0.0f,
+          .5f,  -.5f,   0.0f, 1.0f, 0.0f,
+          .0f,   .5f,   0.0f, 0.0f, 1.0f,
+    };
+    // clang-format on
+
+    GLuint VAO { 0 }, VBO { 0 };
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 2));
+
+    glBindVertexArray(0);
+
+    //--------------------------------------------------------------------------------------------
+    // 设置构成一个面片的顶点总数，第一个参数必须为GL_PATCH_VERTICES
+    glPatchParameteri(GL_PATCH_VERTICES, 3);
+
+    //--------------------------------------------------------------------------------------------
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO);
+        // 使用了细分着色器之后，不能再使用GL_TRIANGLES之类的绘制模式
+        // 需要使用一种新的模式：GL_PATCHES（面片）
+        glDrawArrays(GL_PATCHES, 0, 3);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete buffers
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST2
