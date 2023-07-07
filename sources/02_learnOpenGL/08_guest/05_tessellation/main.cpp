@@ -3,9 +3,10 @@
  * 2. 对一个三角形进行简单的细分
  * 3. 对两个四边形进行细分，并解释细分着色器的内部变量的含义
  * 4. 使用glPatchParameterfv替代细分控制着色器
+ * 5. 对TEST1实现基于GPU的曲面细分
  */
 
-#define TEST4
+#define TEST5
 
 #ifdef TEST1
 
@@ -650,3 +651,229 @@ int main()
 }
 
 #endif // TEST4
+
+#ifdef TEST5
+
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL opengl(4, 5, Camera({ 0.f, 30.f, 0.f }, { 0.f, 0.f, 1.f }, { 0.f, 0.f, 0.f }));
+    auto window = opengl.GetWindow();
+    opengl.SetKeyCallback(
+        [](char key)
+        {
+            // 使用'L'和'F'切换显示模式
+            if ('l' == key || 'L' == key)
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            }
+            else if ('f' == key || 'F' == key)
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+        });
+
+    GLint maxTessLevel;
+    glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &maxTessLevel);
+    std::cout << "Max available tess level: " << maxTessLevel << std::endl;
+
+    //--------------------------------------------------------------------------------------------
+    auto vert                 = ReadFile("resources/02_08_05_TEST5.vert");
+    auto frag                 = ReadFile("resources/02_08_05_TEST5.frag");
+    auto tesc                 = ReadFile("resources/02_08_05_TEST5.tesc"); // tessellation control
+    auto tese                 = ReadFile("resources/02_08_05_TEST5.tese"); // tessellation evaluation
+    auto vertexShaderSource   = vert.c_str();
+    auto fragmentShaderSource = frag.c_str();
+    auto tescShaderSource     = tesc.c_str();
+    auto teseShaderSource     = tese.c_str();
+
+    GLint success { 0 };
+    char infoLog[512](0);
+
+    // vertex shader
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+    glCompileShader(vertexShader);
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+        std::cerr << "Vertex shader compilation failed: " << infoLog << '\n';
+        return -1;
+    }
+
+    // fragment shader
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+    glCompileShader(fragmentShader);
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
+        std::cerr << "Fragment shader compilation failed: " << infoLog << '\n';
+        return -1;
+    }
+
+    // tessellation control shader
+    GLuint tescShader = glCreateShader(GL_TESS_CONTROL_SHADER);
+    glShaderSource(tescShader, 1, &tescShaderSource, nullptr);
+    glCompileShader(tescShader);
+    glGetShaderiv(tescShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(tescShader, 512, nullptr, infoLog);
+        std::cerr << "Tesc shader compilation failed: " << infoLog << '\n';
+        return -1;
+    }
+
+    // tessellation evaluation shader
+    GLuint teseShader = glCreateShader(GL_TESS_EVALUATION_SHADER);
+    glShaderSource(teseShader, 1, &teseShaderSource, nullptr);
+    glCompileShader(teseShader);
+    glGetShaderiv(teseShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(teseShader, 512, nullptr, infoLog);
+        std::cerr << "Tese shader compilation failed: " << infoLog << '\n';
+        return -1;
+    }
+
+    //--------------------------------------------------------------------------------------------
+    // shader program
+    GLuint shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glAttachShader(shaderProgram, tescShader);
+    glAttachShader(shaderProgram, teseShader);
+    glLinkProgram(shaderProgram);
+
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n";
+        return -1;
+    }
+
+    glDetachShader(shaderProgram, vertexShader);
+    glDetachShader(shaderProgram, fragmentShader);
+    glDetachShader(shaderProgram, tescShader);
+    glDetachShader(shaderProgram, teseShader);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    glDeleteShader(tescShader);
+    glDeleteShader(teseShader);
+
+    //--------------------------------------------------------------------------------------------
+    stbi_set_flip_vertically_on_load(true);
+    int width { 0 }, height { 0 }, nrChannels { 0 };
+    unsigned char* data = stbi_load("resources/iceland_heightmap.png", &width, &height, &nrChannels, 0);
+    // unsigned char* data = stbi_load("resources/river_heightmap.png", &width, &height, &nrChannels, 0);
+    // unsigned char* data = stbi_load("resources/river2_heightmap.png", &width, &height, &nrChannels, 0);
+
+    uint32_t texture { 0 };
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        std::cout << "Image size: " << height << ", " << width << ", " << nrChannels << '\n';
+    }
+    else
+    {
+        std::cout << "Failed to load texture\n";
+        return -1;
+    }
+
+    std::vector<float> vertices;
+    unsigned rez = 20; // 总共只采集20 * 20个顶点
+    for (unsigned i = 0; i <= rez - 1; i++)
+    {
+        for (unsigned j = 0; j <= rez - 1; j++)
+        {
+            vertices.push_back(-width / 2.0f + width * i / (float)rez);         // v.x
+            vertices.push_back(0.0f);                                           // v.y
+            vertices.push_back(-height / 2.0f + height * j / (float)rez);       // v.z
+            vertices.push_back(i / (float)rez);                                 // u
+            vertices.push_back(j / (float)rez);                                 // v
+
+            vertices.push_back(-width / 2.0f + width * (i + 1) / (float)rez);   // v.x
+            vertices.push_back(0.0f);                                           // v.y
+            vertices.push_back(-height / 2.0f + height * j / (float)rez);       // v.z
+            vertices.push_back((i + 1) / (float)rez);                           // u
+            vertices.push_back(j / (float)rez);                                 // v
+
+            vertices.push_back(-width / 2.0f + width * i / (float)rez);         // v.x
+            vertices.push_back(0.0f);                                           // v.y
+            vertices.push_back(-height / 2.0f + height * (j + 1) / (float)rez); // v.z
+            vertices.push_back(i / (float)rez);                                 // u
+            vertices.push_back((j + 1) / (float)rez);                           // v
+
+            vertices.push_back(-width / 2.0f + width * (i + 1) / (float)rez);   // v.x
+            vertices.push_back(0.0f);                                           // v.y
+            vertices.push_back(-height / 2.0f + height * (j + 1) / (float)rez); // v.z
+            vertices.push_back((i + 1) / (float)rez);                           // u
+            vertices.push_back((j + 1) / (float)rez);                           // v
+        }
+    }
+    std::cout << "Loaded " << rez * rez << " patches of 4 control points each" << std::endl;
+    std::cout << "Processing " << rez * rez * 4 << " vertices in vertex shader" << std::endl;
+
+    GLuint VAO { 0 }, VBO { 0 };
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
+
+    glBindVertexArray(0);
+
+    //--------------------------------------------------------------------------------------------
+    const int numOfPointsEachPatch { 4 };
+    glPatchParameteri(GL_PATCH_VERTICES, numOfPointsEachPatch);
+
+    //--------------------------------------------------------------------------------------------
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto v = glm::value_ptr(opengl.GetViewMatrix());
+        auto p = glm::value_ptr(opengl.GetProjectionMatrix());
+        auto m = glm::value_ptr(glm::scale(glm::mat4(1.f), glm::vec3(0.01f)));
+
+        glUseProgram(shaderProgram);
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, m);
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, v);
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, p);
+
+        glBindVertexArray(VAO);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glDrawArrays(GL_PATCHES, 0, numOfPointsEachPatch * rez * rez);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete buffers
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST5
