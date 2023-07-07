@@ -1,0 +1,26 @@
+#version 430 core
+
+layout (local_size_x = 10, local_size_y = 10, local_size_z = 1) in;
+
+layout(rgba32f, binding = 0) uniform image2D imgOutput;
+
+// 计算着色器内置变量：
+// const uvec3 gl_WorkGroupSize         本地工作组大小，就是local_size_x y z
+// in    uvec3 gl_NumWorkGroup          glDispatchCompute的三个参数
+
+// in    uvec3 gl_LocalInvocationID     当前执行单元在本地工作组中的位置，范围： [uvec3(0) , gl_WorkGroupSize - uvec3(1)]
+// in    uvec3 gl_WorkGroupID           当前本地工作组在更大的全局工作组的位置，范围：[uvec3(0) , gl_NumWorkGroups-uvec3(1)]
+
+// in    uvec3 gl_GlobalInvocationID    gl_WorkGroupID * gl_WorkGroupSize + gl_LocalInvocationID 当前工作单元在全局工作组中的唯一索引
+// in    uint  gl_LocalInvocationIndex  用1维数据表示2维或3维
+//                                      gl_LocalInvocationID.z * gl_WorkGroupSize.x * gl_WorkGroupSize.y + 
+//                                      gl_LocalInvocationID.y * gl_WorkGroupSize.x + gl_LocalInvocationID.x
+
+void main()
+{
+    vec4 pixel = vec4(1.0, 0.0, 0.0, 1.0);
+    ivec2 texCoord = ivec2(gl_GlobalInvocationID.xy);
+
+    // 将像素保存到纹理图像中
+    imageStore(imgOutput, texCoord, pixel);
+}

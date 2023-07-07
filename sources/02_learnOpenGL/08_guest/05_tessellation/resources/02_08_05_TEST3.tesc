@@ -27,6 +27,7 @@ out vec3 tcs_color[];
 // 可以使用 glPatchParameterfv 函数在外部设置这两个值
 // 根据划分的图元不同，这两个数组的某些数值可能并不会用到
 // 注意这两个数组的类型是浮点数，小数点后的部分应该会影响外侧坐标的生成
+// https://www.khronos.org/opengl/wiki/Tessellation#Edge_tessellation_spacing
 
 void main()
 {
