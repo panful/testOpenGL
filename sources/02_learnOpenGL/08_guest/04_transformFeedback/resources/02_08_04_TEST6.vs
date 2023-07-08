@@ -1,44 +1,35 @@
 #version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in float aVelocity;
+layout (location = 2) in float aElasticity;
 
 out vec3 nextPos;
 out float nextVelocity;
+out float nextElasticity;
 
 uniform float uTime;
 
 void main()
 {
-    float x = aPos.x;
-    float y = aPos.y;
-    float z = 0.0;
-    float v = aVelocity;
+    float v = aVelocity;    // 速度
+    float t = uTime;        // 时间
+    float g = .98;          // 重力加速度，放慢运动
+    float h = aPos.y;       // 位置
+    float e = aElasticity;  // 弹性系数
 
-    y = y - v * uTime;
+    h = h - v * t - 0.5 * g * t * t;
+    v = v + g * t;
 
-    if(y < -0.8)
+    // 运动到屏幕最下面时弹起
+    if(h < -1.0)
     {
-        y = (-1.6 - y);
-        v = -0.5 * v;
+        h = -2.0 - h;
+        v = -e * v; 
     }
 
-    if(y > 0.8)
-    {
-        y = 0.8 - (y - 0.8);
-        v = -2 * v;
-    }
-
-    if(v > 0.0)
-    {
-        v = v + 0.01 * v;
-    }
-    else if(v < 0.0)
-    {
-        v = v - 0.01 * v;
-    }
-
-    nextPos = vec3(x, y, z);
+    nextPos = vec3(aPos.x, h, aPos.z);
     nextVelocity = v;
+    nextElasticity = e;
 
     gl_Position = vec4(aPos, 1.0);
 }

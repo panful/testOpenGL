@@ -1081,8 +1081,8 @@ int main()
     // shader program
     GLuint shaderProgram = glCreateProgram();
 
-    GLchar const* varyings[] = { "nextPos", "nextVelocity" };
-    glTransformFeedbackVaryings(shaderProgram, 2, varyings, GL_INTERLEAVED_ATTRIBS);
+    GLchar const* varyings[] = { "nextPos", "nextVelocity", "nextElasticity" };
+    glTransformFeedbackVaryings(shaderProgram, 3, varyings, GL_INTERLEAVED_ATTRIBS);
 
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
@@ -1103,9 +1103,10 @@ int main()
     //--------------------------------------------------------------------------------------------
     std::vector<float> vertices;
     int numPoints = 1000;
-    int dataSize  = numPoints * 4 * sizeof(float);
+    int dataSize  = numPoints * 5 * sizeof(float);
     std::default_random_engine engine(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
-    std::uniform_real_distribution<float> velocity(0.1f, 0.5f);
+    std::uniform_real_distribution<float> velocity(0.1f, 1.f);
+    std::uniform_real_distribution<float> elasticity(0.1f, 0.8f);
 
     for (int i = 0; i < numPoints; ++i)
     {
@@ -1113,6 +1114,7 @@ int main()
         vertices.emplace_back(0.8f);
         vertices.emplace_back(0.0f);
         vertices.emplace_back(velocity(engine));
+        vertices.emplace_back(elasticity(engine));
     }
 
     GLuint VAO[2] { 0 }, VBO[2] { 0 };
@@ -1123,10 +1125,15 @@ int main()
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
     glBufferData(GL_ARRAY_BUFFER, dataSize, vertices.data(), GL_STATIC_DRAW);
+    // 位置
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    // 初速度
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(sizeof(float) * 3));
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
+    // 弹性系数
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 4));
 
     glBindVertexArray(0);
 
@@ -1187,16 +1194,18 @@ int main()
 
         glUseProgram(shaderProgram);
         glUniform1f(glGetUniformLocation(shaderProgram, "uTime"), deltaTime);
-        //glUniform1f(glGetUniformLocation(shaderProgram, "uSpeed"), 0.3f);
+        // glUniform1f(glGetUniformLocation(shaderProgram, "uSpeed"), 0.3f);
 
         if (flag)
         {
             glBindVertexArray(VAO[1]);
             glBindBuffer(GL_ARRAY_BUFFER, tfBuffer[0]);
             glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
             glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(sizeof(float) * 3));
+            glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 4));
 
             glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, tfBuffer[1]);
             glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tfObject[1]);
@@ -1216,9 +1225,11 @@ int main()
             glBindVertexArray(VAO[0]);
             glBindBuffer(GL_ARRAY_BUFFER, tfBuffer[1]);
             glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
             glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(sizeof(float) * 3));
+            glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 4));
 
             glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, tfBuffer[0]);
             glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tfObject[0]);
