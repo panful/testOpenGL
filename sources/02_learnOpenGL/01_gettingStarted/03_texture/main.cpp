@@ -9,9 +9,10 @@
  * 08. 自定义纹理数据，1D纹理的使用
  * 09. 使用纹理设置窗口背景，可以将背景设置为任意颜色：渐变色、图片等等
  * 10. TBO GL_TEXTURE_BUFFER的使用，通过纹理给每一个单元设置一个颜色
+ * 11. 点精灵
  */
 
-#define TEST10
+#define TEST11
 
 #ifdef TEST1
 
@@ -1497,7 +1498,7 @@ int main()
         0,      255,    0,      255,
         0,      0,      255,    255,
     };
-    
+
     // clang-format on
 
     // 创建texture buffer object
@@ -1548,3 +1549,53 @@ int main()
 }
 
 #endif // TEST10
+
+#ifdef TEST11
+
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("resources/02_01_03_TEST11.vs", "resources/02_01_03_TEST11.fs");
+
+    // clang-format off
+    std::vector<float> vertices {
+         0.5f,  0.5f,  0.0f,
+         0.5f, -0.5f,  0.0f,
+        -0.5f, -0.5f,  0.0f,
+        -0.5f,  0.5f,  0.0f,
+    };
+    // clang-format on
+
+    Renderer points(vertices, { 3 }, GL_POINTS);
+    Texture texture(std::string_view("resources/02_01_03_snow.png"));
+
+    // 设置点的大小
+    // glPointSize(10.f);
+    // 开启在着色器中设置点的大小，否则只能使用glPointSize设置大小
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    // 设置纹理坐标gl_PointCoord.y的方向
+    glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
+    // 设置点精灵渐隐效果
+    glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 1.f);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+        texture.Use();
+        points.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST11

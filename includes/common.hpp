@@ -1076,6 +1076,7 @@ public:
 
     void LoadImage(const std::string_view& path, bool bFlip = true)
     {
+        Bind();
         stbi_set_flip_vertically_on_load(bFlip);
         int channels { 0 };
         void* data = nullptr;
@@ -1125,6 +1126,7 @@ public:
         {
             std::clog << "Failed to load texture\n";
         }
+        Release();
     }
 
     void SetWarpParameter(GLint s, GLint t, GLint r = 0) const
