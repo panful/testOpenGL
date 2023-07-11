@@ -10,9 +10,10 @@
  * 09. 使用纹理设置窗口背景，可以将背景设置为任意颜色：渐变色、图片等等
  * 10. TBO GL_TEXTURE_BUFFER的使用，通过纹理给每一个单元设置一个颜色
  * 11. 点精灵
+ * 12. PBO GL_PIXEL_PACK_BUFFER GL_PIXEL_UNPACK_BUFFER 的简单使用
  */
 
-#define TEST11
+#define TEST12
 
 #ifdef TEST1
 
@@ -1599,3 +1600,112 @@ int main()
 }
 
 #endif // TEST11
+
+#ifdef TEST12
+
+#include <common.hpp>
+
+GLuint pbo { 0 };
+GLuint texture { 0 };
+
+int main()
+{
+    InitOpenGL opengl;
+    auto window = opengl.GetWindow();
+    opengl.SetMiddleButtonCallback(
+        [](int x, int y)
+        {
+            auto index = (800 * (600 - y) + x) * 4;
+
+            //------------------------------------------------------------------------
+            // 首先我们要把缓冲区绑定到 GL_PIXEL_PACK_BUFFER 这个地方
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
+            // 这个函数会判断 GL_PIXEL_PACK_BUFFER 这个地方有没有绑定一个缓冲区，如果有，那就把数据写入到这个缓冲区里
+            // 前4个参数就是要读取的屏幕区域，格式是RGBA，类型是BYTE，每个像素4字节
+            // 如果GL_PIXEL_PACK_BUFFER有绑定缓冲区，最后一个参数就作为偏移值来使用
+            glReadPixels(0, 0, 800, 600, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            // 已经成功把屏幕的像素数据复制到了缓冲区里
+            // 这时候，可以用 glMapBuffer 得到缓冲区的内存指针，来读取里面的像素数据，保存到图片文件，完成截图
+            // 注意glMapBuffer的第1个参数不一定要是GL_PIXEL_PACK_BUFFER，可以把缓冲区绑定到比如创建PBO时的GL_ARRAY_BUFFER
+            // 然后这里也传GL_ARRAY_BUFFER，由于懒得再绑定一次，就接着用上面绑定的GL_PIXEL_PACK_BUFFER
+            void* data = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_WRITE);
+            if (data)
+            {
+                auto pixels = static_cast<uint8_t*>(data);
+                std::cout << "GL_PIXEL_PACK_BUFFER\t" << (int)pixels[index] << '\t' << (int)pixels[index + 1] << '\t' << (int)pixels[index + 2]
+                          << '\n';
+                glUnmapBuffer(GL_PIXEL_PACK_BUFFER); // 不要忘了解除Map
+            }
+
+            // 完事了把GL_PIXEL_PACK_BUFFER这个地方的缓冲区解绑掉，以免别的函数误操作
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+            //------------------------------------------------------------------------
+            // 把缓冲区中的像素数据传给纹理，把缓冲区绑定到 GL_PIXEL_UNPACK_BUFFER ，注意是GL_PIXEL_UNPACK_BUFFER
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+            // 绑定纹理
+            glBindTexture(GL_TEXTURE_2D, texture);
+            // 这个函数会判断 GL_PIXEL_UNPACK_BUFFER 这个地方有没有绑定一个缓冲区
+            // 如果有，就从这个缓冲区读取数据，而不是data参数指定的那个内存
+            // 前面参数很简单就不解释了，最后一个参数和上面glReadPixels同理，传NULL就行
+            // 这样glTexSubImage2D就会从我们的缓冲区中读取数据了
+            // 这里为什么要用glTexSubImage2D呢，因为如果用glTexImage2D，glTexImage2D会销毁纹理内存重新申请，
+            // glTexSubImage2D就仅仅只是更新纹理中的数据，这就提高了速度，并且优化了显存的利用率
+            // 因为是从缓存获取数据，这里是并行发生的，非常快
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 800, 600, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            // 完事了把GL_PIXEL_UNPACK_BUFFER这个地方的缓冲区解绑掉，以免别的函数误操作
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+            // 获取纹理的像素值，这里只是演示，实际应用中可以把纹理传给着色器使用等等
+            // 从纹理读取像素数据是一个比较耗时的操作，最好不要使用，如果非要使用最好使用PBO
+            std::vector<uint8_t> pixels(800 * 600 * 4);
+            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+            std::cout << "GL_PIXEL_UNPACK_BUFFER\t" << (int)pixels[index] << '\t' << (int)pixels[index + 1] << '\t' << (int)pixels[index + 2] << '\n';
+            // 解绑纹理
+            glBindTexture(GL_TEXTURE_2D, 0);
+        });
+
+    ShaderProgram shader("resources/02_01_03_TEST9.vs", "resources/02_01_03_TEST9.fs");
+
+    // clang-format off
+    std::vector<float> vertices{
+        -.5f, -.5f, 0.f,    1.f, 0.f, 0.f,
+         .5f, -.5f, 0.f,    0.f, 1.f, 0.f,
+         0.f,  .5f, 0.f,    0.f, 0.f, 1.f,
+    };
+    // clang-format on
+
+    Renderer triangle(vertices, { 3, 3 }, GL_TRIANGLES);
+
+    // 创建一个缓冲区，并分配内存（显存），注意这里的格式是：GL_ARRAY_BUFFER
+    glGenBuffers(1, &pbo);
+    glBindBuffer(GL_ARRAY_BUFFER, pbo);
+    glBufferData(GL_ARRAY_BUFFER, 800 * 600 * 4, nullptr, GL_STREAM_COPY);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // 创建一个2D纹理
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 800, 600, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.Use();
+        shader.SetUniformMat4("transform", glm::mat4(1.f));
+        triangle.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST12
