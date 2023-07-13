@@ -11,7 +11,7 @@
  * 9.测试class Renderer
  */
 
-#define TEST9
+#define TEST3
 
 #ifdef TEST1
 
@@ -504,6 +504,13 @@ int main(void)
     GLint posAttrib = glGetAttribLocation(shaderProgram, "aPos");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), 0);
+
+    //-----------------------------------------------------------------------
+    // OpenGL版本不能为3.3以及之后的，其他版本不清楚
+    // 即使用了以下代码后不能正确绘制
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Render loop */
     while (!glfwWindowShouldClose(window))
@@ -1306,8 +1313,8 @@ int main()
     };
     // clang-format on
 
-    Renderer triangle(vertices, indices, { 2,3 });
-    Renderer line(vertices2, { 2,3 });
+    Renderer triangle(vertices, indices, { 2, 3 });
+    Renderer line(vertices2, { 2, 3 });
 
     while (!glfwWindowShouldClose(window))
     {
