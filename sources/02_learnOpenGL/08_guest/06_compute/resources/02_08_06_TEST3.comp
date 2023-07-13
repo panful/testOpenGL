@@ -1,0 +1,18 @@
+#version 430 core
+
+// 每块中粒子的数量为 128
+layout(local_size_x = 128) in;
+
+// 使用两个缓存来包含粒子的位置和速度信息
+layout(rgba32f, binding = 0) uniform imageBuffer position_buffer;
+
+// 时间间隔
+uniform float dt;
+
+void main()
+{
+    vec4 pos = imageLoad(position_buffer, int(gl_GlobalInvocationID.x));
+
+    // 将新的位置和速度信息重新保存到缓存中
+    imageStore(position_buffer, int(gl_GlobalInvocationID.x), pos + vec4(dt,dt,0.0,0.0));
+}

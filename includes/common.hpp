@@ -926,6 +926,79 @@ private:
     uint32_t m_program;
 };
 
+class ComputeShader
+{
+public:
+    ComputeShader(const std::string_view& path) noexcept
+    {
+        auto comp                = ReadFile(path);
+        auto computeShaderSource = comp.c_str();
+
+        GLint success { 0 };
+        char infoLog[512](0);
+
+        // compute shader
+        GLuint computeShader = glCreateShader(GL_COMPUTE_SHADER);
+        glShaderSource(computeShader, 1, &computeShaderSource, nullptr);
+        glCompileShader(computeShader);
+        glGetShaderiv(computeShader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(computeShader, 512, nullptr, infoLog);
+            std::cerr << "Compute shader compilation failed: " << infoLog << std::endl;
+        }
+
+        //--------------------------------------------------------------------------------------------
+        // shader program
+        m_shaderProgram = glCreateProgram();
+        glAttachShader(m_shaderProgram, computeShader);
+        glLinkProgram(m_shaderProgram);
+
+        glGetProgramiv(m_shaderProgram, GL_LINK_STATUS, &success);
+        if (!success)
+        {
+            std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << std::endl;
+        }
+
+        glDetachShader(m_shaderProgram, computeShader);
+        glDeleteShader(computeShader);
+    }
+
+    void SetUniform1f(const std::string_view& name, GLfloat v) const
+    {
+        glUniform1f(Location(name), v);
+    }
+
+    void Use() const
+    {
+        glUseProgram(m_shaderProgram);
+    }
+
+    ~ComputeShader() noexcept
+    {
+        glDeleteProgram(m_shaderProgram);
+    }
+
+    ComputeShader(const ComputeShader&)            = delete;
+    ComputeShader& operator=(const ComputeShader&) = delete;
+
+private:
+    GLint Location(const std::string_view& name) const
+    {
+        auto location = glGetUniformLocation(m_shaderProgram, name.data());
+
+        if (-1 == location)
+        {
+            std::clog << "Wrong of uniform name\t" << name << '\n';
+        }
+
+        return location;
+    }
+
+private:
+    uint32_t m_shaderProgram { 0 };
+};
+
 class Texture
 {
 public:

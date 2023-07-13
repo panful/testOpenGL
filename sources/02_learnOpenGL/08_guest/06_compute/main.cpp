@@ -3,7 +3,7 @@
  * 2. 使用计算着色器生成一张纹理并绘制到屏幕
  */
 
-#define TEST2
+#define TEST3
 
 #ifdef TEST1
 
@@ -115,50 +115,13 @@ int main()
 
 #include <common.hpp>
 
-uint32_t CreateComputeShader(const std::string_view& path)
-{
-    auto comp                = ReadFile(path);
-    auto computeShaderSource = comp.c_str();
-
-    GLint success { 0 };
-    char infoLog[512](0);
-
-    // compute shader
-    GLuint computeShader = glCreateShader(GL_COMPUTE_SHADER);
-    glShaderSource(computeShader, 1, &computeShaderSource, nullptr);
-    glCompileShader(computeShader);
-    glGetShaderiv(computeShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(computeShader, 512, nullptr, infoLog);
-        std::cerr << "Compute shader compilation failed: " << infoLog << std::endl;
-    }
-
-    //--------------------------------------------------------------------------------------------
-    // shader program
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, computeShader);
-    glLinkProgram(shaderProgram);
-
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << std::endl;
-    }
-
-    glDetachShader(shaderProgram, computeShader);
-    glDeleteShader(computeShader);
-
-    return shaderProgram;
-}
-
 int main()
 {
     InitOpenGL opengl(4, 3);
     auto window = opengl.GetWindow();
 
     //--------------------------------------------------------------------------------------------
-    auto computeShader = CreateComputeShader("resources/02_08_06_TEST2.comp");
+    ComputeShader computeShader("resources/02_08_06_TEST2.comp");
     ShaderProgram program("resources/02_08_06_TEST2.vert", "resources/02_08_06_TEST2.frag");
 
     //--------------------------------------------------------------------------------------------
@@ -192,11 +155,10 @@ int main()
     glBindTexture(GL_TEXTURE_2D, 0);
 
     //--------------------------------------------------------------------------------------------
-
     while (!glfwWindowShouldClose(window))
     {
-        glUseProgram(computeShader);
-        glUniform1f(glGetUniformLocation(computeShader, "t"), (float)glfwGetTime());
+        computeShader.Use();
+        computeShader.SetUniform1f("t", (float)glfwGetTime());
         glDispatchCompute((unsigned int)texWidth / 10, (unsigned int)texHeight / 10, 1);
         // 保证计算着色器已经将纹理的每一个像素填充完成
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
@@ -215,9 +177,198 @@ int main()
         glfwPollEvents();
     }
 
-    // remember to delete buffers
     glfwTerminate();
     return 0;
 }
 
 #endif // TEST2
+
+#ifdef TEST3
+
+#include <chrono>
+#include <common.hpp>
+#include <random>
+
+float MyRandom(float min, float max)
+{
+    static std::default_random_engine engine(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
+    std::uniform_real_distribution<float> distribution(min, max);
+    return distribution(engine);
+}
+
+constexpr int PARTICLE_COUNT = 10'000;
+
+int main()
+{
+    InitOpenGL opengl(4, 3);
+    auto window = opengl.GetWindow();
+
+    ShaderProgram shader("resources/02_08_06_TEST3.vert", "resources/02_08_06_TEST3.frag");
+    ComputeShader compute("resources/02_08_06_TEST3.comp");
+
+    float* data = new float[PARTICLE_COUNT * 4]();
+    for (int i = 0; i < PARTICLE_COUNT; ++i)
+    {
+        data[i * 4 + 0] = MyRandom(-1.f, 1.f);
+        data[i * 4 + 0] = MyRandom(-1.f, 1.f);
+        data[i * 4 + 0] = 0.f;
+        data[i * 4 + 0] = 1.f;
+    }
+
+    GLuint pos_vel { 0 };
+    glGenBuffers(1, &pos_vel);
+    glBindBuffer(GL_ARRAY_BUFFER, pos_vel);
+    glBufferData(GL_ARRAY_BUFFER, PARTICLE_COUNT * sizeof(float) * 4, data, GL_STATIC_DRAW);
+
+    // //---------------------------------------------------------------------
+    // GLuint tex_pos_vel { 0 };
+    // glGenTextures(1, &tex_pos_vel);
+    // glBindTexture(GL_TEXTURE_BUFFER, tex_pos_vel);
+    // glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pos_vel);
+
+    // float currentTime { 0.f }, lastTime { 0.f }, deltaTime { 0.f };
+
+    while (!glfwWindowShouldClose(window))
+    {
+        // compute.Use();
+        // glBindImageTexture(0, tex_pos_vel, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+
+        // currentTime = (float)glfwGetTime();
+        // deltaTime   = currentTime - lastTime;
+        // lastTime    = currentTime;
+
+        // compute.SetUniform1f("dt", (float)glfwGetTime());
+        // glDispatchCompute(PARTICLE_COUNT, 1, 1);
+        // glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+        //---------------------------------------------------------------------
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.Use();
+        // glBindBuffer(GL_ARRAY_BUFFER, pos_vel);
+        // glEnableVertexAttribArray(0);
+        // glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+        glDrawArrays(GL_POINTS, 0, PARTICLE_COUNT);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+}
+
+#endif // TEST3
+
+#ifdef TEST33
+
+#include <chrono>
+#include <common.hpp>
+#include <random>
+
+float MyRandom(float min, float max)
+{
+    static std::default_random_engine engine(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
+    std::uniform_real_distribution<float> distribution(min, max);
+    return distribution(engine);
+}
+
+constexpr int PARTICLE_COUNT = 10'000;
+
+int main()
+{
+    InitOpenGL opengl(4, 3);
+    auto window = opengl.GetWindow();
+
+    ShaderProgram shader("resources/02_08_06_TEST3.vert", "resources/02_08_06_TEST3.frag");
+    ComputeShader compute("resources/02_08_06_TEST3.comp");
+
+    GLuint pos_vel[2] { 0 };
+    glGenBuffers(2, pos_vel);
+    glBindBuffer(GL_ARRAY_BUFFER, pos_vel[0]);
+    glBufferData(GL_ARRAY_BUFFER, PARTICLE_COUNT * sizeof(float) * 4, nullptr, GL_DYNAMIC_COPY);
+
+    // 映射位置缓存并使用随机向量填充
+    auto pos = (glm::vec4*)glMapBufferRange(GL_ARRAY_BUFFER, 0, PARTICLE_COUNT * sizeof(float) * 4, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+    for (int i = 0; i < PARTICLE_COUNT; ++i)
+    {
+        pos[i] = glm::vec4(MyRandom(-10.f, 10.f), MyRandom(-10.f, 10.f), MyRandom(-10.f, 10.f), MyRandom(0.5f, 1.f));
+    }
+
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    // 初始化速度缓存
+    glBindBuffer(GL_ARRAY_BUFFER, pos_vel[1]);
+    glBufferData(GL_ARRAY_BUFFER, PARTICLE_COUNT * sizeof(float) * 4, nullptr, GL_DYNAMIC_COPY);
+
+    // 映射位置缓存并使用随机向量填充
+    auto vel = (glm::vec4*)glMapBufferRange(GL_ARRAY_BUFFER, 0, PARTICLE_COUNT * sizeof(float) * 4, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+    for (int i = 0; i < PARTICLE_COUNT; ++i)
+    {
+        vel[i] = glm::vec4(MyRandom(-.1f, .1f), MyRandom(-.1f, .1f), MyRandom(-.1f, .1f), 0.f);
+    }
+
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    //---------------------------------------------------------------------
+    GLuint tex_pos_vel[2] { 0 };
+    glGenTextures(2, tex_pos_vel);
+
+    glBindTexture(GL_TEXTURE_BUFFER, tex_pos_vel[0]);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pos_vel[0]);
+
+    glBindTexture(GL_TEXTURE_BUFFER, tex_pos_vel[1]);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pos_vel[1]);
+
+    //---------------------------------------------------------------------
+    GLuint VAO { 0 };
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, pos_vel[0]);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glBindVertexArray(0);
+
+    float currentTime { 0.f }, lastTime { 0.f }, deltaTime { 0.f };
+
+    while (!glfwWindowShouldClose(window))
+    {
+        compute.Use();
+
+        glBindImageTexture(0, tex_pos_vel[0], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+        glBindImageTexture(1, tex_pos_vel[1], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+
+        currentTime = (float)glfwGetTime();
+        deltaTime   = currentTime - lastTime;
+        lastTime    = currentTime;
+
+        compute.SetUniform1f("dt", (float)glfwGetTime());
+        glDispatchCompute(PARTICLE_COUNT, 1, 1);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+        glBindTexture(GL_TEXTURE_BUFFER, tex_pos_vel[0]);
+        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pos_vel[0]);
+
+        //---------------------------------------------------------------------
+
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, pos_vel[0]);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glBindVertexArray(0);
+
+        //---------------------------------------------------------------------
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.Use();
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_POINTS, 0, PARTICLE_COUNT);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+}
+
+#endif // TEST3
