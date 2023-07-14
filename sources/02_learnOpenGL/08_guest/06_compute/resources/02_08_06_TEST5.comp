@@ -1,0 +1,22 @@
+#version 430 core
+
+layout(local_size_x = 3) in;
+
+layout(rgba32f, binding = 0) uniform imageBuffer position_buffer;
+
+layout(std430, binding = 0) buffer test_buffer{
+    // 可以将这两个成员作为结构体(struct)放在buffer里边
+    // 如果有未知大小的数组，放在最后
+    int test;
+    float offset;
+};
+
+void main()
+{
+    vec4 pos = imageLoad(position_buffer, int(gl_GlobalInvocationID.x));
+
+    // 给输入的顶点在x分量增加一个偏移值，并将新的顶点输出
+    pos += vec4(offset, 0.0, 0.0, 0.0);
+    
+    imageStore(position_buffer, int(gl_GlobalInvocationID.x), pos);
+}

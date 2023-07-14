@@ -2,10 +2,11 @@
  * 1. 创建一个计算着色器，获取计算着色器支持的工作组数量
  * 2. 使用计算着色器生成一张纹理并绘制到屏幕
  * 3. glsl中imageBuffer的使用，将顶点经过计算着色器修改后输出到Buffer
- * 4. 粒子模拟器
+ * 4. GL_UNIFORM_BUFFER 的使用，粒子模拟器
+ * 5. GL_SHADER_STORAGE_BUFFER 的使用
  */
 
-#define TEST4
+#define TEST5
 
 #ifdef TEST1
 
@@ -334,9 +335,9 @@ int main()
     glBufferData(GL_UNIFORM_BUFFER, ubSize, nullptr, GL_DYNAMIC_COPY);
     auto attr = (glm::vec4*)glMapBufferRange(GL_UNIFORM_BUFFER, 0, ubSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
     attr[0]   = glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f);
-    attr[1]   = glm::vec4( 0.5f, -0.5f, 0.0f, 2.0f);
-    attr[2]   = glm::vec4( 0.5f,  0.5f, 0.0f, 3.0f);
-    attr[3]   = glm::vec4(-0.5f,  0.5f, 0.0f, 4.0f);
+    attr[1]   = glm::vec4(0.5f, -0.5f, 0.0f, 2.0f);
+    attr[2]   = glm::vec4(0.5f, 0.5f, 0.0f, 3.0f);
+    attr[3]   = glm::vec4(-0.5f, 0.5f, 0.0f, 4.0f);
     glUnmapBuffer(GL_UNIFORM_BUFFER);
 
     float currentTime { 0.f }, lastTime { 0.f }, deltaTime { 0.f };
@@ -372,3 +373,86 @@ int main()
 }
 
 #endif // TEST4
+
+#ifdef TEST5
+
+#include <common.hpp>
+#include <thread>
+
+int main()
+{
+    InitOpenGL opengl(4, 3);
+    auto window = opengl.GetWindow();
+
+    ShaderProgram shader("resources/02_08_06_TEST3.vert", "resources/02_08_06_TEST3.frag");
+    ComputeShader compute("resources/02_08_06_TEST5.comp");
+
+    // clang-format off
+    float data[] = {
+       -1.0f, -0.5f, 0.f, 1.f,
+        0.0f, -0.5f, 0.f, 1.f,
+       -0.5f,  0.5f, 0.f, 1.f,
+    };
+    // clang-format on
+
+    //---------------------------------------------------------------------
+    GLuint vao { 0 }, buffer { 0 };
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(data) * 4, data, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+    glBindVertexArray(0);
+
+    //---------------------------------------------------------------------
+    GLuint texture { 0 };
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_BUFFER, texture);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, buffer);
+    glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+    //---------------------------------------------------------------------
+    struct test_struct
+    {
+        int test;
+        float offset;
+    };
+
+    test_struct buffer_data(1, 0.1f);
+
+    GLuint storage_buffer { 0 };
+    glGenBuffers(1, &storage_buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, storage_buffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(test_struct), &buffer_data, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        compute.Use();
+        glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+        // 第二个参数对应着色器中的"layout(std430, binding = 0) buffer" => "binding = 0"
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, storage_buffer);
+        glDispatchCompute(1, 1, 1);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+        //---------------------------------------------------------------------
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.Use();
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+}
+
+#endif // TEST5
