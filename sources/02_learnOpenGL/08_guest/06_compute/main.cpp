@@ -282,31 +282,29 @@ int main()
 
     GLuint pos_vel[2] { 0 };
     glGenBuffers(2, pos_vel);
+
+    //---------------------------------------------------------------------
+    // 初始化位置缓存，分配内存，如果没有绑定target或者没有分配内存，glMapBufferRange都会报错
     glBindBuffer(GL_ARRAY_BUFFER, pos_vel[0]);
     glBufferData(GL_ARRAY_BUFFER, PARTICLE_COUNT * sizeof(float) * 4, nullptr, GL_DYNAMIC_COPY);
-
-    // 映射位置缓存并使用随机向量填充
+    // 映射位置缓存并使用随机向量填充 xyz是速度，w是生命值
     auto pos = (glm::vec4*)glMapBufferRange(GL_ARRAY_BUFFER, 0, PARTICLE_COUNT * sizeof(float) * 4, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-
     for (int i = 0; i < PARTICLE_COUNT; ++i)
     {
         pos[i] = glm::vec4(MyRandom(-1.f, 1.f), MyRandom(-1.f, 1.f), MyRandom(-1.f, 1.f), MyRandom(0.5f, 1.f));
     }
-
     glUnmapBuffer(GL_ARRAY_BUFFER);
 
-    // 初始化速度缓存
+    //---------------------------------------------------------------------
+    // 初始化速度缓存xyz是速度，w没用
     glBindBuffer(GL_ARRAY_BUFFER, pos_vel[1]);
     glBufferData(GL_ARRAY_BUFFER, PARTICLE_COUNT * sizeof(float) * 4, nullptr, GL_DYNAMIC_COPY);
-
-    // 映射位置缓存并使用随机向量填充
+    // 映射速度缓存并使用随机向量填充
     auto vel = (glm::vec4*)glMapBufferRange(GL_ARRAY_BUFFER, 0, PARTICLE_COUNT * sizeof(float) * 4, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-
     for (int i = 0; i < PARTICLE_COUNT; ++i)
     {
         vel[i] = glm::vec4(MyRandom(-.1f, .1f), MyRandom(-.1f, .1f), MyRandom(-.1f, .1f), 0.f);
     }
-
     glUnmapBuffer(GL_ARRAY_BUFFER);
 
     //---------------------------------------------------------------------
@@ -328,12 +326,25 @@ int main()
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glBindVertexArray(0);
 
+    //---------------------------------------------------------------------
+    GLint ubSize { 4 * sizeof(float) * 4 };
+    GLuint uniform_buffer { 0 };
+    glGenBuffers(1, &uniform_buffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, uniform_buffer);
+    glBufferData(GL_UNIFORM_BUFFER, ubSize, nullptr, GL_DYNAMIC_COPY);
+    auto attr = (glm::vec4*)glMapBufferRange(GL_UNIFORM_BUFFER, 0, ubSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+    attr[0]   = glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f);
+    attr[1]   = glm::vec4( 0.5f, -0.5f, 0.0f, 2.0f);
+    attr[2]   = glm::vec4( 0.5f,  0.5f, 0.0f, 3.0f);
+    attr[3]   = glm::vec4(-0.5f,  0.5f, 0.0f, 4.0f);
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
+
     float currentTime { 0.f }, lastTime { 0.f }, deltaTime { 0.f };
 
     while (!glfwWindowShouldClose(window))
     {
         compute.Use();
-
+        glBindBufferRange(GL_UNIFORM_BUFFER, 0, uniform_buffer, 0, ubSize);
         glBindImageTexture(0, tex_pos_vel[0], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
         glBindImageTexture(1, tex_pos_vel[1], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
