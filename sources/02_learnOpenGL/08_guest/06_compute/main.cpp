@@ -4,9 +4,10 @@
  * 3. glsl中imageBuffer的使用，将顶点经过计算着色器修改后输出到Buffer
  * 4. GL_UNIFORM_BUFFER 的使用，粒子模拟器
  * 5. GL_SHADER_STORAGE_BUFFER 的使用
+ * 6. 在计算着色器中对 GL_SHADER_STORAGE_BUFFER 进行读写
  */
 
-#define TEST5
+#define TEST6
 
 #ifdef TEST1
 
@@ -456,3 +457,72 @@ int main()
 }
 
 #endif // TEST5
+
+#ifdef TEST6
+
+#include <common.hpp>
+#include <thread>
+
+int main()
+{
+    InitOpenGL opengl(4, 3);
+    auto window = opengl.GetWindow();
+
+    ShaderProgram shader("resources/02_08_06_TEST6.vert", "resources/02_08_06_TEST3.frag");
+    ComputeShader compute("resources/02_08_06_TEST6.comp");
+
+    struct Particle
+    {
+        glm::vec4 pos_vel;
+    };
+
+    std::vector<Particle> particles { { { -0.5f, -1.0f, 0.0f, 0.5f } }, { { 0.5f, -1.0f, 0.0f, 0.1f } } };
+
+    //---------------------------------------------------------------------
+    GLuint buffer { 0 };
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Particle) * particles.size(), particles.data(), GL_DYNAMIC_COPY);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    GLuint VAO { 0 };
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glBindVertexArray(0);
+
+    glPointSize(5.f);
+    float currentTime { 0.f }, lastTime { 0.f }, deltaTime { 0.f };
+
+    while (!glfwWindowShouldClose(window))
+    {
+        currentTime = (float)glfwGetTime();
+        deltaTime   = currentTime - lastTime;
+        lastTime    = currentTime;
+
+        std::cout << "FPS:\t" << 1.f / deltaTime << '\n';
+
+        compute.Use();
+        compute.SetUniform1f("deltaTime", deltaTime);
+
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, buffer);
+        glDispatchCompute(1, 1, 1);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+        //---------------------------------------------------------------------
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.Use();
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(particles.size()));
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+}
+
+#endif // TEST6
