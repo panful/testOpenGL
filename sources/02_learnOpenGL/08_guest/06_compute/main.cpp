@@ -5,9 +5,10 @@
  * 4. GL_UNIFORM_BUFFER 的使用，粒子模拟器
  * 5. GL_SHADER_STORAGE_BUFFER 的使用
  * 6. 在计算着色器中对 GL_SHADER_STORAGE_BUFFER 进行读写
+ * 7. 自由落体运动
  */
 
-#define TEST6
+#define TEST7
 
 #ifdef TEST1
 
@@ -473,7 +474,7 @@ int main()
 
     struct Particle
     {
-        glm::vec4 pos_vel;
+        glm::vec4 pos_vel; // xy是位置，zw是速度
     };
 
     std::vector<Particle> particles { { { -0.5f, -1.0f, 0.0f, 0.5f } }, { { 0.5f, -1.0f, 0.0f, 0.1f } } };
@@ -490,6 +491,7 @@ int main()
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glEnableVertexAttribArray(0);
+    // 注意Particle总共4个flaot，但是前两个才是需要传递给顶点着色器的位置
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glBindVertexArray(0);
 
@@ -526,3 +528,85 @@ int main()
 }
 
 #endif // TEST6
+
+#ifdef TEST7
+
+#include <common.hpp>
+#include <random>
+
+float MyRandom(float min, float max)
+{
+    static std::default_random_engine engine(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
+    std::uniform_real_distribution<float> distribution(min, max);
+    return distribution(engine);
+}
+
+int main()
+{
+    InitOpenGL opengl(4, 3);
+    auto window = opengl.GetWindow();
+
+    ShaderProgram shader("resources/02_08_06_TEST6.vert", "resources/02_08_06_TEST3.frag");
+    ComputeShader compute("resources/02_08_06_TEST7.comp");
+
+    struct Particle
+    {
+        glm::vec4 pos2_vel1_et; // xy位置 z速度(竖直方向) w弹性系数
+    };
+
+    constexpr size_t PARTICLE_COUNT = 10;
+    std::vector<Particle> particles;
+    particles.reserve(PARTICLE_COUNT);
+
+    for (size_t i = 0; i < PARTICLE_COUNT; ++i)
+    {
+        particles.emplace_back(Particle({ -0.5f + static_cast<float>(i) * 1.f / PARTICLE_COUNT, 0.8f, MyRandom(0.f, 0.5f), MyRandom(0.5f, 0.9f) }));
+    }
+
+    //---------------------------------------------------------------------
+    GLuint buffer { 0 };
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Particle) * particles.size(), particles.data(), GL_DYNAMIC_COPY);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    GLuint VAO { 0 };
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glBindVertexArray(0);
+
+    glPointSize(5.f);
+    float currentTime { 0.f }, lastTime { 0.f }, deltaTime { 0.f };
+
+    while (!glfwWindowShouldClose(window))
+    {
+        currentTime = (float)glfwGetTime();
+        deltaTime   = currentTime - lastTime;
+        lastTime    = currentTime;
+
+        std::cout << "FPS:\t" << 1.f / deltaTime << '\n';
+
+        compute.Use();
+        compute.SetUniform1f("deltaTime", deltaTime);
+
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, buffer);
+        glDispatchCompute(static_cast<GLuint>(particles.size()), 1, 1);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+        //---------------------------------------------------------------------
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.Use();
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(particles.size()));
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+}
+
+#endif // TEST7
