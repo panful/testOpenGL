@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.8)
-
 set(target_name "01_05_eigen")
 
 add_executable(${target_name} main.cpp)
