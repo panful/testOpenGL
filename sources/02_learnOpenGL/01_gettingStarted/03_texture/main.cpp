@@ -9,11 +9,11 @@
  * 08. 自定义纹理数据，1D纹理的使用
  * 09. 使用纹理设置窗口背景，可以将背景设置为任意颜色：渐变色、图片等等
  * 10. TBO GL_TEXTURE_BUFFER的使用，通过纹理给每一个单元设置一个颜色
- * 11. 点精灵
+ * 11. 点精灵，给顶点设置纹理
  * 12. PBO GL_PIXEL_PACK_BUFFER GL_PIXEL_UNPACK_BUFFER 的简单使用
  */
 
-#define TEST12
+#define TEST11
 
 #ifdef TEST1
 
