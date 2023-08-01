@@ -11,9 +11,11 @@
  * 10. TBO GL_TEXTURE_BUFFER的使用，通过纹理给每一个单元设置一个颜色
  * 11. 点精灵，给顶点设置纹理
  * 12. PBO GL_PIXEL_PACK_BUFFER GL_PIXEL_UNPACK_BUFFER 的简单使用
+ * 13. 使用ktx加载纹理并渲染
+ * 14. 使用 GL_TEXTURE_2D_ARRAY
  */
 
-#define TEST13
+#define TEST14
 
 #ifdef TEST1
 
@@ -1783,11 +1785,10 @@ int main()
     auto mipLevels = ktxTexture->numLevels;
     auto numDims   = ktxTexture->numDimensions;
 
-
     ktx_uint8_t* ktxTextureData = ktxTexture_GetData(ktxTexture);
     ktx_size_t ktxTextureSize   = ktxTexture_GetDataSize(ktxTexture);
 
-    std::cout << width << '\t' << height << '\t' << mipLevels << '\t' << numDims<<'\t' <<  ktxTextureSize << '\n';
+    std::cout << width << '\t' << height << '\t' << mipLevels << '\t' << numDims << '\t' << ktxTextureSize << '\n';
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ktxTextureData);
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -1820,3 +1821,93 @@ int main()
 }
 
 #endif // TEST13
+
+#ifdef TEST14
+
+#include <common.hpp>
+#include <ktx.h>
+
+int main()
+{
+    InitOpenGL initOpenGL(Camera({ 0.f, 0.f, 3.f }, { 0.f, 1.f, 0.f }, { 0.f, 0.f, 0.f }));
+    auto window = initOpenGL.GetWindow();
+
+    ShaderProgram program("resources/02_01_03_TEST14.vs", "resources/02_01_03_TEST14.fs");
+
+    // GL_TEXTURE_2D_ARRAY 纹理坐标的最后一个值表示采样第几层，例如层数为7，那么最后一个值应该为[0,6]
+    // GL_TEXTURE_3D 纹理坐标的最后一个值需要归一化到[0,1]
+    // clang-format off
+    std::vector<float> vertices {
+         // pos                 // texCoord
+         0.5f,  0.5f,  0.0f,    1.0f, 1.0f, 4.0f,
+         0.5f, -0.5f,  0.0f,    1.0f, 0.0f, 4.0f,
+        -0.5f, -0.5f,  0.0f,    0.0f, 0.0f, 4.0f,
+        -0.5f,  0.5f,  0.0f,    0.0f, 1.0f, 4.0f,
+    };
+    // clang-format on
+    std::vector<unsigned int> indices { 0, 1, 3, 1, 2, 3 };
+
+    Renderer quad(vertices, indices, { 3, 3 }, GL_TRIANGLES);
+
+    // 创建并绑定纹理
+    unsigned int texture { 0 };
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+    // 纹理环绕
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // 纹理过滤
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    ktxTexture* ktxTexture { nullptr };
+
+    if (ktxResult result = ktxTexture_CreateFromNamedFile("resources/texturearray_rgba.ktx", KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture))
+    {
+        std::cout << "failed to load texture\n";
+        return -1;
+    }
+
+    auto width     = ktxTexture->baseWidth;
+    auto height    = ktxTexture->baseHeight;
+    auto mipLevels = ktxTexture->numLevels;
+    auto numDims   = ktxTexture->numDimensions;
+    auto isArray   = ktxTexture->isArray;
+    auto numLayers = ktxTexture->numLayers;
+    auto numFaces  = ktxTexture->numFaces;
+
+    ktx_uint8_t* ktxTextureData = ktxTexture_GetData(ktxTexture);
+
+    std::cout << width << '\t' << height << '\t' << mipLevels << '\t' << numDims << '\t' << isArray << '\t' << numLayers << '\t' << numFaces << '\n';
+
+    // 将纹理数据传递给GPU需要使用 glTexImage3D
+    // numLayers 表示array的大小
+    // GL_TEXTURE_2D_ARRAY 没有层之间的过滤(z方向)，它只是2D图像的组合，Mipmap只有两个方向(xy)，
+    // GL_TEXTURE_3D 层之间有过滤，是一个3D图像，Mipmap会包含3个方向(xyz)
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, width, height, numLayers, 0, GL_RGBA, GL_UNSIGNED_BYTE, ktxTextureData);
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+
+    ktxTexture_Destroy(ktxTexture);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        auto v = initOpenGL.GetViewMatrix();
+        auto p = initOpenGL.GetProjectionMatrix();
+
+        program.Use();
+        program.SetUniformMat4("transform", p * v);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+        quad.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST14
