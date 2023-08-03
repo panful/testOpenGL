@@ -15,7 +15,7 @@
  * 14. 使用 GL_TEXTURE_2D_ARRAY
  */
 
-#define TEST14
+#define TEST1
 
 #ifdef TEST1
 

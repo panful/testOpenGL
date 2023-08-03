@@ -1446,19 +1446,19 @@ public:
         return m_rbo;
     }
 
-    constexpr void Resize(GLsizei w, GLsizei h) const noexcept
+    void Resize(GLsizei w, GLsizei h) const noexcept
     {
         Bind();
         glRenderbufferStorage(GL_RENDERBUFFER, m_format, w, h);
         Release();
     }
 
-    constexpr void Bind() const noexcept
+    void Bind() const noexcept
     {
         glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
     }
 
-    constexpr void Release() const noexcept
+    void Release() const noexcept
     {
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
@@ -1484,38 +1484,38 @@ public:
     FrameBufferObject(const FrameBufferObject&)            = delete;
     FrameBufferObject& operator=(const FrameBufferObject&) = delete;
 
-    constexpr void AddAttachment(GLuint attachment, const Texture& texture, GLint level = 0) const
+    void AddAttachment(GLuint attachment, const Texture& texture, GLint level = 0) const
     {
         Bind();
         glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, texture.GetTarget(), texture.Get(), level);
         Release();
     }
 
-    constexpr void AddAttachment(GLuint attachment, const RenderBufferObject& rbo) const
+    void AddAttachment(GLuint attachment, const RenderBufferObject& rbo) const
     {
         Bind();
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rbo.GetHandle());
         Release();
     }
 
-    constexpr void SetDrawBuffers(const std::vector<GLenum> buffers) const
+    void SetDrawBuffers(const std::vector<GLenum> buffers) const
     {
         Bind();
         glDrawBuffers(static_cast<GLsizei>(buffers.size()), buffers.data());
         Release();
     }
 
-    constexpr void Bind() const
+    void Bind() const
     {
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     }
 
-    constexpr void Release() const
+    void Release() const
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    constexpr bool Check() const
+    bool Check() const
     {
         Bind();
         return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;

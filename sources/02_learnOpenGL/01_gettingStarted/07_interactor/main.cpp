@@ -218,7 +218,7 @@ std::unique_ptr<Renderer> CreateSphere()
     uint32_t longitude = 32;
     uint32_t latitude  = 32;
     float radius       = 1.0f;
-    auto M_PI          = std::numbers::pi_v<float>;
+    auto THE_PI          = std::numbers::pi_v<float>;
 
     std::vector<float> vertices;
     std::vector<uint32_t> indices;
@@ -226,13 +226,13 @@ std::unique_ptr<Renderer> CreateSphere()
     // Generate vertices
     for (uint32_t lat = 0; lat <= latitude; ++lat)
     {
-        float theta    = lat * M_PI / latitude;
+        float theta    = lat * THE_PI / latitude;
         float sinTheta = std::sin(theta);
         float cosTheta = std::cos(theta);
 
         for (uint32_t lon = 0; lon <= longitude; ++lon)
         {
-            float phi    = lon * 2 * M_PI / longitude;
+            float phi    = lon * 2 * THE_PI / longitude;
             float sinPhi = std::sin(phi);
             float cosPhi = std::cos(phi);
 
