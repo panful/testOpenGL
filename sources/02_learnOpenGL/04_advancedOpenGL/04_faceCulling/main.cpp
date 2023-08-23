@@ -1,9 +1,10 @@
 /*
  * 1. 背面剔除基础示例
  * 2. 对平面使用背面剔除
+ * 3.
  */
 
-#define TEST2
+#define TEST1
 
 #ifdef TEST1
 
@@ -96,7 +97,8 @@ int main()
     // 默认值是 GL_CCW 逆时针的面 Counter-clockwise
     glFrontFace(GL_CW);
 
-    // @note 只对像立方体、球体这样的封闭形状有效，不要对平面，线等图元使用背面剔除
+    // @note 面剔除影响的是三角面，即点和线没有背面剔除，因为点和线不存在顺时针或逆时针的顶点顺序
+    // 最好不要对除过立方体、球体这样的封闭形状以外的图元开启背面剔除
 
     while (!glfwWindowShouldClose(window))
     {
@@ -106,13 +108,13 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         auto distance = static_cast<float>(glfwGetTime() / 2.);
-        distance = distance >= 3.f ? 2.99f : distance;
+        distance      = distance >= 3.f ? 2.99f : distance;
         std::cout << distance << '\n';
 
         // 将相机一直靠近立方体，直到相机进入立方体内部
         // 进入立方体内部后会发现背面（绿色面）没有被渲染（关闭背面剔除可以看到渲染）
-        auto modelMat = glm::mat4(1.f);
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 3.f - distance), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modelMat       = glm::mat4(1.f);
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 3.f - distance), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         program.Use();
@@ -126,7 +128,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;
@@ -212,8 +213,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // 当矩形转到背面时，将不会显示任何图元
-        auto modelMat = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(0.f, 1.f, 0.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(0.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         program.Use();
@@ -227,7 +228,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;

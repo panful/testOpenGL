@@ -9,9 +9,10 @@
  * 7. 透视除法
  * 8. z-fighting z冲突
  * 9. 解决z-fighting
+ * 10 绘制多边形的边框、边线
  */
 
-#define TEST9
+#define TEST10
 
 #ifdef TEST1
 
@@ -28,7 +29,7 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
-const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_WIDTH  = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 const char* VS = "#version 330 core                                     \n"
@@ -81,8 +82,7 @@ int main()
     if (!success)
     {
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
-                  << infoLog << std::endl;
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
 
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -93,8 +93,7 @@ int main()
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
-                  << infoLog << std::endl;
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
 
     unsigned int shaderProgram = glCreateProgram();
@@ -106,8 +105,7 @@ int main()
     if (!success)
     {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
-                  << infoLog << std::endl;
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
     glDetachShader(shaderProgram, vertexShader);
     glDetachShader(shaderProgram, fragmentShader);
@@ -166,7 +164,8 @@ int main()
         // 1.uniform的位置值。
         // 2.告诉OpenGL我们将要发送多少个矩阵(
         // 3.是否对矩阵进行置换(Transpose)，也就是说交换矩阵的行和列。
-        //     OpenGL开发者通常使用一种内部矩阵布局，叫做列主序(Column - major Ordering)布局。GLM的默认布局就是列主序，所以并不需要置换矩阵，我们填GL_FALSE。
+        //     OpenGL开发者通常使用一种内部矩阵布局，叫做列主序(Column - major
+        //     Ordering)布局。GLM的默认布局就是列主序，所以并不需要置换矩阵，我们填GL_FALSE。
         // 4.矩阵数据，但是GLM并不是把它们的矩阵储存为OpenGL所希望接受的那种，因此要先用GLM的自带的函数value_ptr来变换这些数据。
         auto transformLoc = glGetUniformLocation(shaderProgram, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
@@ -295,7 +294,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -364,16 +362,14 @@ int main()
 
     //----------------------------------------------------------------------------------
     // 打印MVP矩阵得到的顶点坐标
-    auto print_vetices = [vertices](const char* name, const glm::mat4& mat) {
+    auto print_vetices = [vertices](const char* name, const glm::mat4& mat)
+    {
         std::cout << "---------------- " << name << '\n';
         for (size_t i = 0; i < 4; i++)
         {
             auto result_vertices = mat * glm::vec4(vertices[i * 6 + 0], vertices[i * 6 + 1], vertices[i * 6 + 2], 1.0f);
-            auto w = result_vertices.w;
-            std::cout << "w: " << w << "\t\t"
-                      << result_vertices.x / w << "\t\t"
-                      << result_vertices.y / w << "\t\t"
-                      << result_vertices.z / w << '\n';
+            auto w               = result_vertices.w;
+            std::cout << "w: " << w << "\t\t" << result_vertices.x / w << "\t\t" << result_vertices.y / w << "\t\t" << result_vertices.z / w << '\n';
         }
     };
 
@@ -412,7 +408,7 @@ int main()
         print_vetices("model + view + projection", projection * view * model);
 
         auto resultMat = glm::mat4(1.0f);
-        resultMat = projection * view * model;
+        resultMat      = projection * view * model;
         program.SetUniformMat4("transform", resultMat);
 
         glBindVertexArray(VAO);
@@ -425,7 +421,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -545,7 +540,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -670,7 +664,7 @@ int main()
         // 注意和视口大小的影响，模型是正方体，绘制出来后看起来可能不是立方体
         // auto p = glm::ortho(-1.f, 1.f, -1.f, 1.f, 4.f, 6.f);
         // 避免视口的宽高比和正交平截头体宽高比不一致导致的拉伸，可以做如下变换：
-        constexpr auto width = 800.0f;
+        constexpr auto width  = 800.0f;
         constexpr auto height = 600.0f;
         // auto p = glm::ortho(-1.f, 1.f, -1.f / (width / height), 1.f / (width / height), 4.f, 6.f);
 
@@ -686,7 +680,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -785,7 +778,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -905,7 +897,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    
 
     glfwTerminate();
     return 0;
@@ -926,8 +917,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #ifdef TEST8
 
-#include <vector>
 #include <common.hpp>
+#include <vector>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -1079,8 +1070,6 @@ int main()
     glDeleteBuffers(1, &VBO2);
     glDeleteBuffers(1, &EBO2);
 
-    
-
     glfwTerminate();
     return 0;
 }
@@ -1109,8 +1098,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 // 将近裁剪面（设置透视投影时设置）设置的离观察者远一些：提高裁剪范围内的精确度
 // 使用更高位数的深度缓冲区：提高深度缓冲区的精确度
 
-#include <vector>
 #include <common.hpp>
+#include <vector>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -1257,7 +1246,7 @@ int main()
         // r: 能产⽣于窗⼝坐标系的深度值中可分辨的差异最小值.r 是是由具体OpenGL 平台指定的 ⼀个常量.
         // ⼀个大于0的Offset 会把模型推到离你(摄像机) 更远的位置, 相应的⼀个⼩于0的Offset 会把模型拉近，
         // 一般⽽⾔, 只需要将 -1.f 和 1.f 这样简单赋值给glPolygonOffset 基本可以满⾜足需求.
-        glPolygonOffset(1.f, 1.f);
+        // glPolygonOffset(1.f, 1.f);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
@@ -1283,8 +1272,6 @@ int main()
     glDeleteBuffers(1, &VBO2);
     glDeleteBuffers(1, &EBO2);
 
-    
-
     glfwTerminate();
     return 0;
 }
@@ -1301,3 +1288,108 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST9
+
+#ifdef TEST10
+
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL opengl(Camera({ 2.f, 2.f, 8.f }));
+    auto window = opengl.GetWindow();
+
+    ShaderProgram program("resources/02_01_04_TEST10.vs", "resources/02_01_04_TEST10.fs");
+
+    // clang-format off
+    std::vector<float> vertices {
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+    };
+
+    std::vector<uint32_t> indices_poly { 
+        0, 1, 2, 0, 2, 3,
+        1, 5, 6, 1, 6, 2,
+        5, 4, 7, 5, 7, 6,
+        4, 0, 3, 4, 3, 7,
+        3, 2, 6, 3, 6, 7,
+        4, 5, 1, 4, 1, 0,
+    };
+
+    std::vector<uint32_t> indices_line { 
+        0, 1, 1, 2, 2, 3, 3, 0,
+        1, 5, 5, 6, 6, 2, 2, 1,
+        5, 4, 4, 7, 7, 6, 6, 5,
+        4, 0, 0, 3, 3, 7, 7, 4,
+        3, 2, 2, 6, 6, 7, 7, 3,
+        4, 5, 5, 1, 1, 0, 0, 4,
+    };
+    // clang-format on
+
+    Renderer poly(vertices, indices_poly, { 3 }, GL_TRIANGLES);
+    Renderer line(vertices, indices_line, { 3 }, GL_LINES);
+
+    // clang-format off
+    std::vector<glm::mat4> models { 
+        glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, 0.f)),
+        glm::translate(glm::mat4(1.f), glm::vec3(1.f, 0.f, 0.f)),
+        glm::translate(glm::mat4(1.f), glm::vec3(0.f, 1.f, 0.f)),
+        glm::translate(glm::mat4(1.f), glm::vec3(1.f, 1.f, 0.f)),
+        glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, 1.f)),
+        glm::translate(glm::mat4(1.f), glm::vec3(1.f, 0.f, 1.f)),
+        glm::translate(glm::mat4(1.f), glm::vec3(0.f, 1.f, 1.f)),
+        glm::translate(glm::mat4(1.f), glm::vec3(1.f, 1.f, 1.f)),
+    };
+    // clang-format on
+
+    glEnable(GL_DEPTH_TEST);
+    glLineWidth(2.f);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto vp = opengl.GetProjectionMatrix() * opengl.GetViewMatrix();
+
+        program.Use();
+
+        //--------------------------------------------------------------------------
+        // 多边形面
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(1.f, 1.f);
+
+        program.SetUniform3f("uColor", 1.f, 0.f, 0.f);
+        for (auto&& m : models)
+        {
+            program.SetUniformMat4("transform", vp * m);
+            poly.Draw();
+        }
+
+        glDisable(GL_POLYGON_OFFSET_FILL);
+
+        //--------------------------------------------------------------------------
+        // 多边形边框
+        program.SetUniform3f("uColor", 0.f, 1.f, 0.f);
+        for (auto&& m : models)
+        {
+            program.SetUniformMat4("transform", vp * m);
+            line.Draw();
+        }
+
+        glfwPollEvents();
+        glfwSwapBuffers(window);
+    }
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST10
