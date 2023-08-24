@@ -187,7 +187,6 @@ int main()
 #ifdef TEST2
 
 #include <common.hpp>
-#include <thread>
 
 int main()
 {
@@ -787,7 +786,6 @@ int main()
 #ifdef TEST5
 
 #include <common.hpp>
-#include <thread>
 
 int main()
 {

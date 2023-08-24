@@ -1424,7 +1424,7 @@ private:
 class RenderBufferObject
 {
 public:
-    constexpr RenderBufferObject(GLenum format, GLsizei w, GLsizei h) noexcept
+    RenderBufferObject(GLenum format, GLsizei w, GLsizei h) noexcept
         : m_format(format)
     {
         glGenRenderbuffers(1, &m_rbo);
