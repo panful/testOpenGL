@@ -1206,7 +1206,6 @@ int main()
     }
 
     //----------------------------------------------------------------------------------
-
     // 要想出现z冲突现象，必须开启深度测试
     glEnable(GL_DEPTH_TEST);
 
@@ -1221,21 +1220,17 @@ int main()
 
         // 绕(1,1,0)旋转
         auto m = glm::rotate(glm::mat4(1.0f), static_cast<float>(glfwGetTime()), glm::vec3(1, 1, 0));
-
         // 观察矩阵
         auto v = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -5));
-
         // 透视投影
         // auto p = glm::perspective(glm::radians(30.0f), 8 / 6.f, 4.f, 6.f);
-
         // 正交投影
         auto p = glm::ortho(-1.f, 1.f, -1.f / (8 / 6.f), 1.f / (8 / 6.f), 4.f, 6.f);
 
         program.SetUniformMat4("transform", p * v * m);
 
-        //-----------------------------------------------------
-
-        // 开启多边形偏移
+        //-----------------------------------------------------------------------------------
+        // 开启多边形偏移，只对多边形（三角形）有作用，GL_LINES、GL_POINTS等类型的图元没有作用
         // GL_POLYGON_OFFSET_POINT 对应光栅化模式: GL_POINT
         // GL_POLYGON_OFFSET_LINE  对应光栅化模式: GL_LINE
         // GL_POLYGON_OFFSET_FILL  对应光栅化模式: GL_FILL
@@ -1246,19 +1241,18 @@ int main()
         // r: 能产⽣于窗⼝坐标系的深度值中可分辨的差异最小值.r 是是由具体OpenGL 平台指定的 ⼀个常量.
         // ⼀个大于0的Offset 会把模型推到离你(摄像机) 更远的位置, 相应的⼀个⼩于0的Offset 会把模型拉近，
         // 一般⽽⾔, 只需要将 -1.f 和 1.f 这样简单赋值给glPolygonOffset 基本可以满⾜足需求.
-        // glPolygonOffset(1.f, 1.f);
+        glPolygonOffset(1.f, 1.f);
 
+        // 红色
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
 
         glDisable(GL_POLYGON_OFFSET_FILL);
 
-        //-----------------------------------------------------
-
+        //-----------------------------------------------------------------------------------
+        // 绿色
         glBindVertexArray(VAO2);
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
-
-        //-----------------------------------------------------
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -1349,7 +1343,7 @@ int main()
     // clang-format on
 
     glEnable(GL_DEPTH_TEST);
-    glLineWidth(2.f);
+    glLineWidth(1.f);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -1361,7 +1355,7 @@ int main()
         program.Use();
 
         //--------------------------------------------------------------------------
-        // 多边形面
+        // 多边形面，始终在边框的下面
         glEnable(GL_POLYGON_OFFSET_FILL);
         glPolygonOffset(1.f, 1.f);
 
