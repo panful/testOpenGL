@@ -24,5 +24,7 @@ int main()
     ktx_uint8_t* ktxTextureData = ktxTexture_GetData(ktxTexture);
     ktx_size_t ktxTextureSize   = ktxTexture_GetDataSize(ktxTexture);
 
-    std::cout << width << '\t' << height << '\t' << mipLevels << '\t' << ktxTextureSize << '\n';
+    std::cout << "load ktx library successful\n"
+              << "load texture metalplate01_rgba.ktx successful\nwidth:\t" << width << "\nheight:\t" << height << "\nmips:\t" << mipLevels
+              << "\nsize:\t" << ktxTextureSize << '\n';
 }
