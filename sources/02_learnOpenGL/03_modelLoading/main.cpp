@@ -11,11 +11,12 @@
 
 int main()
 {
-    InitOpenGL init(Camera({ 0, 0, 10 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    InitOpenGL init(Camera({ 5, 5, 5 }, { 0, 1, 0 }, { 0, 0, 0 }));
     auto window = init.GetWindow();
     ShaderProgram program("resources/02_03_TEST1.vs", "resources/02_03_TEST1.fs");
 
-    ModelLoading::Model ourModel("resources/backpack.obj");
+    // ModelLoading::Model ourModel("resources/backpack.obj");
+    ModelLoading::Model ourModel("resources/airplane/11803_Airplane_v1_l1.obj", false);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -31,7 +32,8 @@ int main()
 
         glm::mat4 model = glm::mat4(1.0f);
         model           = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        model           = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+        model           = glm::scale(model, glm::vec3(0.001f, 0.001f, 0.001f));
+        // model           = glm::scale(model, glm::vec3(1.f, 1.f, 1.f));
         program.SetUniformMat4("model", model);
 
         ourModel.Draw(program);
