@@ -15,7 +15,7 @@ int main()
     auto window = init.GetWindow();
     ShaderProgram program("resources/02_03_TEST1.vs", "resources/02_03_TEST1.fs");
 
-    // ModelLoading::Model ourModel("resources/backpack.obj");
+    // ModelLoading::Model ourModel("resources/backpack/backpack.obj");
     ModelLoading::Model ourModel("resources/airplane/11803_Airplane_v1_l1.obj", false);
 
     glEnable(GL_DEPTH_TEST);
