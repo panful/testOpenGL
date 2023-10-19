@@ -4,7 +4,7 @@
  * 3. X射线透视
  */
 
-#define TEST3
+#define TEST2
 
 #ifdef TEST1
 
@@ -100,7 +100,7 @@ int main()
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         // 比较模板值并将通过测试的模板值更新到模板缓冲中
         // 如果参数为0x00，则只做模板测试，并不会更新模板缓冲，和glDepthMask(GL_FALSE)效果类似
-        // 掩码值还可以设置为0x00到0xFF之间的任意值
+        // 掩码值还可以设置为0x00到0xFF之间的任意值，0xFF表示对模板值的8位数字都有效，0x00表示对模板值的8位数字都无效，其他值类似
         // 当参数为0x00时也就没必要调用glStencilOp()
         glStencilMask(0xFF);
 
