@@ -41,6 +41,11 @@ void Window::SetSize(int w, int h)
     m_windowHeight = h;
 }
 
+std::array<int, 2> Window::GetSize() const
+{
+    return { m_windowwidth, m_windowHeight };
+}
+
 void Window::SetWindowName(const std::string& name)
 {
     m_windowName = name;
@@ -86,6 +91,7 @@ void Window::SetGlfwWindow(GLFWwindow* w)
 
 void Window::AddRenderer(Renderer* r)
 {
+    r->SetWindow(this);
     m_renderers.emplace_back(r);
 }
 

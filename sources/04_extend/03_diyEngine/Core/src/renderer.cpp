@@ -60,3 +60,28 @@ Camera* Renderer::GetCamera() const
 {
     return m_camera;
 }
+
+void Renderer::SetWindow(Window* w)
+{
+    m_window = w;
+}
+
+/// @brief 设置视口在窗口上的位置
+/// @param v x0, y0, x1, y1
+void Renderer::SetViewport(const std::array<double, 4>& v)
+{
+    m_viewport = v;
+}
+
+void Renderer::SetBackground(const std::array<double, 3>& c)
+{
+    m_background      = c;
+    m_useGradientBack = false;
+}
+
+void Renderer::SetBackground(const std::array<double, 3>& c, const std::array<double, 3>& c2)
+{
+    m_background      = c;
+    m_background2     = c2;
+    m_useGradientBack = true;
+}

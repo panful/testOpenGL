@@ -2,10 +2,12 @@
 
 #include "object.h"
 #include "smartpointer.h"
+#include <array>
 #include <list>
 
 class Actor;
 class Camera;
+class Window;
 
 class Renderer : public Object
 {
@@ -14,6 +16,11 @@ public:
 
     void AddActor(Actor*);
     void RemoveActor(Actor*);
+
+    void SetWindow(Window*);
+    void SetViewport(const std::array<double, 4>&);
+    void SetBackground(const std::array<double, 3>&);
+    void SetBackground(const std::array<double, 3>&, const std::array<double, 3>&);
 
     virtual void Render();
     void ResetCamera() const;
@@ -28,8 +35,15 @@ protected:
     ~Renderer() override;
 
 protected:
-    std::list<SmartPointer<Actor>> m_actors;
+    std::list<SmartPointer<Actor>> m_actors {};
     Camera* m_camera { nullptr };
+    Window* m_window { nullptr };
+
+    std::array<double, 4> m_viewport { 0., 0., 1., 1. };
+
+    bool m_useGradientBack { false };
+    std::array<double, 3> m_background {};
+    std::array<double, 3> m_background2 {};
 
     bool m_useShadows { false };
     bool m_useDepthPeeling { false };

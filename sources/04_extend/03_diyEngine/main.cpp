@@ -21,7 +21,7 @@ int main()
 
     New<Cells> cells;
     cells->InsertNextCell({ 0, 1, 2 });
-    cells->InsertNextCell({ 3,4 });
+    cells->InsertNextCell({ 3, 4 });
 
     New<Geometry> geom;
     geom->SetPoints(points);
@@ -35,9 +35,17 @@ int main()
 
     New<Renderer> renderer;
     renderer->AddActor(actor);
+    renderer->SetViewport({ 0.1, 0.1, 0.45, 0.45 });
+    renderer->SetBackground({ .1, .2, .3 });
+
+    New<Renderer> renderer2;
+    renderer2->AddActor(actor);
+    renderer2->SetViewport({ 0.55, 0.55, 0.9, 0.9 });
+    renderer2->SetBackground({ .3, .2, .1 });
 
     New<Window> window;
     window->AddRenderer(renderer);
+    window->AddRenderer(renderer2);
 
     New<InteractorStyle> style;
     New<Interactor> interactor;

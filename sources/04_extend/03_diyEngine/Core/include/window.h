@@ -3,6 +3,7 @@
 #include "object.h"
 #include <string>
 #include <list>
+#include <array>
 
 class Renderer;
 struct GLFWwindow;
@@ -20,6 +21,8 @@ public:
     void RemoveRenderer(Renderer*);
 
     void SetSize(int, int);
+    std::array<int, 2> GetSize() const;
+
     void SetWindowName(const std::string&);
     GLFWwindow* GetGlfwWindow() const;
     void SetGlfwWindow(GLFWwindow*);
