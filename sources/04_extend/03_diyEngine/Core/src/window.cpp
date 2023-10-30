@@ -1,11 +1,14 @@
 #include "window.h"
 #include "log.h"
+#include "objectFactory.h"
 #include "renderer.h"
 // clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 // clang-format on
 #include <mutex>
+
+StandardNewMacro(Window);
 
 Window::Window()
 {
@@ -17,6 +20,10 @@ Window::~Window()
     LogDebug("");
     glfwDestroyWindow(m_window);
     glfwTerminate();
+    for (const auto renderer : m_renderers)
+    {
+        renderer->UnRegister(this);
+    }
 }
 
 void Window::Render()
@@ -41,7 +48,7 @@ void Window::SetSize(int w, int h)
     m_windowHeight = h;
 }
 
-std::array<int, 2> Window::GetSize() const
+std::array<int, 2> Window::GetSize() const noexcept
 {
     return { m_windowwidth, m_windowHeight };
 }
@@ -79,7 +86,7 @@ void Window::CreateWindow()
     }
 }
 
-GLFWwindow* Window::GetGlfwWindow() const
+GLFWwindow* Window::GetGlfwWindow() const noexcept
 {
     return m_window;
 }
@@ -89,12 +96,26 @@ void Window::SetGlfwWindow(GLFWwindow* w)
     m_window = w;
 }
 
-void Window::AddRenderer(Renderer* r)
+void Window::AddRenderer(Renderer* renderer)
 {
-    r->SetWindow(this);
-    m_renderers.emplace_back(r);
+    if (!HasRenderer(renderer))
+    {
+        renderer->SetWindow(this);
+        m_renderers.emplace_back(renderer);
+        renderer->Register(this);
+    }
 }
 
-void Window::RemoveRenderer(Renderer*)
+void Window::RemoveRenderer(Renderer* renderer)
 {
+    if (HasRenderer(renderer))
+    {
+        m_renderers.remove(renderer);
+        renderer->UnRegister(this);
+    }
+}
+
+bool Window::HasRenderer(Renderer* renderer) const noexcept
+{
+    return !(std::find(std::begin(m_renderers), std::end(m_renderers), renderer) == m_renderers.end());
 }

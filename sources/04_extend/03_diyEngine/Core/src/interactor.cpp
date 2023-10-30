@@ -2,8 +2,11 @@
 #include "interactor.h"
 #include "interactorStyle.h"
 #include "log.h"
+#include "objectFactory.h"
 #include "window.h"
 #include <GLFW/glfw3.h>
+
+StandardNewMacro(Interactor);
 
 Interactor::Interactor()
 {
@@ -13,6 +16,8 @@ Interactor::Interactor()
 Interactor::~Interactor()
 {
     LogDebug("");
+    DestructObjectMemberMacro(m_window);
+    DestructObjectMemberMacro(m_interactorStyle);
 }
 
 void Interactor::Start()
@@ -34,7 +39,7 @@ void Interactor::Start()
     }
 }
 
-void Interactor::Render() const
+void Interactor::Render()
 {
     if (m_window)
     {
@@ -42,14 +47,14 @@ void Interactor::Render() const
     }
 }
 
-void Interactor::SetWindow(Window* w)
+void Interactor::SetWindow(Window* window)
 {
-    m_window = w;
+    SetObjectBodyMacro(m_window, window);
 }
 
-void Interactor::SetInteractorStyle(InteractorStyle* style)
+void Interactor::SetInteractorStyle(InteractorStyle* interactorStyle)
 {
-    m_interactorStyle = style;
+    SetObjectBodyMacro(m_interactorStyle, interactorStyle);
 }
 
 void Interactor::ProcessInput(GLFWwindow* window)

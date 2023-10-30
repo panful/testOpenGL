@@ -13,11 +13,12 @@ Mapper::Mapper()
 Mapper::~Mapper()
 {
     LogDebug("");
+    DestructObjectMemberMacro(m_geometry);
 }
 
-void Mapper::SetGeometry(Geometry* geom)
+void Mapper::SetGeometry(Geometry* geometry)
 {
-    m_geometry = geom;
+    SetObjectBodyMacro(m_geometry, geometry);
 }
 
 void Mapper::Render()

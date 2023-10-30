@@ -1,9 +1,9 @@
 #pragma once
 
 #include "object.h"
-#include <string>
-#include <list>
 #include <array>
+#include <list>
+#include <string>
 
 class Renderer;
 struct GLFWwindow;
@@ -11,20 +11,17 @@ struct GLFWwindow;
 class Window : public Object
 {
 public:
-    static Window* New()
-    {
-        return new Window();
-    }
+    static Window* New();
 
     void Render();
     void AddRenderer(Renderer*);
     void RemoveRenderer(Renderer*);
 
     void SetSize(int, int);
-    std::array<int, 2> GetSize() const;
+    std::array<int, 2> GetSize() const noexcept;
 
     void SetWindowName(const std::string&);
-    GLFWwindow* GetGlfwWindow() const;
+    GLFWwindow* GetGlfwWindow() const noexcept;
     void SetGlfwWindow(GLFWwindow*);
 
 protected:
@@ -34,6 +31,7 @@ protected:
 private:
     void Init() const;
     void CreateWindow();
+    bool HasRenderer(Renderer*) const noexcept;
 
 private:
     GLFWwindow* m_window { nullptr };

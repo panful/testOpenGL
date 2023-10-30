@@ -5,10 +5,7 @@
 class InteractorStyle : public Object
 {
 public:
-    static InteractorStyle* New()
-    {
-        return new InteractorStyle();
-    }
+    static InteractorStyle* New();
 
 public:
     virtual void MouseMoveEvent();

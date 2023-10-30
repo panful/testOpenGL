@@ -1,13 +1,12 @@
 #pragma once
 
 #include "object.h"
-#include "smartpointer.h"
 #include <array>
 #include <list>
 
 class Actor;
-class Camera;
 class Window;
+class Camera;
 
 class Renderer : public Object
 {
@@ -25,7 +24,7 @@ public:
     virtual void Render();
     void ResetCamera() const;
     void SetCamera(Camera*);
-    Camera* GetCamera() const;
+    Camera* GetCamera() const noexcept;
 
 private:
     bool HasActor(Actor*);
@@ -35,7 +34,7 @@ protected:
     ~Renderer() override;
 
 protected:
-    std::list<SmartPointer<Actor>> m_actors {};
+    std::list<Actor*> m_actors {};
     Camera* m_camera { nullptr };
     Window* m_window { nullptr };
 

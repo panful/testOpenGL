@@ -2,8 +2,10 @@
 
 #include "renderer.h"
 #include "actor.h"
+#include "camera.h"
 #include "log.h"
 #include "objectFactory.h"
+#include "window.h"
 #include <algorithm>
 
 ObjectFactoryNewMacro(Renderer);
@@ -11,11 +13,17 @@ ObjectFactoryNewMacro(Renderer);
 Renderer::Renderer()
 {
     LogDebug("");
+    m_camera = Camera::New();
 }
 
 Renderer::~Renderer()
 {
     LogDebug("");
+    DestructObjectMemberMacro(m_camera);
+    for (const auto actor : m_actors)
+    {
+        actor->UnRegister(this);
+    }
 }
 
 void Renderer::AddActor(Actor* actor)
@@ -23,6 +31,7 @@ void Renderer::AddActor(Actor* actor)
     if (!HasActor(actor))
     {
         m_actors.emplace_back(actor);
+        actor->Register(this);
     }
 }
 
@@ -31,6 +40,7 @@ void Renderer::RemoveActor(Actor* actor)
     if (HasActor(actor))
     {
         m_actors.remove(actor);
+        actor->UnRegister(this);
     }
 }
 
@@ -41,7 +51,7 @@ bool Renderer::HasActor(Actor* actor)
 
 void Renderer::Render()
 {
-    for (const auto& actor : m_actors)
+    for (const auto actor : m_actors)
     {
         actor->Render();
     }
@@ -51,37 +61,37 @@ void Renderer::ResetCamera() const
 {
 }
 
-void Renderer::SetCamera(Camera* cam)
+void Renderer::SetCamera(Camera* camera)
 {
-    m_camera = cam;
+    SetObjectBodyMacro(m_camera, camera);
 }
 
-Camera* Renderer::GetCamera() const
+Camera* Renderer::GetCamera() const noexcept
 {
     return m_camera;
 }
 
-void Renderer::SetWindow(Window* w)
+void Renderer::SetWindow(Window* window)
 {
-    m_window = w;
+    m_window = window;
 }
 
 /// @brief 设置视口在窗口上的位置
-/// @param v x0, y0, x1, y1
-void Renderer::SetViewport(const std::array<double, 4>& v)
+/// @param viewport x0, y0, x1, y1
+void Renderer::SetViewport(const std::array<double, 4>& viewport)
 {
-    m_viewport = v;
+    m_viewport = viewport;
 }
 
-void Renderer::SetBackground(const std::array<double, 3>& c)
+void Renderer::SetBackground(const std::array<double, 3>& color)
 {
-    m_background      = c;
+    m_background      = color;
     m_useGradientBack = false;
 }
 
-void Renderer::SetBackground(const std::array<double, 3>& c, const std::array<double, 3>& c2)
+void Renderer::SetBackground(const std::array<double, 3>& color, const std::array<double, 3>& color2)
 {
-    m_background      = c;
-    m_background2     = c2;
+    m_background      = color;
+    m_background2     = color2;
     m_useGradientBack = true;
 }

@@ -18,6 +18,7 @@ set(HEADERS
     Core/include/objectFactory.h
     Core/include/points.h
     Core/include/cells.h
+    Core/include/property.h
     OpenGL/include/OpenGLObjectFactory.h
     OpenGL/include/OpenGLActor.h
     OpenGL/include/OpenGLMapper.h
@@ -43,6 +44,7 @@ set(SRCS
     Core/src/objectFactory.cpp
     Core/src/points.cpp
     Core/src/cells.cpp
+    Core/src/property.cpp
     OpenGL/src/OpenGLObjectFactory.cpp
     OpenGL/src/OpenGLActor.cpp
     OpenGL/src/OpenGLMapper.cpp

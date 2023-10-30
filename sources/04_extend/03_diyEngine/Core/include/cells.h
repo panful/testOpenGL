@@ -19,13 +19,13 @@ public:
     void InsertNextCell(std::initializer_list<uint32_t>&&);
     void InsertCells(CellType, const std::vector<uint32_t>&);
 
-    std::vector<uint32_t> GetVertexIndices() const;
-    std::vector<uint32_t> GetLineIndices() const;
-    std::vector<uint32_t> GetTriangleIndices() const;
+    std::vector<uint32_t> GetVertexIndices() const noexcept;
+    std::vector<uint32_t> GetLineIndices() const noexcept;
+    std::vector<uint32_t> GetTriangleIndices() const noexcept;
 
 protected:
     Cells();
-    ~Cells();
+    ~Cells() override;
 
 private:
     std::vector<uint32_t> m_vertex;

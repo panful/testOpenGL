@@ -1,6 +1,8 @@
 #include "geometry.h"
+#include "cells.h"
 #include "log.h"
 #include "objectFactory.h"
+#include "points.h"
 
 StandardNewMacro(Geometry);
 
@@ -12,24 +14,26 @@ Geometry::Geometry()
 Geometry::~Geometry()
 {
     LogDebug("");
+    DestructObjectMemberMacro(m_points);
+    DestructObjectMemberMacro(m_cells);
 }
 
-void Geometry::SetPoints(Points* p)
+void Geometry::SetPoints(Points* points)
 {
-    m_points = p;
+    SetObjectBodyMacro(m_points, points);
 }
 
-void Geometry::SetCells(Cells* c)
+void Geometry::SetCells(Cells* cells)
 {
-    m_cells = c;
+    SetObjectBodyMacro(m_cells, cells);
 }
 
-Points* Geometry::GetPoints() const
+Points* Geometry::GetPoints() const noexcept
 {
     return m_points;
 }
 
-Cells* Geometry::GetCells() const
+Cells* Geometry::GetCells() const noexcept
 {
     return m_cells;
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "object.h"
-#include "smartpointer.h"
 #include <array>
 
 class Window;
@@ -11,16 +10,14 @@ struct GLFWwindow;
 class Interactor : public Object
 {
 public:
-    static Interactor* New()
-    {
-        return new Interactor();
-    }
+    static Interactor* New();
 
-    virtual void Render() const;
+    virtual void Render();
     virtual void Start();
+
     void SetWindow(Window*);
     void SetInteractorStyle(InteractorStyle*);
-    void ProcessInput(GLFWwindow* window);
+    void ProcessInput(GLFWwindow*);
 
 protected:
     Interactor();

@@ -13,15 +13,15 @@ public:
     void SetPoints(Points*);
     void SetCells(Cells*);
 
-    Points* GetPoints() const;
-    Cells* GetCells() const;
+    Points* GetPoints() const noexcept;
+    Cells* GetCells() const noexcept;
 
     size_t GetNumberOfPoints() const noexcept;
     size_t GetNumberOfCells() const noexcept;
 
 protected:
     Geometry();
-    ~Geometry();
+    ~Geometry() override;
 
 private:
     Points* m_points { nullptr };

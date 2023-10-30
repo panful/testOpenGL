@@ -1,5 +1,8 @@
 #include "interactorStyle.h"
 #include "log.h"
+#include "objectFactory.h"
+
+StandardNewMacro(InteractorStyle);
 
 InteractorStyle::InteractorStyle()
 {

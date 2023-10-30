@@ -14,7 +14,7 @@ Cells::~Cells()
     LogDebug("");
 }
 
-void Cells::Allocate(size_t size)
+void Cells::Allocate(size_t point_size)
 {
 }
 
@@ -61,17 +61,17 @@ void Cells::InsertCells(CellType type, const std::vector<uint32_t>& cells)
     }
 }
 
-std::vector<uint32_t> Cells::GetVertexIndices() const
+std::vector<uint32_t> Cells::GetVertexIndices() const noexcept
 {
     return m_vertex;
 }
 
-std::vector<uint32_t> Cells::GetLineIndices() const
+std::vector<uint32_t> Cells::GetLineIndices() const noexcept
 {
     return m_line;
 }
 
-std::vector<uint32_t> Cells::GetTriangleIndices() const
+std::vector<uint32_t> Cells::GetTriangleIndices() const noexcept
 {
     return m_triangle;
 }

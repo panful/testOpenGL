@@ -46,3 +46,25 @@ protected:
         }                                                                        \
         return thisClass::New();                                                 \
     }
+
+#define SetObjectBodyMacro(Name, Obj) \
+    if (Name != Obj)                  \
+    {                                 \
+        auto tmp = Name;              \
+        Name     = Obj;               \
+        if (Name)                     \
+        {                             \
+            Name->Register(this);     \
+        }                             \
+        if (tmp)                      \
+        {                             \
+            tmp->UnRegister(this);    \
+        }                             \
+    }
+
+#define DestructObjectMemberMacro(Name) \
+    if (Name)                           \
+    {                                   \
+        Name->Delete();                 \
+        Name = nullptr;                 \
+    }

@@ -26,7 +26,7 @@ void Points::InsertNextPoint(float x, float y, float z)
     m_points.emplace_back(z);
 }
 
-std::vector<float> Points::GetPoints() const
+std::vector<float> Points::GetPoints() const noexcept
 {
     return m_points;
 }

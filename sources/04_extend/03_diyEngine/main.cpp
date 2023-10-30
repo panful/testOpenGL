@@ -8,11 +8,13 @@
 #include "points.h"
 #include "renderer.h"
 #include "window.h"
+#include "property.h"
+#include "log.h"
 
 int main()
 {
     New<Points> points;
-    points->Allocate(3);
+    points->Allocate(5);
     points->InsertNextPoint(-.5f, -.5f, 0.f);
     points->InsertNextPoint(.5f, -.5f, 0.f);
     points->InsertNextPoint(0.f, .5f, 0.f);
@@ -32,6 +34,7 @@ int main()
 
     New<Actor> actor;
     actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor({ 1., 1., 0. });
 
     New<Renderer> renderer;
     renderer->AddActor(actor);
