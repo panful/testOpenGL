@@ -3,13 +3,13 @@
 #include "geometry.h"
 #include "interactor.h"
 #include "interactorStyle.h"
+#include "log.h"
 #include "mapper.h"
 #include "new.h"
 #include "points.h"
+#include "property.h"
 #include "renderer.h"
 #include "window.h"
-#include "property.h"
-#include "log.h"
 
 int main()
 {

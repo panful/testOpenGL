@@ -5,6 +5,7 @@
 #include "objectFactory.h"
 #include "property.h"
 #include "smartpointer.h"
+#include <limits>
 
 ObjectFactoryNewMacro(Actor);
 
@@ -23,12 +24,25 @@ Actor::~Actor()
 
 void Actor::Render()
 {
-    m_mapper->Render();
+    if(m_property)
+    {
+        m_property->Render();
+    }
+    m_mapper->Render(this);
 }
 
 void Actor::SetMapper(Mapper* mapper)
 {
     SetObjectBodyMacro(m_mapper, mapper);
+}
+
+bool Actor::IsTranslucent() const noexcept
+{
+    if (m_property && m_property->GetOpacity() < 1.0)
+    {
+        return true;
+    }
+    return false;
 }
 
 void Actor::SetProperty(Property* property)

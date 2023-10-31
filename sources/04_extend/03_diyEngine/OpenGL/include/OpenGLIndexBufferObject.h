@@ -9,5 +9,5 @@ public:
 
 protected:
     OpenGLIndexBufferObject();
-    ~OpenGLIndexBufferObject();
+    ~OpenGLIndexBufferObject() override;
 };

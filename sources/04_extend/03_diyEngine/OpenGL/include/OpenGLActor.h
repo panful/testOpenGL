@@ -11,5 +11,5 @@ public:
 
 protected:
     OpenGLActor();
-    ~OpenGLActor();
+    ~OpenGLActor() override;
 };

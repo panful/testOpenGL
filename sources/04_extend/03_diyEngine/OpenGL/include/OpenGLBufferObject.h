@@ -23,7 +23,7 @@ public:
 
 protected:
     OpenGLBufferObject();
-    ~OpenGLBufferObject();
+    ~OpenGLBufferObject() override;
 
     Internal m_internal;
 };

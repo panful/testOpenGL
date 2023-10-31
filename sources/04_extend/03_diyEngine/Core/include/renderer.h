@@ -22,6 +22,10 @@ public:
     void SetBackground(const std::array<double, 3>&, const std::array<double, 3>&);
 
     virtual void Render();
+    virtual void RenderOpaque();
+    virtual void RenderTranslucent();
+    virtual void Clear();
+
     void ResetCamera() const;
     void SetCamera(Camera*);
     Camera* GetCamera() const noexcept;

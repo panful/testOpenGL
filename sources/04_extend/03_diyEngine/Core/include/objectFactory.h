@@ -62,6 +62,8 @@ protected:
         }                             \
     }
 
+#define ConstructObjectMemberMacro(Name, Type) Name = Type::New();
+
 #define DestructObjectMemberMacro(Name) \
     if (Name)                           \
     {                                   \

@@ -57,6 +57,22 @@ void Renderer::Render()
     }
 }
 
+void Renderer::RenderOpaque()
+{
+    for (const auto actor : m_actors)
+    {
+        actor->Render();
+    }
+}
+
+void Renderer::RenderTranslucent()
+{
+}
+
+void Renderer::Clear()
+{
+}
+
 void Renderer::ResetCamera() const
 {
 }

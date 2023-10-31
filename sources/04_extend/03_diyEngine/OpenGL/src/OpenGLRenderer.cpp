@@ -2,6 +2,7 @@
 #include "actor.h"
 #include "log.h"
 #include "objectFactory.h"
+#include "property.h"
 #include "window.h"
 #include <glad/glad.h>
 
@@ -30,15 +31,42 @@ void OpenGLRenderer::Render()
     glScissor(x, y, w, h);
     glViewport(x, y, w, h);
 
+    Clear();
+    RenderOpaque();
+
+    bool hasTranslucent { false };
+    for (const auto actor : m_actors)
+    {
+        if (actor->IsTranslucent())
+        {
+            hasTranslucent = true;
+            break;
+        }
+    }
+    if (hasTranslucent)
+    {
+        RenderTranslucent();
+    }
+}
+
+/// @brief 渲染不透明图元
+void OpenGLRenderer::RenderOpaque()
+{
+    Renderer::RenderOpaque();
+}
+
+/// @brief 渲染透明图元
+void OpenGLRenderer::RenderTranslucent()
+{
+}
+
+/// @brief 清除背景/Z缓冲区
+void OpenGLRenderer::Clear()
+{
     auto r = static_cast<float>(m_background[0]);
     auto g = static_cast<float>(m_background[1]);
     auto b = static_cast<float>(m_background[2]);
 
     glClearColor(r, g, b, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
-
-    for (const auto actor : m_actors)
-    {
-        actor->Render();
-    }
 }

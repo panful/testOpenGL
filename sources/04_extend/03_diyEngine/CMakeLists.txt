@@ -28,6 +28,7 @@ set(HEADERS
     OpenGL/include/OpenGLIndexBufferObject.h
     OpenGL/include/OpenGLVertexArrayObject.h
     OpenGL/include/OpenGLShaderProgram.h
+    OpenGL/include/OpenGLProperty.h
 )
 set(SRCS
     Core/src/actor.cpp
@@ -54,6 +55,7 @@ set(SRCS
     OpenGL/src/OpenGLIndexBufferObject.cpp
     OpenGL/src/OpenGLVertexArrayObject.cpp
     OpenGL/src/OpenGLShaderProgram.cpp
+    OpenGL/src/OpenGLProperty.cpp
 )
 
 add_executable(${target_name} "main.cpp" ${HEADERS} ${SRCS})

@@ -3,6 +3,7 @@
 #include "object.h"
 
 class Geometry;
+class Actor;
 
 class Mapper : public Object
 {
@@ -10,7 +11,7 @@ public:
     static Mapper* New();
 
     void SetGeometry(Geometry*);
-    virtual void Render();
+    virtual void Render(Actor*);
 
 protected:
     Mapper();

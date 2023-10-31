@@ -9,5 +9,5 @@ public:
 
 protected:
     OpenGLVertexBufferObject();
-    ~OpenGLVertexBufferObject();
+    ~OpenGLVertexBufferObject() override;
 };

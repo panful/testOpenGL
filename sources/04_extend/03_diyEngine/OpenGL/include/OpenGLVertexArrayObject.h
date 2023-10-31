@@ -13,7 +13,7 @@ public:
 
 protected:
     OpenGLVertexArrayObject();
-    ~OpenGLVertexArrayObject();
+    ~OpenGLVertexArrayObject() override;
 
 private:
     uint32_t m_handle { 0 };

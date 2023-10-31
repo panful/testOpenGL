@@ -21,7 +21,7 @@ void Mapper::SetGeometry(Geometry* geometry)
     SetObjectBodyMacro(m_geometry, geometry);
 }
 
-void Mapper::Render()
+void Mapper::Render(Actor*)
 {
 }
 

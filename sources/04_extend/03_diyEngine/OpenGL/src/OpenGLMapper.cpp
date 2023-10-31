@@ -3,11 +3,13 @@
 #include "OpenGLShaderProgram.h"
 #include "OpenGLVertexArrayObject.h"
 #include "OpenGLVertexBufferObject.h"
+#include "actor.h"
 #include "cells.h"
 #include "geometry.h"
 #include "log.h"
 #include "objectFactory.h"
 #include "points.h"
+#include "property.h"
 #include "smartpointer.h"
 #include <glad/glad.h>
 
@@ -21,14 +23,20 @@ OpenGLMapper::OpenGLMapper()
 OpenGLMapper::~OpenGLMapper()
 {
     LogDebug("");
+    DestructObjectMemberMacro(m_vao);
+    DestructObjectMemberMacro(m_vbo);
+    DestructObjectMemberMacro(m_iboVertex);
+    DestructObjectMemberMacro(m_iboLine);
+    DestructObjectMemberMacro(m_iboTriangle);
+    DestructObjectMemberMacro(m_shaderProgram);
 }
 
-void OpenGLMapper::Render()
+void OpenGLMapper::Render(Actor* actor)
 {
     if (m_dirty)
     {
         BuildBufferObjects();
-        BuildShaderProgram();
+        BuildShaderProgram(actor);
 
         m_dirty = false;
     }
@@ -57,9 +65,8 @@ void OpenGLMapper::Render()
 
 void OpenGLMapper::BuildBufferObjects()
 {
-    m_vao = SmartPointer<OpenGLVertexArrayObject>::New();
-    m_vbo = SmartPointer<OpenGLVertexBufferObject>::New();
-
+    ConstructObjectMemberMacro(m_vao, OpenGLVertexArrayObject);
+    ConstructObjectMemberMacro(m_vbo, OpenGLVertexBufferObject);
     m_vao->Bind();
     m_vbo->Bind();
     m_vbo->UpLoad(m_geometry->GetPoints()->GetPoints());
@@ -68,29 +75,31 @@ void OpenGLMapper::BuildBufferObjects()
 
     if (!m_geometry->GetCells()->GetVertexIndices().empty())
     {
-        m_iboVertex = SmartPointer<OpenGLIndexBufferObject>::New();
+        ConstructObjectMemberMacro(m_iboVertex, OpenGLIndexBufferObject);
         m_iboVertex->Bind();
         m_iboVertex->UpLoad(m_geometry->GetCells()->GetVertexIndices());
         m_iboVertex->UnBind();
     }
     if (!m_geometry->GetCells()->GetLineIndices().empty())
     {
-        m_iboLine = SmartPointer<OpenGLIndexBufferObject>::New();
+
+        ConstructObjectMemberMacro(m_iboLine, OpenGLIndexBufferObject);
         m_iboLine->Bind();
         m_iboLine->UpLoad(m_geometry->GetCells()->GetLineIndices());
         m_iboLine->UnBind();
     }
     if (!m_geometry->GetCells()->GetTriangleIndices().empty())
     {
-        m_iboTriangle = SmartPointer<OpenGLIndexBufferObject>::New();
+        ConstructObjectMemberMacro(m_iboTriangle, OpenGLIndexBufferObject);
         m_iboTriangle->Bind();
         m_iboTriangle->UpLoad(m_geometry->GetCells()->GetTriangleIndices());
         m_iboTriangle->UnBind();
     }
 }
 
-void OpenGLMapper::BuildShaderProgram()
+void OpenGLMapper::BuildShaderProgram(Actor* actor)
 {
-    m_shaderProgram = SmartPointer<OpenGLShaderProgram>::New();
+    ConstructObjectMemberMacro(m_shaderProgram, OpenGLShaderProgram);
     m_shaderProgram->SetAttribute();
+    m_shaderProgram->ReplaceColor(actor->GetProperty()->GetColor());
 }

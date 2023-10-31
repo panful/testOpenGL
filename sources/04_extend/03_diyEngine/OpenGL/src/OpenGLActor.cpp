@@ -2,6 +2,7 @@
 #include "log.h"
 #include "objectFactory.h"
 #include "mapper.h"
+#include "property.h"
 
 StandardNewMacro(OpenGLActor);
 
@@ -17,5 +18,5 @@ OpenGLActor::~OpenGLActor()
 
 void OpenGLActor::Render()
 {
-    m_mapper->Render();
+    m_mapper->Render(this);
 }

@@ -23,11 +23,16 @@ class Property : public Object
 public:
     static Property* New();
 
+    virtual void Render();
+
     void SetColor(const std::array<double, 3>&);
     std::array<double, 3> GetColor() const noexcept;
 
     void SetEdgeColor(const std::array<double, 3>&);
     std::array<double, 3> GetEdgeColor() const noexcept;
+
+    void SetOpacity(double);
+    double GetOpacity() const noexcept;
 
     void SetPointSize(double);
     double GetPointSize() const noexcept;
@@ -39,7 +44,7 @@ public:
     Representation GetReresentation() const noexcept;
 
     void SetEdgeVisibility(bool);
-    bool GetEdgeVisibility(bool) const noexcept;
+    bool GetEdgeVisibility() const noexcept;
     void EdgeVisibilityOn();
     void EdgeVisibilityOff();
 
@@ -47,7 +52,7 @@ protected:
     Property();
     ~Property() override;
 
-private:
+protected:
     std::array<double, 3> m_color { 1., 1., 1. };
     std::array<double, 3> m_ambientColor { 1., 1., 1. };
     std::array<double, 3> m_diffuseColor { 1., 1., 1. };

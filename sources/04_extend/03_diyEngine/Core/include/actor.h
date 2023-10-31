@@ -13,6 +13,8 @@ public:
     void SetMapper(Mapper*);
     virtual void Render();
 
+    bool IsTranslucent() const noexcept;
+
     void SetProperty(Property*);
     Property* GetProperty() const noexcept;
 
