@@ -14,19 +14,24 @@ Points::~Points()
     LogDebug("");
 }
 
+/// @brief 申请size个顶点的内存
+/// @param size 
 void Points::Allocate(size_t size)
 {
     m_points.reserve(size * 3);
 }
 
-void Points::InsertNextPoint(float x, float y, float z)
-{
-    m_points.emplace_back(x);
-    m_points.emplace_back(y);
-    m_points.emplace_back(z);
-}
-
 std::vector<float> Points::GetPoints() const noexcept
 {
     return m_points;
+}
+
+void Points::SetNumberofPoints(size_t num)
+{
+    m_points.resize(num);
+}
+
+size_t Points::GetNumberOfPoints() const noexcept
+{
+    return m_points.size() / 3;
 }

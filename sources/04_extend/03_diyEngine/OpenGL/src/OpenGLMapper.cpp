@@ -2,16 +2,16 @@
 #include "OpenGLIndexBufferObject.h"
 #include "OpenGLShaderProgram.h"
 #include "OpenGLVertexArrayObject.h"
-#include "OpenGLVertexBufferObject.h"
+#include "OpenGLVertexBufferObjectGroup.h"
 #include "actor.h"
 #include "cells.h"
+#include "dataArray.h"
 #include "geometry.h"
 #include "log.h"
 #include "objectFactory.h"
 #include "points.h"
 #include "property.h"
 #include "smartpointer.h"
-#include <glad/glad.h>
 
 StandardNewMacro(OpenGLMapper);
 
@@ -24,10 +24,11 @@ OpenGLMapper::~OpenGLMapper()
 {
     LogDebug("");
     DestructObjectMemberMacro(m_vao);
-    DestructObjectMemberMacro(m_vbo);
-    DestructObjectMemberMacro(m_iboVertex);
-    DestructObjectMemberMacro(m_iboLine);
-    DestructObjectMemberMacro(m_iboTriangle);
+    for (auto elem : m_primitives)
+    {
+        DestructObjectMemberMacro(elem);
+    }
+    DestructObjectMemberMacro(m_vbos);
     DestructObjectMemberMacro(m_shaderProgram);
 }
 
@@ -44,19 +45,19 @@ void OpenGLMapper::Render(Actor* actor)
     m_shaderProgram->Use();
     m_vao->Bind();
 
-    if (m_iboVertex)
+    if (m_primitives[PT_Point])
     {
-        m_iboVertex->Bind();
+        m_primitives[PT_Point]->Bind();
         glDrawElements(GL_POINTS, static_cast<GLsizei>(m_geometry->GetCells()->GetVertexIndices().size()), GL_UNSIGNED_INT, 0);
     }
-    if (m_iboLine)
+    if (m_primitives[PT_Line])
     {
-        m_iboLine->Bind();
+        m_primitives[PT_Line]->Bind();
         glDrawElements(GL_LINES, static_cast<GLsizei>(m_geometry->GetCells()->GetLineIndices().size()), GL_UNSIGNED_INT, 0);
     }
-    if (m_iboTriangle)
+    if (m_primitives[PT_Triangle])
     {
-        m_iboTriangle->Bind();
+        m_primitives[PT_Triangle]->Bind();
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_geometry->GetCells()->GetTriangleIndices().size()), GL_UNSIGNED_INT, 0);
     }
 
@@ -66,40 +67,104 @@ void OpenGLMapper::Render(Actor* actor)
 void OpenGLMapper::BuildBufferObjects()
 {
     ConstructObjectMemberMacro(m_vao, OpenGLVertexArrayObject);
-    ConstructObjectMemberMacro(m_vbo, OpenGLVertexBufferObject);
+    ConstructObjectMemberMacro(m_vbos, OpenGLVertexBufferObjectGroup);
+
     m_vao->Bind();
-    m_vbo->Bind();
-    m_vbo->UpLoad(m_geometry->GetPoints()->GetPoints());
-    m_vao->VertexAttrib();
+
+    if (auto points = m_geometry->GetPoints()) [[likely]]
+    {
+        m_vbos->CacheVertexAttribute(OpenGLVertexAttributes::Pos, points->GetPoints());
+    }
+    else [[unlikely]]
+    {
+        LogWarn("Points were nullptr");
+    }
+
+    BuildColorBufferObject();
+
     m_vao->UnBind();
 
+    BuildAllIBOs();
+}
+
+void OpenGLMapper::BuildAllIBOs()
+{
     if (!m_geometry->GetCells()->GetVertexIndices().empty())
     {
-        ConstructObjectMemberMacro(m_iboVertex, OpenGLIndexBufferObject);
-        m_iboVertex->Bind();
-        m_iboVertex->UpLoad(m_geometry->GetCells()->GetVertexIndices());
-        m_iboVertex->UnBind();
+        ConstructObjectMemberMacro(m_primitives[PT_Point], OpenGLIndexBufferObject);
+        m_primitives[PT_Point]->Bind();
+        m_primitives[PT_Point]->UpLoad(m_geometry->GetCells()->GetVertexIndices());
+        m_primitives[PT_Point]->UnBind();
     }
     if (!m_geometry->GetCells()->GetLineIndices().empty())
     {
-
-        ConstructObjectMemberMacro(m_iboLine, OpenGLIndexBufferObject);
-        m_iboLine->Bind();
-        m_iboLine->UpLoad(m_geometry->GetCells()->GetLineIndices());
-        m_iboLine->UnBind();
+        ConstructObjectMemberMacro(m_primitives[PT_Line], OpenGLIndexBufferObject);
+        m_primitives[PT_Line]->Bind();
+        m_primitives[PT_Line]->UpLoad(m_geometry->GetCells()->GetLineIndices());
+        m_primitives[PT_Line]->UnBind();
     }
     if (!m_geometry->GetCells()->GetTriangleIndices().empty())
     {
-        ConstructObjectMemberMacro(m_iboTriangle, OpenGLIndexBufferObject);
-        m_iboTriangle->Bind();
-        m_iboTriangle->UpLoad(m_geometry->GetCells()->GetTriangleIndices());
-        m_iboTriangle->UnBind();
+        ConstructObjectMemberMacro(m_primitives[PT_Triangle], OpenGLIndexBufferObject);
+        m_primitives[PT_Triangle]->Bind();
+        m_primitives[PT_Triangle]->UpLoad(m_geometry->GetCells()->GetTriangleIndices());
+        m_primitives[PT_Triangle]->UnBind();
     }
 }
 
 void OpenGLMapper::BuildShaderProgram(Actor* actor)
 {
     ConstructObjectMemberMacro(m_shaderProgram, OpenGLShaderProgram);
+
+    if (m_colorVisibility)
+    {
+        m_shaderProgram->ReplaceColor();
+    }
+    else
+    {
+        m_shaderProgram->ReplaceColor(actor->GetProperty()->GetColor());
+    }
+
     m_shaderProgram->SetAttribute();
-    m_shaderProgram->ReplaceColor(actor->GetProperty()->GetColor());
+}
+
+void OpenGLMapper::BuildColorBufferObject()
+{
+    switch (m_colorMode)
+    {
+    case ColorMode::Point:
+        if (auto dataArray = m_geometry->GetPointArray(m_colorArray))
+        {
+            if (m_interpolateColorBeforeMapping)
+            {
+                if (3 == dataArray->GetNumberOfComponents())
+                {
+                    if (dataArray->GetNumberOfTuples() == m_geometry->GetNumberOfPoints()) [[likely]]
+                    {
+                        m_vbos->CacheVertexAttribute(OpenGLVertexAttributes::Color, dataArray->GetData());
+                    }
+                    else [[unlikely]]
+                    {
+                        LogWarn("Unequal number of colors and vertices");
+
+                        // 深拷贝一份颜色数据，并将大小设置为和顶点个数一致
+                        auto tmpData = dataArray->GetData();
+                        tmpData.resize(m_geometry->GetNumberOfPoints() * 3);
+                        m_vbos->CacheVertexAttribute(OpenGLVertexAttributes::Color, tmpData);
+                    }
+                }
+                else
+                {
+                }
+            }
+            else
+            {
+
+            }
+        }
+        break;
+    [[unlikely]] default:
+        LogWarn("Color mode is error");
+        break;
+    }
 }

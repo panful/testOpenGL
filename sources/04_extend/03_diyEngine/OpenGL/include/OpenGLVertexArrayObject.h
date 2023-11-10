@@ -9,7 +9,6 @@ public:
 
     void Bind();
     void UnBind();
-    void VertexAttrib();
 
 protected:
     OpenGLVertexArrayObject();

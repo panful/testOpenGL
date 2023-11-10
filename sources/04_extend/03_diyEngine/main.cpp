@@ -1,5 +1,6 @@
 #include "actor.h"
 #include "cells.h"
+#include "dataArray.h"
 #include "geometry.h"
 #include "interactor.h"
 #include "interactorStyle.h"
@@ -25,12 +26,25 @@ int main()
     cells->InsertNextCell({ 0, 1, 2 });
     cells->InsertNextCell({ 3, 4 });
 
+    New<DataArray> colors;
+    colors->SetName("color");
+    colors->SetNumberOfComponents(3);
+    colors->InsertNextTuple3(1, 0, 0);
+    colors->InsertNextTuple3(0, 1, 0);
+    colors->InsertNextTuple3(0, 0, 1);
+    colors->InsertNextTuple3(0, 1, 0);
+    colors->InsertNextTuple3(0, 1, 0);
+
     New<Geometry> geom;
     geom->SetPoints(points);
     geom->SetCells(cells);
+    geom->AddPointArray(colors);
 
     New<Mapper> mapper;
     mapper->SetGeometry(geom);
+    mapper->SetColorVisibility(false);
+    mapper->SetColorModeToPointData();
+    mapper->SetColorArray("color");
 
     New<Actor> actor;
     actor->SetMapper(mapper);

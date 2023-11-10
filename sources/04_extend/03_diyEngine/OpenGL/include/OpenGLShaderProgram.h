@@ -12,6 +12,7 @@ public:
     void Use();
 
     void SetAttribute();
+    void ReplaceColor();
     void ReplaceColor(const std::array<double, 3>&);
     void ReplaceLight();
     void ReplaceNormal();
@@ -24,6 +25,7 @@ protected:
 private:
     void Build();
     void ReplaceValue(std::string&, const std::string&, const std::string&, const std::string&);
+    void ReplaceValue(std::string&, const std::string&, const std::string&);
 
 private:
     uint32_t m_handle { 0 };
