@@ -6,9 +6,10 @@
  * 5. 将多个VBO绑定到一个VAO上，顶点位置、颜色等分开使用glBufferData提交，类似glBufferSubData
  * 6. 顶点着色器的顶点属性设置为mat4
  * 7. 动态更新顶点的颜色属性，但是不更新位置属性
+ * 8. 顶点位置、颜色数据分开提交，且位置和颜色的数据类型不一样
  */
 
-#define TEST7
+#define TEST8
 
 #ifdef TEST1
 
@@ -481,14 +482,12 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 #include <array>
 #include <common.hpp>
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
 int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
     ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
 
     // clang-format off
@@ -527,14 +526,15 @@ int main()
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-    // 绑定完GL_ARRAY_BUFFER之后需要立即启用顶点属性，且顺序不可打乱
-    glBindBuffer(GL_ARRAY_BUFFER, VBO_Pos);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
-    glEnableVertexAttribArray(0);
-
+    // 绑定完GL_ARRAY_BUFFER之后需要立即启用顶点属性，且绑定操作和属性设置操作顺序不可打乱
+    // 顶点属性的设置顺序可以打乱：对颜色和位置的设置顺序没有要求
     glBindBuffer(GL_ARRAY_BUFFER, VBO_Color);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_Pos);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
 
     glBindVertexArray(0);
 
@@ -566,11 +566,6 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
 }
 
 #endif // TEST5
@@ -827,3 +822,87 @@ void processInput(GLFWwindow* window)
 }
 
 #endif // TEST7
+
+#ifdef TEST8
+
+#include <array>
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+
+    // clang-format off
+    // 顶点数据
+    std::array<GLfloat, 3 * 3> vertices {
+        -0.5f,  -0.5f,  0.0f,   // left
+         0.5f,  -0.5f,  0.0f,   // right
+         0.0f,   0.5f,  0.0f    // top
+    };
+
+    // 颜色数据
+    std::array<GLubyte, 3 * 3> colors {
+        255,   0,   0,
+          0, 255,   0,
+          0,   0, 255,
+    };
+    // clang-format on
+
+    //---------------------------------------------------------------------------
+    // 创建多个VBO和一个VAO
+    GLuint VAO { 0 }, VBO_Pos { 0 }, VBO_Color { 0 };
+
+    glGenBuffers(1, &VBO_Pos);
+    glGenBuffers(1, &VBO_Color);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_Pos);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_Color);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLubyte) * colors.size(), colors.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //---------------------------------------------------------------------------
+    // 将多个VBO绑定到一个VAO上
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_Pos);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+
+    // 注意：使用unsigned char类型的数据时，着色器接受类型仍然为vec3
+    // glVertexAttribPointer的第四个参数：数据是否标准化应该设置为true
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_Color);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_UNSIGNED_BYTE, GL_TRUE, 3 * sizeof(GLubyte), (void*)0);
+
+    glBindVertexArray(0);
+
+    CheckError();
+
+    //---------------------------------------------------------------------------
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffers
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST8
