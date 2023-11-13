@@ -2,6 +2,7 @@ set(target_name "01_07_gltf")
 
 add_executable(${target_name} "main.cpp")
 target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty2/glTF)
+target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/includes)
 
 install(TARGETS ${target_name} RUNTIME DESTINATION .)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION .)
