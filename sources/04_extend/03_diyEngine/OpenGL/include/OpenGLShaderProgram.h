@@ -11,9 +11,9 @@ public:
 
     void Use();
 
-    void SetAttribute();
-    void ReplaceColor();
-    void ReplaceColor(const std::array<double, 3>&);
+    void ReplacePointColor();
+    void ReplaceCellColor();
+    void ReplacePrimitiveColor(const std::array<double, 3>&);
     void ReplaceLight();
     void ReplaceNormal();
     void ReplaceTexCoord();

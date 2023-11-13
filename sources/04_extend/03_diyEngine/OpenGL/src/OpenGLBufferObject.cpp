@@ -25,3 +25,8 @@ void OpenGLBufferObject::UnBind()
 {
     glBindBuffer(m_internal.Target, 0);
 }
+
+uint32_t OpenGLBufferObject::GetHandle() const noexcept
+{
+    return m_internal.Handle;
+}

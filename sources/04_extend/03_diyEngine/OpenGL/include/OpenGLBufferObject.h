@@ -18,6 +18,8 @@ public:
     void Bind();
     void UnBind();
 
+    uint32_t GetHandle() const noexcept;
+
     template <typename T>
     void UpLoad(const std::vector<T>& data);
 

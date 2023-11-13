@@ -22,6 +22,9 @@ public:
     std::vector<uint32_t> GetVertexIndices() const noexcept;
     std::vector<uint32_t> GetLineIndices() const noexcept;
     std::vector<uint32_t> GetTriangleIndices() const noexcept;
+    size_t GetNumberOfVertices() const noexcept;
+    size_t GetNumberOfLines() const noexcept;
+    size_t GetNumberOfTriangles() const noexcept;
 
 protected:
     Cells();

@@ -21,6 +21,7 @@ set(HEADERS
     Core/include/property.h
     Core/include/dataArray.h
     Core/include/lookupTable.h
+    Core/include/texture.h
     OpenGL/include/OpenGLObjectFactory.h
     OpenGL/include/OpenGLActor.h
     OpenGL/include/OpenGLMapper.h
@@ -32,6 +33,8 @@ set(HEADERS
     OpenGL/include/OpenGLShaderProgram.h
     OpenGL/include/OpenGLProperty.h
     OpenGL/include/OpenGLVertexBufferObjectGroup.h
+    OpenGL/include/OpenGLTextureBufferObject.h
+    OpenGL/include/OpenGLTexture.h
 )
 set(SRCS
     Core/src/actor.cpp
@@ -51,6 +54,7 @@ set(SRCS
     Core/src/property.cpp
     Core/src/dataArray.cpp
     Core/src/lookupTable.cpp
+    Core/src/texture.cpp
     OpenGL/src/OpenGLObjectFactory.cpp
     OpenGL/src/OpenGLActor.cpp
     OpenGL/src/OpenGLMapper.cpp
@@ -62,6 +66,8 @@ set(SRCS
     OpenGL/src/OpenGLShaderProgram.cpp
     OpenGL/src/OpenGLProperty.cpp
     OpenGL/src/OpenGLVertexBufferObjectGroup.cpp
+    OpenGL/src/OpenGLTextureBufferObject.cpp
+    OpenGL/src/OpenGLTexture.cpp
 )
 
 add_executable(${target_name} "main.cpp" ${HEADERS} ${SRCS})

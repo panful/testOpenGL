@@ -31,11 +31,9 @@ OpenGLShaderProgram::OpenGLShaderProgram()
     m_fsCode = R"(
         #version 330 core
 
-        // FS_IN
-
-        // Shader::FSColor Start
+        // Shader::FS_IN Start
         const vec3 color = vec3(0.f, 1.f, 0.f);
-        // Shader::FSColor End
+        // Shader::FS_IN End
 
         out vec4 FragColor;
 
@@ -63,25 +61,29 @@ void OpenGLShaderProgram::Use()
     glUseProgram(m_handle);
 }
 
-void OpenGLShaderProgram::SetAttribute()
-{
-}
-
 /// @brief 设置图元每个顶点的颜色
-void OpenGLShaderProgram::ReplaceColor()
+void OpenGLShaderProgram::ReplacePointColor()
 {
     ReplaceValue(m_vsCode, "// Layout Color", "layout (location = 1) in vec3 aColor;\nout vec3 vsOutColor;");
     ReplaceValue(m_vsCode, "// Shader::VSOUT Start\n", "// Shader::VSOUT End", "gl_Position = vec4(aPos, 1.f);\nvsOutColor = aColor;\n");
-    ReplaceValue(m_fsCode, "// Shader::FSColor Start\n", "// Shader::FSColor End", "in vec3 vsOutColor;\n");
+    ReplaceValue(m_fsCode, "// Shader::FS_IN Start\n", "// Shader::FS_IN End", "in vec3 vsOutColor;\n");
     ReplaceValue(m_fsCode, "// Shader::FSOUT Start\n", "// Shader::FSOUT End", "FragColor = vec4(vsOutColor, 1.f);\n");
+}
+
+/// @brief 设置图元每个单元的颜色
+void OpenGLShaderProgram::ReplaceCellColor()
+{
+    ReplaceValue(m_fsCode, "// Shader::FS_IN Start\n", "// Shader::FS_IN End", "uniform samplerBuffer primitiveColorTexBuffer;\n");
+    ReplaceValue(
+        m_fsCode, "// Shader::FSOUT Start\n", "// Shader::FSOUT End", "FragColor = vec4(texelFetch(primitiveColorTexBuffer, gl_PrimitiveID).rgb, 1.f);\n");
 }
 
 /// @brief 设置整个Actor的颜色
 /// @param color
-void OpenGLShaderProgram::ReplaceColor(const std::array<double, 3>& color)
+void OpenGLShaderProgram::ReplacePrimitiveColor(const std::array<double, 3>& color)
 {
     auto strColor = std::format("const vec3 color = vec3({}, {}, {});", color[0], color[1], color[2]);
-    ReplaceValue(m_fsCode, "// Shader::FSColor Start\n", "// Shader::FSColor End", strColor);
+    ReplaceValue(m_fsCode, "// Shader::FS_IN Start\n", "// Shader::FS_IN End", strColor);
 }
 
 void OpenGLShaderProgram::ReplaceLight()
@@ -131,8 +133,8 @@ void OpenGLShaderProgram::ReplaceValue(std::string& str, const std::string& oldS
 
 void OpenGLShaderProgram::Build()
 {
-    //LogTrace(m_vsCode);
-    //LogTrace(m_fsCode);
+    LogTrace(m_vsCode);
+    LogTrace(m_fsCode);
 
     auto vsSource = m_vsCode.data();
     auto fsSource = m_fsCode.data();

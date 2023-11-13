@@ -1,6 +1,8 @@
 #include "OpenGLMapper.h"
 #include "OpenGLIndexBufferObject.h"
 #include "OpenGLShaderProgram.h"
+#include "OpenGLTexture.h"
+#include "OpenGLTextureBufferObject.h"
 #include "OpenGLVertexArrayObject.h"
 #include "OpenGLVertexBufferObjectGroup.h"
 #include "actor.h"
@@ -8,6 +10,7 @@
 #include "dataArray.h"
 #include "geometry.h"
 #include "log.h"
+#include "new.h"
 #include "objectFactory.h"
 #include "points.h"
 #include "property.h"
@@ -30,6 +33,10 @@ OpenGLMapper::~OpenGLMapper()
     }
     DestructObjectMemberMacro(m_vbos);
     DestructObjectMemberMacro(m_shaderProgram);
+    for (auto elem : m_internalColorTextures)
+    {
+        DestructObjectMemberMacro(elem);
+    }
 }
 
 void OpenGLMapper::Render(Actor* actor)
@@ -47,18 +54,30 @@ void OpenGLMapper::Render(Actor* actor)
 
     if (m_primitives[PT_Point])
     {
+        if (m_colorMode == ColorMode::Cell && m_internalColorTextures[PT_Point])
+        {
+            m_internalColorTextures[PT_Point]->Bind();
+        }
         m_primitives[PT_Point]->Bind();
-        glDrawElements(GL_POINTS, static_cast<GLsizei>(m_geometry->GetCells()->GetVertexIndices().size()), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_POINTS, static_cast<GLsizei>(m_geometry->GetCells()->GetNumberOfVertices()), GL_UNSIGNED_INT, 0);
     }
     if (m_primitives[PT_Line])
     {
+        if (m_colorMode == ColorMode::Cell && m_internalColorTextures[GL_LINES])
+        {
+            m_internalColorTextures[GL_LINES]->Bind();
+        }
         m_primitives[PT_Line]->Bind();
-        glDrawElements(GL_LINES, static_cast<GLsizei>(m_geometry->GetCells()->GetLineIndices().size()), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_LINES, static_cast<GLsizei>(m_geometry->GetCells()->GetNumberOfLines() * 2), GL_UNSIGNED_INT, 0);
     }
     if (m_primitives[PT_Triangle])
     {
+        if (m_colorMode == ColorMode::Cell && m_internalColorTextures[PT_Triangle])
+        {
+            m_internalColorTextures[PT_Triangle]->Bind();
+        }
         m_primitives[PT_Triangle]->Bind();
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_geometry->GetCells()->GetTriangleIndices().size()), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_geometry->GetCells()->GetNumberOfTriangles() * 3), GL_UNSIGNED_INT, 0);
     }
 
     m_vao->UnBind();
@@ -89,21 +108,21 @@ void OpenGLMapper::BuildBufferObjects()
 
 void OpenGLMapper::BuildAllIBOs()
 {
-    if (!m_geometry->GetCells()->GetVertexIndices().empty())
+    if (m_geometry->GetCells()->GetNumberOfVertices() > 0)
     {
         ConstructObjectMemberMacro(m_primitives[PT_Point], OpenGLIndexBufferObject);
         m_primitives[PT_Point]->Bind();
         m_primitives[PT_Point]->UpLoad(m_geometry->GetCells()->GetVertexIndices());
         m_primitives[PT_Point]->UnBind();
     }
-    if (!m_geometry->GetCells()->GetLineIndices().empty())
+    if (m_geometry->GetCells()->GetNumberOfLines() > 0)
     {
         ConstructObjectMemberMacro(m_primitives[PT_Line], OpenGLIndexBufferObject);
         m_primitives[PT_Line]->Bind();
         m_primitives[PT_Line]->UpLoad(m_geometry->GetCells()->GetLineIndices());
         m_primitives[PT_Line]->UnBind();
     }
-    if (!m_geometry->GetCells()->GetTriangleIndices().empty())
+    if (m_geometry->GetCells()->GetNumberOfTriangles() > 0)
     {
         ConstructObjectMemberMacro(m_primitives[PT_Triangle], OpenGLIndexBufferObject);
         m_primitives[PT_Triangle]->Bind();
@@ -118,14 +137,23 @@ void OpenGLMapper::BuildShaderProgram(Actor* actor)
 
     if (m_colorVisibility)
     {
-        m_shaderProgram->ReplaceColor();
+        switch (m_colorMode)
+        {
+        case ColorMode::Point:
+            m_shaderProgram->ReplacePointColor();
+            break;
+        case ColorMode::Cell:
+            m_shaderProgram->ReplaceCellColor();
+            break;
+        [[unlikely]] default:
+            LogWarn("Color mode is error");
+            break;
+        }
     }
     else
     {
-        m_shaderProgram->ReplaceColor(actor->GetProperty()->GetColor());
+        m_shaderProgram->ReplacePrimitiveColor(actor->GetProperty()->GetColor());
     }
-
-    m_shaderProgram->SetAttribute();
 }
 
 void OpenGLMapper::BuildColorBufferObject()
@@ -159,7 +187,34 @@ void OpenGLMapper::BuildColorBufferObject()
             }
             else
             {
+            }
+        }
+        break;
+    case ColorMode::Cell:
+        if (auto dataArray = m_geometry->GetCellArray(m_colorArray))
+        {
+            auto numberOfComponents = (size_t)dataArray->GetNumberOfComponents();
+            auto numberOfVertices   = m_geometry->GetCells()->GetNumberOfVertices();
+            auto numberOfLines      = m_geometry->GetCells()->GetNumberOfLines();
+            auto numberOfTriangles  = m_geometry->GetCells()->GetNumberOfTriangles();
+            auto&& vecData          = dataArray->GetData();
 
+            if (numberOfVertices > 0)
+            {
+                std::vector<float> tmpVec(vecData.cbegin(), vecData.cbegin() + numberOfVertices * numberOfComponents);
+                BuildCellColorTextures(PT_Point, tmpVec);
+            }
+            if (numberOfLines > 0)
+            {
+                std::vector<float> tmpVec(vecData.cbegin() + numberOfVertices * numberOfComponents,
+                    vecData.cbegin() + numberOfVertices * numberOfComponents + numberOfLines * numberOfComponents);
+                BuildCellColorTextures(PT_Line, tmpVec);
+            }
+            if (numberOfTriangles > 0)
+            {
+                std::vector<float> tmpVec(
+                    vecData.cbegin() + numberOfVertices * numberOfComponents + numberOfLines * numberOfComponents, vecData.cend());
+                BuildCellColorTextures(PT_Triangle, tmpVec);
             }
         }
         break;
@@ -167,4 +222,24 @@ void OpenGLMapper::BuildColorBufferObject()
         LogWarn("Color mode is error");
         break;
     }
+}
+
+void OpenGLMapper::BuildCellColorTextures(PrimitiveTypes primitiveType, const std::vector<float>& data)
+{
+    if (m_internalColorTextures[primitiveType])
+    {
+        m_internalColorTextures[primitiveType]->Delete();
+    }
+    ConstructObjectMemberMacro(m_internalColorTextures[primitiveType], OpenGLTexture);
+
+    SmartPointer<OpenGLTextureBufferObject> tbo = SmartPointer<OpenGLTextureBufferObject>::New();
+    tbo->SetFormat(GL_RGB32F);
+    tbo->Bind();
+    tbo->UpLoad(data);
+    tbo->UnBind();
+
+    m_internalColorTextures[primitiveType]->SetTarget(GL_TEXTURE_BUFFER);
+    m_internalColorTextures[primitiveType]->Bind();
+    m_internalColorTextures[primitiveType]->LoadBuffer(tbo);
+    m_internalColorTextures[primitiveType]->UnBind();
 }

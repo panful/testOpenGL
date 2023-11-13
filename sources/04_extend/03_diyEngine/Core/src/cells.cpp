@@ -75,3 +75,18 @@ std::vector<uint32_t> Cells::GetTriangleIndices() const noexcept
 {
     return m_triangle;
 }
+
+size_t Cells::GetNumberOfVertices() const noexcept
+{
+    return m_vertex.size();
+}
+
+size_t Cells::GetNumberOfLines() const noexcept
+{
+    return m_line.size() / 2;
+}
+
+size_t Cells::GetNumberOfTriangles() const noexcept
+{
+    return m_triangle.size() / 3;
+}

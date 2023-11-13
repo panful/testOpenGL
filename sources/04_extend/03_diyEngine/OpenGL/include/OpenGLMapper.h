@@ -2,11 +2,14 @@
 
 #include "mapper.h"
 #include <array>
+#include <vector>
 
 class OpenGLIndexBufferObject;
 class OpenGLVertexBufferObjectGroup;
 class OpenGLVertexArrayObject;
 class OpenGLShaderProgram;
+class OpenGLTexture;
+class DataArray;
 
 class OpenGLMapper : public Mapper
 {
@@ -32,10 +35,13 @@ private:
     void BuildAllIBOs();
     void BuildShaderProgram(Actor*);
     void BuildColorBufferObject();
+    void BuildCellColorTextures(PrimitiveTypes, const std::vector<float>&);
 
 private:
     std::array<OpenGLIndexBufferObject*, PT_Number> m_primitives {};
     OpenGLVertexBufferObjectGroup* m_vbos { nullptr };
     OpenGLVertexArrayObject* m_vao { nullptr };
     OpenGLShaderProgram* m_shaderProgram { nullptr };
+    std::array<OpenGLTexture*, PT_Number> m_internalColorTextures {};
+    // OpenGLTexture* m_internalColorTexture { nullptr };
 };

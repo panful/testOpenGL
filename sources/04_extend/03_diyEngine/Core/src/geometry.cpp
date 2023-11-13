@@ -90,5 +90,5 @@ void Geometry::AddCellArray(DataArray* data)
 
 DataArray* Geometry::GetCellArray(std::string_view arrayName) const noexcept
 {
-    return m_cellData.contains(arrayName) ? m_pointData.at(arrayName) : nullptr;
+    return m_cellData.contains(arrayName) ? m_cellData.at(arrayName) : nullptr;
 }
