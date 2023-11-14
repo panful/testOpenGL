@@ -1,4 +1,4 @@
-/*
+/**
  * 1. glDepthFunc 深度测试函数的设置
  * 2. 对不同的图元使用不同的深度测试函数
  * 3. glDepthMask 设置深度掩码是否更新深度缓冲
@@ -7,9 +7,10 @@
  * 6. glDepthRange设置深度值映射范围
  * 7. GL_DEPTH_CLAMP 将视锥体内的所有顶点都显示，不考虑近裁剪平面
  * 8. 图层，后面绘制的图层始终在之前的图层上面
+ * 9. 遮挡查询遮挡剔除 Hierachical Z-Buffer(HZB)
  */
 
-#define TEST8
+#define TEST9
 
 #ifdef TEST1
 
@@ -1074,3 +1075,94 @@ int main()
     return 0;
 }
 #endif // TEST8
+
+#ifdef TEST9
+
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("resources/02_04_01_TEST9.vs", "resources/02_04_01_TEST9.fs");
+
+    // clang-format off
+    std::vector<GLfloat> vertices1 {
+        -0.5f, -0.5f, 0.f,   1.f, 0.f, 0.f,
+         0.5f, -0.5f, 0.f,   1.f, 0.f, 0.f,
+         0.5f,  0.5f, 0.f,   1.f, 0.f, 0.f,
+        -0.5f,  0.5f, 0.f,   1.f, 0.f, 0.f,
+    };
+
+    std::vector<GLfloat> vertices2 {
+        -0.4f, -0.4f, -.1f,   0.f, 1.f, 0.f,
+         0.4f, -0.4f, -.1f,   0.f, 1.f, 0.f,
+         0.4f,  0.4f, -.1f,   0.f, 1.f, 0.f,
+        -0.4f,  0.4f, -.1f,   0.f, 1.f, 0.f,
+    };
+
+    std::vector<GLfloat> vertices3 {
+        -0.4f, -0.4f, .1f,   0.f, 0.f, 1.f,
+         0.4f, -0.4f, .1f,   0.f, 0.f, 1.f,
+         0.4f,  0.4f, .1f,   0.f, 0.f, 1.f,
+        -0.4f,  0.4f, .1f,   0.f, 0.f, 1.f,
+    };
+
+    std::vector<GLuint> indices { 0, 1, 2, 0, 2, 3 };
+    // clang-format on
+
+    Renderer ren1(vertices1, indices, { 3, 3 }, GL_TRIANGLES);
+    Renderer ren2(vertices2, indices, { 3, 3 }, GL_TRIANGLES);
+    Renderer ren3(vertices3, indices, { 3, 3 }, GL_TRIANGLES);
+
+    GLuint queryId { 0 };
+    glGenQueries(1, &queryId);
+    GLint queryResult { 0 };
+
+    //----------------------------------------------------------------------------------
+    // 开启深度测试
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+        ren1.Draw();
+
+        // queryResult表示通过深度测试的片段数量，如果为0则表示这个物体被完全遮挡
+        // 可以先绘制一次需要查询的物体包围盒，如果该包围盒被遮挡，则不进行绘制(剔除)，没有被遮挡再进行实际绘制
+        {
+            // 开启遮挡查询
+            glBeginQuery(GL_SAMPLES_PASSED, queryId);
+            // 绘制需要查询的物体
+            ren2.Draw();
+            // 结束遮挡查询
+            glEndQuery(GL_SAMPLES_PASSED);
+            // 获取查询结果
+            glGetQueryObjectiv(queryId, GL_QUERY_RESULT, &queryResult);
+            std::cout << "green result:\t" << queryResult << std::endl;
+        }
+
+        {
+            glBeginQuery(GL_SAMPLES_PASSED, queryId);
+            ren3.Draw();
+            glEndQuery(GL_SAMPLES_PASSED);
+
+            glGetQueryObjectiv(queryId, GL_QUERY_RESULT, &queryResult);
+            std::cout << "blue result:\t" << queryResult << std::endl;
+        }
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+    glDeleteQueries(1, &queryId);
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST9
