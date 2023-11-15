@@ -6,10 +6,25 @@
 #define TINYGLTF_NOEXCEPTION
 #define JSON_NOEXCEPTION
 
+// clang-format off
 #define HAS_STB_IMAGE
-
 #include "tiny_gltf.h"
 #include "common.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+// clang-format on
+
+#include <variant>
+
+struct Primitive
+{
+    uint32_t VAO { 0 };
+    int indexCount { 0 };
+    uint32_t indexType { 0 };
+    int material { 0 };
+    uint32_t mode { 0 };
+    glm::mat4 modelMat { glm::mat4(1.f) };
+};
 
 class ModelglTFLoading
 {
@@ -19,12 +34,39 @@ public:
         LoadModel(filename);
     }
 
-    void Draw()
+    void Draw(ShaderProgram& program)
     {
-        for (auto [vao, count_type] : m_vaos)
+        for (const auto& primitive : m_primitives)
         {
-            glBindVertexArray(vao);
-            glDrawElements(GL_TRIANGLES, std::get<0>(count_type), std::get<1>(count_type), 0);
+            if (primitive.material > -1)
+            {
+                std::visit(
+                    [this, &program](auto&& var)
+                    {
+                        using T = std::decay_t<decltype(var)>;
+                        if constexpr (std::is_same_v<T, int>)
+                        {
+                            if (auto texIndex = m_textures[var]; texIndex > -1)
+                            {
+                                glBindTexture(GL_TEXTURE_2D, m_glTextureIDs[texIndex]);
+                            }
+                        }
+                        else if constexpr (std::is_same_v<T, glm::vec4>)
+                        {
+                            program.SetUniform4fv("uColor", var);
+                        }
+                    },
+                    m_materials[primitive.material]);
+            }
+            else
+            {
+                program.SetUniform4f("uColor", 1.f, 0.f, 0.f, 1.f);
+            }
+
+            program.SetUniformMat4("model", primitive.modelMat);
+
+            glBindVertexArray(primitive.VAO);
+            glDrawElements(primitive.mode, primitive.indexCount, primitive.indexType, 0);
             glBindVertexArray(0);
         }
     }
@@ -70,9 +112,9 @@ private:
         std::cout << "scenes size: " << m_model.scenes.size() << std::endl;
         std::cout << "nodes size: " << m_model.nodes.size() << std::endl;
 
-        // LoadImage(model);
-        // LoadTexture(model);
-        // LoadMaterial(model);
+        LoadImages();
+        LoadTextures();
+        LoadMaterials();
 
         for (auto& scene : m_model.scenes)
         {
@@ -84,64 +126,112 @@ private:
         }
     }
 
-    void LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& model)
+    void LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& model, const glm::mat4& mat = glm::mat4(1.f))
     {
+        std::cout << "node: " << inputNode.name << std::endl;
+        glm::mat4 tmpMat = mat;
+
+        if (inputNode.translation.size() == 3)
+        {
+            tmpMat = glm::translate(tmpMat, glm::vec3(glm::make_vec3(inputNode.translation.data())));
+        }
+        if (inputNode.rotation.size() == 4)
+        {
+            glm::quat quat = glm::make_quat(inputNode.rotation.data());
+            tmpMat *= glm::mat4(quat);
+        }
+        if (inputNode.scale.size() == 3)
+        {
+            tmpMat = glm::scale(tmpMat, glm::vec3(glm::make_vec3(inputNode.scale.data())));
+        }
+        if (inputNode.matrix.size() == 16)
+        {
+            tmpMat = glm::make_mat4x4(inputNode.matrix.data());
+        }
+
         for (auto child : inputNode.children)
         {
-            LoadNode(model.nodes[child], model);
+            LoadNode(model.nodes[child], model, tmpMat);
         }
 
         // vertices indices
         if (inputNode.mesh > -1)
         {
-            auto size = model.meshes[inputNode.mesh].primitives.size();
             for (auto& primitive : model.meshes[inputNode.mesh].primitives)
             {
-                unsigned int VBO, VAO, EBO;
+                unsigned int VAO { 0 };
                 glGenVertexArrays(1, &VAO);
-                glGenBuffers(1, &VBO);
-                glGenBuffers(1, &EBO);
-
                 glBindVertexArray(VAO);
+
+                Primitive tmpPrimitive {};
+                tmpPrimitive.VAO = VAO;
 
                 // vertices
                 {
+                    uint32_t VBO[3] {};
+                    glGenBuffers(3, VBO);
+                    size_t vertexCount { 0 };
+
+                    const void* pos_buffer { nullptr };
                     if (primitive.attributes.contains("POSITION"))
                     {
-                        auto accessor    = model.accessors[primitive.attributes.at("POSITION")];
-                        auto bufferView  = model.bufferViews[accessor.bufferView];
-                        auto buf         = &model.buffers[bufferView.buffer].data[accessor.byteOffset + bufferView.byteOffset];
-                        auto vertexCount = accessor.count;
-
-                        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-                        glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(float) * 3, buf, GL_STATIC_DRAW);
+                        auto accessor   = model.accessors[primitive.attributes.at("POSITION")];
+                        auto bufferView = model.bufferViews[accessor.bufferView];
+                        pos_buffer      = &model.buffers[bufferView.buffer].data[accessor.byteOffset + bufferView.byteOffset];
+                        vertexCount     = accessor.count;
 
                         std::cout << "vertices size: " << vertexCount << '\n';
                     }
+                    else
+                    {
+                        std::cout << "position is empty\n";
+                    }
+                    glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+                    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(float) * 3, pos_buffer, GL_STATIC_DRAW);
+                    glEnableVertexAttribArray(0);
+                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
+                    const void* normal_buffer { nullptr };
                     if (primitive.attributes.contains("NORMAL"))
                     {
-                        auto accessor      = model.accessors[primitive.attributes.at("NORMAL")];
-                        auto bufferView    = model.bufferViews[accessor.bufferView];
-                        auto normalsBuffer = model.buffers[bufferView.buffer].data[accessor.byteOffset + bufferView.byteOffset];
+                        auto accessor   = model.accessors[primitive.attributes.at("NORMAL")];
+                        auto bufferView = model.bufferViews[accessor.bufferView];
+                        normal_buffer   = &model.buffers[bufferView.buffer].data[accessor.byteOffset + bufferView.byteOffset];
+                        if (accessor.count != vertexCount)
+                        {
+                            std::cout << "position and normal are not equal\n";
+                        }
                     }
+                    else
+                    {
+                        std::vector<float> buf(vertexCount * 3);
+                        normal_buffer = buf.data();
+                    }
+                    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+                    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(float) * 3, normal_buffer, GL_STATIC_DRAW);
+                    glEnableVertexAttribArray(1);
+                    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
+                    const void* texcoord_buffer { nullptr };
                     if (primitive.attributes.contains("TEXCOORD_0"))
                     {
-                        auto accessor        = model.accessors[primitive.attributes.at("TEXCOORD_0")];
-                        auto bufferView      = model.bufferViews[accessor.bufferView];
-                        auto texCoordsBuffer = model.buffers[bufferView.buffer].data[accessor.byteOffset + bufferView.byteOffset];
+                        auto accessor   = model.accessors[primitive.attributes.at("TEXCOORD_0")];
+                        auto bufferView = model.bufferViews[accessor.bufferView];
+                        texcoord_buffer = &model.buffers[bufferView.buffer].data[accessor.byteOffset + bufferView.byteOffset];
+                        if (accessor.count != vertexCount)
+                        {
+                            std::cout << "position and texcooed are not equal\n";
+                        }
                     }
-
-                    // 合并顶点属性
-                    // for (size_t v = 0; v < vertexCount; ++v)
-                    // {
-                    //     Vertex vert {};
-                    //     vert.pos    = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
-                    //     vert.normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
-                    //     vert.uv     = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
-                    //     vert.color  = glm::vec3(1.0f);
-                    // }
+                    else
+                    {
+                        std::vector<float> buf(vertexCount * 2);
+                        texcoord_buffer = buf.data();
+                    }
+                    glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
+                    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(float) * 2, texcoord_buffer, GL_STATIC_DRAW);
+                    glEnableVertexAttribArray(2);
+                    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
                 }
 
                 // indices
@@ -151,11 +241,14 @@ private:
 
                     if (TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER == bufferView.target)
                     {
-                        auto buffer         = model.buffers[bufferView.buffer];
-                        uint32_t indexCount = static_cast<uint32_t>(accessor.count);
+                        auto buffer             = model.buffers[bufferView.buffer];
+                        uint32_t indexCount     = static_cast<uint32_t>(accessor.count);
+                        tmpPrimitive.indexCount = indexCount;
 
                         std::cout << "indices size: " << indexCount << '\n';
 
+                        uint32_t EBO { 0 };
+                        glGenBuffers(1, &EBO);
                         switch (accessor.componentType)
                         {
                         case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT:
@@ -163,16 +256,15 @@ private:
                             auto buf = &buffer.data[accessor.byteOffset + bufferView.byteOffset];
                             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
                             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint32_t), buf, GL_STATIC_DRAW);
-                            m_vaos.try_emplace(VAO, std::make_tuple(indexCount, GL_UNSIGNED_INT));
+                            tmpPrimitive.indexType = GL_UNSIGNED_INT;
                         }
                         break;
                         case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
                         {
                             auto buf = &buffer.data[accessor.byteOffset + bufferView.byteOffset];
-
                             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
                             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint16_t), buf, GL_STATIC_DRAW);
-                            m_vaos.try_emplace(VAO, std::make_tuple(indexCount, GL_UNSIGNED_SHORT));
+                            tmpPrimitive.indexType = GL_UNSIGNED_SHORT;
                         }
                         break;
                         case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
@@ -180,7 +272,7 @@ private:
                             auto buf = &buffer.data[accessor.byteOffset + bufferView.byteOffset];
                             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
                             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint8_t), buf, GL_STATIC_DRAW);
-                            m_vaos.try_emplace(VAO, std::make_tuple(indexCount, GL_UNSIGNED_BYTE));
+                            tmpPrimitive.indexType = GL_UNSIGNED_BYTE;
                         }
                         break;
                         default:
@@ -189,14 +281,86 @@ private:
                     }
                 }
 
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-                glEnableVertexAttribArray(0);
+                if (TINYGLTF_MODE_TRIANGLES != primitive.mode)
+                {
+                    std::cout << "primitive is not triangle";
+                }
+                tmpPrimitive.material = primitive.material;
+                tmpPrimitive.mode     = GL_TRIANGLES;
+                tmpPrimitive.modelMat = tmpMat;
+
+                m_primitives.emplace_back(tmpPrimitive);
+
                 glBindVertexArray(0);
             }
         }
     }
 
+    void LoadTextures()
+    {
+        for (auto texture : m_model.textures)
+        {
+            m_textures.emplace_back(texture.source);
+        }
+    }
+
+    void LoadMaterials()
+    {
+        for (auto& material : m_model.materials)
+        {
+            if (material.values.contains("baseColorFactor"))
+            {
+                m_materials.emplace_back(glm::make_vec4(material.values.at("baseColorFactor").ColorFactor().data()));
+            }
+            else if (material.values.contains("baseColorTexture"))
+            {
+                m_materials.emplace_back(material.values.at("baseColorTexture").TextureIndex());
+            }
+            else
+            {
+                // 如果没有默认的颜色或纹理，设置图元为绿色
+                m_materials.emplace_back(glm::vec4(0.f, 1.f, 0.f, 1.f));
+            }
+        }
+    }
+
+    void LoadImages()
+    {
+        std::vector<uint32_t> images;
+        for (auto& image : m_model.images)
+        {
+            uint32_t texture { 0 };
+            glGenTextures(1, &texture);
+            glBindTexture(GL_TEXTURE_2D, texture);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            if (image.component == 3)
+            {
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0, GL_RGB, GL_UNSIGNED_BYTE, image.image.data());
+            }
+            else if (image.component == 4)
+            {
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.image.data());
+            }
+            else
+            {
+                std::cout << "image component error: " << image.component << '\n';
+            }
+            glGenerateMipmap(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            m_glTextureIDs.emplace_back(texture);
+        }
+    }
+
 private:
-    std::map<uint32_t, std::tuple<int, uint32_t>> m_vaos;
+    std::vector<Primitive> m_primitives;
+    std::vector<std::variant<glm::vec4, int>> m_materials;
+    std::vector<int> m_textures;
+    std::vector<uint32_t> m_glTextureIDs;
     tinygltf::Model m_model;
 };

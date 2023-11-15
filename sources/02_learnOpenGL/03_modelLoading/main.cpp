@@ -2,9 +2,10 @@
 /**
  * 1. learnOpenGL教程中的代码 assimp加载模型
  * 2. glTF加载模型
+ * 3. glTF加载带有纹理的模型(stb_image加载纹理)
  */
 
-#define TEST2
+#define TEST3
 
 #ifdef TEST1
 
@@ -72,9 +73,8 @@ int main()
 
         program.SetUniformMat4("projection", init.GetProjectionMatrix());
         program.SetUniformMat4("view", init.GetViewMatrix());
-        program.SetUniformMat4("model", glm::mat4(1.0f));
 
-        glTFModle.Draw();
+        glTFModle.Draw(program);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -85,3 +85,39 @@ int main()
 }
 
 #endif // TEST2
+
+#ifdef TEST3
+
+#include <glTFModel.hpp>
+
+int main()
+{
+    InitOpenGL init(Camera({ 0, 0, 5 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    auto window = init.GetWindow();
+    ShaderProgram program("resources/02_03_TEST2.vs", "resources/02_03_TEST3.fs");
+
+    ModelglTFLoading glTFModle("./resources/glTF/FlightHelmet/FlightHelmet.gltf");
+
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+
+        program.SetUniformMat4("projection", init.GetProjectionMatrix());
+        program.SetUniformMat4("view", init.GetViewMatrix());
+
+        glTFModle.Draw(program);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST3
