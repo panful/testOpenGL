@@ -6,6 +6,8 @@ add_executable(${target_name} "main.cpp")
 target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/includes)
 # glad glfw assimp 头文件
 target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/includes)
+# gltf
+target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty2/glTF)
 # glad glfw assimp 库目录
 target_link_directories(${target_name} PRIVATE 
     ${PROJECT_SOURCE_DIR}/3rdparty/libs/$<IF:$<CONFIG:Debug>,Debug,Release>/${CMAKE_SYSTEM_NAME}) 

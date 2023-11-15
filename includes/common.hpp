@@ -17,7 +17,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#ifndef HAS_STB_IMAGE
 #include <stb_image.h>
+#endif
 
 #include <array>
 #include <filesystem>

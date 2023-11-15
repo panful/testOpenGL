@@ -1,9 +1,10 @@
 
-/*
- * 1. learnOpenGL教程中的代码
+/**
+ * 1. learnOpenGL教程中的代码 assimp加载模型
+ * 2. glTF加载模型
  */
 
-#define TEST1
+#define TEST2
 
 #ifdef TEST1
 
@@ -47,3 +48,40 @@ int main()
 }
 
 #endif // TEST1
+
+#ifdef TEST2
+
+#include <glTFModel.hpp>
+
+int main()
+{
+    InitOpenGL init(Camera({ 0, 0, 30 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    auto window = init.GetWindow();
+    ShaderProgram program("resources/02_03_TEST2.vs", "resources/02_03_TEST2.fs");
+
+    ModelglTFLoading glTFModle("./resources/glTF/cube.gltf");
+
+    glEnable(GL_DEPTH_TEST);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+
+        program.SetUniformMat4("projection", init.GetProjectionMatrix());
+        program.SetUniformMat4("view", init.GetViewMatrix());
+        program.SetUniformMat4("model", glm::mat4(1.0f));
+
+        glTFModle.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST2
