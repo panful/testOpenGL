@@ -271,6 +271,10 @@ protected:
 
     void OnMiddleButtonUp()
     {
+        if (m_midButtonUpCallback)
+        {
+            m_midButtonUpCallback(m_cursorPosition[0], m_cursorPosition[1]);
+        }
     }
 
     void OnMouseMove()
@@ -318,6 +322,11 @@ protected:
             break;
         default:
             break;
+        }
+
+        if (m_mouseMoveCallback)
+        {
+            m_mouseMoveCallback(m_cursorPosition[0], m_cursorPosition[1]);
         }
     }
 
@@ -400,6 +409,16 @@ protected:
         m_midButtonCallback = cb;
     }
 
+    void SetMiddleButtonUpCallback(std::function<void(int, int)>&& cb)
+    {
+        m_midButtonUpCallback = cb;
+    }
+
+    void SetMouseMoveCallback(std::function<void(int, int)>&& cb)
+    {
+        m_mouseMoveCallback = cb;
+    }
+
 private:
     Camera m_camera {};
     Interaction m_interaction { Interaction::NONE };
@@ -410,6 +429,8 @@ private:
     char m_keyCode { 0 };
     std::function<void(char)> m_keyCallback {};
     std::function<void(int, int)> m_midButtonCallback {};
+    std::function<void(int, int)> m_midButtonUpCallback {};
+    std::function<void(int, int)> m_mouseMoveCallback {};
 };
 
 class InitOpenGL
@@ -527,6 +548,16 @@ public:
     void SetMiddleButtonCallback(std::function<void(int, int)>&& cb) const
     {
         m_interactor.SetMiddleButtonCallback(std::move(cb));
+    }
+
+    void SetMiddleButtonUpCallback(std::function<void(int, int)>&& cb) const
+    {
+        m_interactor.SetMiddleButtonUpCallback(std::move(cb));
+    }
+
+    void SetMouseMoveCallback(std::function<void(int, int)>&& cb) const
+    {
+        m_interactor.SetMouseMoveCallback(std::move(cb));
     }
 
 private:
