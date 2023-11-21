@@ -17,6 +17,7 @@ public:
     void RemoveActor(Actor*);
 
     void SetWindow(Window*);
+    Window* GetWindow() const noexcept;
     void SetViewport(const std::array<double, 4>&);
     void SetBackground(const std::array<double, 3>&);
     void SetBackground(const std::array<double, 3>&, const std::array<double, 3>&);

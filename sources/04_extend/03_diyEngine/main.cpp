@@ -4,6 +4,7 @@
 #include "geometry.h"
 #include "interactor.h"
 #include "interactorStyle.h"
+#include "interactorStyleTrackballCamera.h"
 #include "log.h"
 #include "mapper.h"
 #include "new.h"
@@ -78,7 +79,7 @@ int main()
     window->AddRenderer(renderer);
     // window->AddRenderer(renderer2);
 
-    New<InteractorStyle> style;
+    New<InteractorStyleTrackballCamera> style;
     New<Interactor> interactor;
     interactor->SetWindow(window);
     interactor->SetInteractorStyle(style);

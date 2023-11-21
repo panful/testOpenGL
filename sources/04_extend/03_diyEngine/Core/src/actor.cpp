@@ -22,13 +22,13 @@ Actor::~Actor()
     DestructObjectMemberMacro(m_mapper);
 }
 
-void Actor::Render()
+void Actor::Render(Renderer* renderer)
 {
     if(m_property)
     {
         m_property->Render();
     }
-    m_mapper->Render(this);
+    m_mapper->Render(renderer,this);
 }
 
 void Actor::SetMapper(Mapper* mapper)

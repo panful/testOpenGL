@@ -53,7 +53,7 @@ void Renderer::Render()
 {
     for (const auto actor : m_actors)
     {
-        actor->Render();
+        actor->Render(this);
     }
 }
 
@@ -61,7 +61,7 @@ void Renderer::RenderOpaque()
 {
     for (const auto actor : m_actors)
     {
-        actor->Render();
+        actor->Render(this);
     }
 }
 
@@ -89,7 +89,13 @@ Camera* Renderer::GetCamera() const noexcept
 
 void Renderer::SetWindow(Window* window)
 {
+    // 不能增加window的引用计数，避免循环依赖
     m_window = window;
+}
+
+Window* Renderer::GetWindow() const noexcept
+{
+    return m_window;
 }
 
 /// @brief 设置视口在窗口上的位置

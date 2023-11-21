@@ -7,6 +7,7 @@
 class Geometry;
 class Actor;
 class LookupTable;
+class Renderer;
 
 class Mapper : public Object
 {
@@ -21,7 +22,7 @@ public:
     static Mapper* New();
 
     void SetGeometry(Geometry*);
-    virtual void Render(Actor*);
+    virtual void Render(Renderer*, Actor*);
 
     void SetColorVisibility(bool);
     bool GetColorVisibility() const noexcept;

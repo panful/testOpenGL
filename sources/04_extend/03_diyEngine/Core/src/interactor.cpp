@@ -55,6 +55,25 @@ void Interactor::SetWindow(Window* window)
 void Interactor::SetInteractorStyle(InteractorStyle* interactorStyle)
 {
     SetObjectBodyMacro(m_interactorStyle, interactorStyle);
+    if (m_interactorStyle)
+    {
+        m_interactorStyle->SetInteractor(this);
+    }
+}
+
+Renderer* Interactor::FindPokedRenderer(const std::array<int, 2>&)
+{
+    for (auto renderer : m_window->GetRenderers())
+    {
+        // TODO
+        return renderer;
+    }
+    return nullptr;
+}
+
+std::array<int, 2> Interactor::GetEventPos() const noexcept
+{
+    return m_eventPos;
 }
 
 void Interactor::ProcessInput(GLFWwindow* window)
@@ -69,7 +88,8 @@ void Interactor::CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
     if (auto pInstance = static_cast<Interactor*>(glfwGetWindowUserPointer(window)))
     {
-        pInstance->m_eventPos = { static_cast<int>(xpos), static_cast<int>(xpos) };
+        pInstance->m_eventPos = { static_cast<int>(xpos), static_cast<int>(ypos) };
+        pInstance->m_interactorStyle->MouseMoveEvent();
     }
 }
 

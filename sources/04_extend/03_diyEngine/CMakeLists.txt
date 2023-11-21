@@ -22,6 +22,7 @@ set(HEADERS
     Core/include/dataArray.h
     Core/include/lookupTable.h
     Core/include/texture.h
+    Core/include/interactorStyleTrackballCamera.h
     OpenGL/include/OpenGLObjectFactory.h
     OpenGL/include/OpenGLActor.h
     OpenGL/include/OpenGLMapper.h
@@ -55,6 +56,7 @@ set(SRCS
     Core/src/dataArray.cpp
     Core/src/lookupTable.cpp
     Core/src/texture.cpp
+    Core/src/interactorStyleTrackballCamera.cpp
     OpenGL/src/OpenGLObjectFactory.cpp
     OpenGL/src/OpenGLActor.cpp
     OpenGL/src/OpenGLMapper.cpp

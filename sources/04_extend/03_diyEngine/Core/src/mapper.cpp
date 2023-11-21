@@ -23,7 +23,7 @@ void Mapper::SetGeometry(Geometry* geometry)
     SetObjectBodyMacro(m_geometry, geometry);
 }
 
-void Mapper::Render(Actor*)
+void Mapper::Render(Renderer*, Actor*)
 {
 }
 
@@ -82,7 +82,7 @@ void Mapper::SetColorModeToCellData()
     m_colorMode = ColorMode::Cell;
 }
 
-/// @brief 
+/// @brief
 /// @param value true:给每个顶点设置颜色着色器自动插值 false:纹理映射颜色
 void Mapper::SetInterpolateColorBeforeMapping(bool value)
 {

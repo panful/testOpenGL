@@ -16,6 +16,7 @@ public:
     void Render();
     void AddRenderer(Renderer*);
     void RemoveRenderer(Renderer*);
+    std::list<Renderer*> GetRenderers() const noexcept;
 
     void SetSize(int, int);
     std::array<int, 2> GetSize() const noexcept;

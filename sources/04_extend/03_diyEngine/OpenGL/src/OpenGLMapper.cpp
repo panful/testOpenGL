@@ -6,6 +6,7 @@
 #include "OpenGLVertexArrayObject.h"
 #include "OpenGLVertexBufferObjectGroup.h"
 #include "actor.h"
+#include "camera.h"
 #include "cells.h"
 #include "dataArray.h"
 #include "geometry.h"
@@ -14,7 +15,10 @@
 #include "objectFactory.h"
 #include "points.h"
 #include "property.h"
+#include "renderer.h"
 #include "smartpointer.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 StandardNewMacro(OpenGLMapper);
 
@@ -39,7 +43,7 @@ OpenGLMapper::~OpenGLMapper()
     }
 }
 
-void OpenGLMapper::Render(Actor* actor)
+void OpenGLMapper::Render(Renderer* renderer, Actor* actor)
 {
     if (m_dirty)
     {
@@ -50,8 +54,9 @@ void OpenGLMapper::Render(Actor* actor)
     }
 
     m_shaderProgram->Use();
-    m_vao->Bind();
+    SetShaderParameters(renderer);
 
+    m_vao->Bind();
     if (m_primitives[PT_Point])
     {
         if (m_colorMode == ColorMode::Cell && m_internalColorTextures[PT_Point])
@@ -242,4 +247,15 @@ void OpenGLMapper::BuildCellColorTextures(PrimitiveTypes primitiveType, const st
     m_internalColorTextures[primitiveType]->Bind();
     m_internalColorTextures[primitiveType]->LoadBuffer(tbo);
     m_internalColorTextures[primitiveType]->UnBind();
+}
+
+void OpenGLMapper::SetShaderParameters(Renderer* renderer)
+{
+    auto camera = renderer->GetCamera();
+    auto view   = camera->GetViewMatrix();
+    auto proj   = camera->GetProjectMatrix();
+    auto model  = glm::mat4(1.f);
+    m_shaderProgram->SetUniformMat4("model", glm::value_ptr(model));
+    m_shaderProgram->SetUniformMat4("view", glm::value_ptr(view));
+    m_shaderProgram->SetUniformMat4("proj", glm::value_ptr(proj));
 }

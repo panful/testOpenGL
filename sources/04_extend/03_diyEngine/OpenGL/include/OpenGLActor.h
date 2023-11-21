@@ -7,7 +7,7 @@ class OpenGLActor : public Actor
 public:
     static OpenGLActor* New();
 
-    void Render() override;
+    void Render(Renderer*) override;
 
 protected:
     OpenGLActor();

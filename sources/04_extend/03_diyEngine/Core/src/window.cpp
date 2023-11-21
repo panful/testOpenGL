@@ -119,3 +119,8 @@ bool Window::HasRenderer(Renderer* renderer) const noexcept
 {
     return !(std::find(std::begin(m_renderers), std::end(m_renderers), renderer) == m_renderers.end());
 }
+
+std::list<Renderer*> Window::GetRenderers() const noexcept
+{
+    return m_renderers;
+}

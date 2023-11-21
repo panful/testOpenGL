@@ -5,6 +5,7 @@
 
 class Window;
 class InteractorStyle;
+class Renderer;
 struct GLFWwindow;
 
 class Interactor : public Object
@@ -18,6 +19,8 @@ public:
     void SetWindow(Window*);
     void SetInteractorStyle(InteractorStyle*);
     void ProcessInput(GLFWwindow*);
+    Renderer* FindPokedRenderer(const std::array<int, 2>&);
+    std::array<int, 2> GetEventPos() const noexcept;
 
 protected:
     Interactor();

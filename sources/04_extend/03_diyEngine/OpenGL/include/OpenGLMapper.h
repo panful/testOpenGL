@@ -24,7 +24,7 @@ class OpenGLMapper : public Mapper
 public:
     static OpenGLMapper* New();
 
-    void Render(Actor*) override;
+    void Render(Renderer*, Actor*) override;
 
 protected:
     OpenGLMapper();
@@ -36,6 +36,7 @@ private:
     void BuildShaderProgram(Actor*);
     void BuildColorBufferObject();
     void BuildCellColorTextures(PrimitiveTypes, const std::vector<float>&);
+    void SetShaderParameters(Renderer*);
 
 private:
     std::array<OpenGLIndexBufferObject*, PT_Number> m_primitives {};
@@ -43,5 +44,4 @@ private:
     OpenGLVertexArrayObject* m_vao { nullptr };
     OpenGLShaderProgram* m_shaderProgram { nullptr };
     std::array<OpenGLTexture*, PT_Number> m_internalColorTextures {};
-    // OpenGLTexture* m_internalColorTexture { nullptr };
 };

@@ -4,6 +4,7 @@
 
 class Mapper;
 class Property;
+class Renderer;
 
 class Actor : public Object
 {
@@ -11,7 +12,7 @@ public:
     static Actor* New();
 
     void SetMapper(Mapper*);
-    virtual void Render();
+    virtual void Render(Renderer*);
 
     bool IsTranslucent() const noexcept;
 
