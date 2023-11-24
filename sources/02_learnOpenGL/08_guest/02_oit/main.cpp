@@ -3,9 +3,11 @@
  * 2. 更多物体透明设置
  * 3. 更多物体加入相机，不同视角观察透明效果
  * 4. 互相交互的物体的透明度
+ * 
+ * 21.Per-Pixel Linked List实现顺序无关透明
  */
 
-#define TEST1
+#define TEST21
 
 #ifdef TEST1
 
@@ -677,3 +679,152 @@ int main()
 }
 
 #endif // TEST4
+
+#ifdef TEST21
+
+#include <common.hpp>
+
+constexpr int width { 800 };
+constexpr int height { 600 };
+
+int main()
+{
+    // clang-format off
+    std::vector<GLfloat> vertices0{
+        -0.5f,  0.5f,  0.0f,
+        -0.5f, -0.5f,  0.0f,
+         0.5f,  0.5f,  0.0f,
+         0.5f, -0.5f,  0.0f,
+    };
+
+    std::vector<GLfloat> vertices1{
+        -0.2f,  0.5f, -0.5f,
+        -0.2f, -0.5f, -0.5f,
+        -0.2f,  0.5f,  0.5f,
+        -0.2f, -0.5f,  0.5f,
+    };
+
+    std::vector<GLfloat> vertices2{
+         0.2f,  0.5f, -0.5f,
+         0.2f, -0.5f, -0.5f,
+         0.2f,  0.5f,  0.5f,
+         0.2f, -0.5f,  0.5f,
+    };
+
+    std::vector<GLfloat> quad{
+        -1.f,  1.f,
+        -1.f, -1.f,
+         1.f,  1.f,
+         1.f, -1.f,
+    };
+    // clang-format on
+
+    InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    auto window = initOpenGL.GetWindow();
+
+    Renderer rendererRect0(vertices0, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererRect1(vertices1, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererRect2(vertices2, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererQuad(quad, { 2 }, GL_TRIANGLE_STRIP);
+
+    ShaderProgram programGeometry("resources/02_08_02_TEST5_geometry.vs", "resources/02_08_02_TEST5_geometry.fs");
+    ShaderProgram programColor("resources/02_08_02_TEST5_color.vs", "resources/02_08_02_TEST5_color.fs");
+
+    //-----------------------------------------------------------------------------------
+    // 保存每个像素的队头索引
+    GLuint headIndexImageTexture { 0 };
+    glGenTextures(1, &headIndexImageTexture);
+    glBindTexture(GL_TEXTURE_2D, headIndexImageTexture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32UI, width, height);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    //-----------------------------------------------------------------------------------
+    // 链表当前的索引，链表最大长度
+    struct geometrySBO
+    {
+        GLuint count;
+        GLuint maxNodeCount;
+    };
+
+    GLuint NODE_COUNT = 20;
+    geometrySBO geometry_sbo { 0, NODE_COUNT * width * height };
+    GLuint buffer1 { 0 };
+    glGenBuffers(1, &buffer1);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer1);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(geometrySBO), &geometry_sbo, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    //-----------------------------------------------------------------------------------
+    // 保存每个像素的所有片段信息，一个像素可能会由多个片段构成（多个片段就需要混合）
+    struct Node
+    {
+        glm::vec4 color; // 片段的颜色
+        float depth;     // 片段的深度值
+        GLuint next;     // 下一个片段的索引
+    };
+
+    std::vector<Node> nodes(NODE_COUNT * width * height); // 链表的长度需要提前指定，太大会造成内存浪费，太小结果会错误
+    GLuint buffer3 { 0 };
+    glGenBuffers(1, &buffer3);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer3);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Node) * nodes.size(), nodes.data(), GL_DYNAMIC_COPY);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    //-----------------------------------------------------------------------------------
+    // 不需要开启深度测试，也不需要开启混合
+    // 两个Buffer，一个Buffer和窗口（帧缓冲）大小一致，保存窗口每个像素的最后一个片段索引
+    // 另一个Buffer保存所有的片段信息，片段信息包含颜色、深度和当前像素下一个片段的索引
+    // 通过找到构成当前像素的所有片段信息，然后根据深度值排序，再把这些片段按顺序混合就是当前像素的实际颜色
+    while (!glfwWindowShouldClose(window))
+    {
+        //-----------------------------------------------------------------------------------
+        // 每一帧开始时，将链表当前索引count置为0
+        GLuint data { 0 };
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer1);
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(GLuint), &data);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        // 将每个像素的队头链表索引置为0xFFFFFFFF
+        GLuint clearColor = 0xFFFFFFFF;
+        glBindTexture(GL_TEXTURE_2D, headIndexImageTexture);
+        glClearTexImage(headIndexImageTexture, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, &clearColor);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        //-----------------------------------------------------------------------------------
+        // 绘制所有图元，不需要排序
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        programGeometry.Use();
+        programGeometry.SetUniformMat4("model", glm::mat4(1.f));
+        programGeometry.SetUniformMat4("view", initOpenGL.GetViewMatrix());
+        programGeometry.SetUniformMat4("proj", initOpenGL.GetProjectionMatrix());
+
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, buffer1);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, buffer3);
+        glBindImageTexture(2, headIndexImageTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI);
+
+        programGeometry.SetUniform4fv("uColor", glm::vec4(0.f, 1.f, 0.f, 0.5f));
+        rendererRect1.Draw();
+        programGeometry.SetUniform4fv("uColor", glm::vec4(1.f, 0.f, 0.f, 1.0f));
+        rendererRect0.Draw();
+        programGeometry.SetUniform4fv("uColor", glm::vec4(0.f, 0.f, 1.f, 0.5f));
+        rendererRect2.Draw();
+
+        //-----------------------------------------------------------------------------------
+        // 对每个像素的所有片段进行深度排序，然后颜色混合
+        programColor.Use();
+        glBindImageTexture(0, headIndexImageTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, buffer3);
+        rendererQuad.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST21

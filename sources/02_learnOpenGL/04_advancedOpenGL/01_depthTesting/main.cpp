@@ -8,9 +8,10 @@
  * 7. GL_DEPTH_CLAMP 将视锥体内的所有顶点都显示，不考虑近裁剪平面
  * 8. 图层，后面绘制的图层始终在之前的图层上面
  * 9. 遮挡查询遮挡剔除 Hierachical Z-Buffer(HZB)
+ * 10.一次drawcall含有自相交的三角形
  */
 
-#define TEST9
+#define TEST10
 
 #ifdef TEST1
 
@@ -1166,3 +1167,56 @@ int main()
 }
 
 #endif // TEST9
+
+#ifdef TEST10
+
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("resources/02_04_01_TEST9.vs", "resources/02_04_01_TEST9.fs");
+
+    // clang-format off
+    std::vector<GLfloat> vertices {
+        -0.5f, -0.5f, 0.3f,   1.f, 0.f, 0.f,
+         0.5f, -0.5f, 0.3f,   1.f, 0.f, 0.f,
+         0.0f,  0.5f, 0.3f,   1.f, 0.f, 0.f,
+
+        -0.5f, -0.5f, 0.1f,   0.f, 1.f, 0.f,
+         0.5f, -0.5f, 0.1f,   0.f, 1.f, 0.f,
+         0.0f,  0.5f, 0.1f,   0.f, 1.f, 0.f,
+
+        -0.5f, -0.5f, 0.2f,   0.f, 0.f, 1.f,
+         0.5f, -0.5f, 0.2f,   0.f, 0.f, 1.f,
+         0.0f,  0.5f, 0.2f,   0.f, 0.f, 1.f,
+    };
+
+    std::vector<GLuint> indices { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+    // clang-format on
+
+    Renderer poly(vertices, indices, { 3, 3 }, GL_TRIANGLES);
+
+    //----------------------------------------------------------------------------------
+    // 三个三角形分三次drawcall和一次的效果是一样的，每个片段都会经过fragmentShader
+    glEnable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+        poly.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST10

@@ -152,11 +152,6 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, texWidth, texHeight, 0, GL_RGBA, GL_FLOAT, nullptr);
-
-    // 将纹理绑定到计算着色器，用来保存计算着色器的输出
-    // 这个函数和着色器中image2D或image1D、image3D对应，不能是sampler2D等
-    // 第一个参数和着色器中的layout(rgba32f, binding = 0)的第二个参数binding对应
-    glBindImageTexture(2, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     //--------------------------------------------------------------------------------------------
@@ -164,6 +159,11 @@ int main()
     {
         computeShader.Use();
         computeShader.SetUniform1f("t", (float)glfwGetTime());
+        // 将纹理绑定到计算着色器，用来保存计算着色器的输出
+        // 这个函数和着色器中image2D或image1D、image3D对应，不能是sampler2D等
+        // 第一个参数和着色器中的layout(rgba32f, binding = 0)的第二个参数binding对应
+        glBindImageTexture(2, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+        // 启动计算着色器，参数表示每个维度上工作组的数量
         glDispatchCompute((unsigned int)texWidth / 10, (unsigned int)texHeight / 10, 1);
         // 保证计算着色器已经将纹理的每一个像素填充完成
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
