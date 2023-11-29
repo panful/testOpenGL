@@ -1,16 +1,20 @@
-/*
- * 1. 加权混合实现OIT(order-independent transparency 顺序无关透明度)，加权函数可以根据具体情况修改
- * 2. 更多物体透明设置
- * 3. 更多物体加入相机，不同视角观察透明效果
- * 4. 互相交互的物体的透明度
- * 
- * 21.Per-Pixel Linked List实现顺序无关透明
- * 22.自相交图元透明
+/**
+ * 11. 加权混合实现OIT 加权函数可以根据具体情况修改
+ * 12. 加权混合对于互相交叉的图元会有误差
+ *
+ * 21. Per-Pixel Linked List 实现顺序无关透明 A-Buffer
+ * 22. 互相交叉图元透明
+ *
+ * 31. 绘制距离相机第二近的片段
+ * 32. 深度剥离 Depth peeling
+ *
+ * 透明度混合 https://zhuanlan.zhihu.com/p/368065919
+ * OIT https://blog.csdn.net/qq_35312463/article/details/115827894
  */
 
-#define TEST22
+#define TEST31
 
-#ifdef TEST1
+#ifdef TEST11
 
 #include <common.hpp>
 
@@ -84,6 +88,7 @@ int main()
     glm::vec4 oneFillerVec(1.0f);
 
     //----------------------------------------------------------------------------------
+    // https://learnopengl.com/Guest-Articles/2020/OIT/Weighted-Blended
     // 在标准化设备坐标系(NDC)中，OpenGL实际使用的是左手坐标系（投影矩阵交换了左右手），左手坐标系z轴指向屏幕里边
     // 透明和不透明帧缓冲并不是必须的，例如不透明的帧缓冲可以放到默认帧缓冲中，
     // 甚至透明帧缓冲也可以省略，默认帧缓冲可以包含四个附件（上述代码的四个纹理）
@@ -172,175 +177,9 @@ int main()
     return 0;
 }
 
-#endif // TEST1
+#endif // TEST11
 
-#ifdef TEST2
-
-#include <common.hpp>
-
-constexpr int windowWidth { 800 };
-constexpr int windowHeight { 600 };
-
-int main()
-{
-    // clang-format off
-    // 透明红色
-    std::vector<GLfloat> red{
-        -0.8f, -0.8f, 0.1f,
-         0.0f, -0.8f, 0.1f,
-        -0.8f,  0.8f, 0.1f,
-         0.0f,  0.8f, 0.1f,
-    };
-
-    // 透明绿色
-    std::vector<GLfloat> green{
-        -0.5f, -0.8f, 0.2f,
-         0.3f, -0.8f, 0.2f,
-        -0.5f,  0.8f, 0.2f,
-         0.3f,  0.8f, 0.2f,
-    };
-
-    // 透明蓝色
-    std::vector<GLfloat> blue{
-        -0.3f, -0.8f, 0.3f,
-         0.5f, -0.8f, 0.3f,
-        -0.3f,  0.8f, 0.3f,
-         0.5f,  0.8f, 0.3f,
-    };
-
-    // 不透明黄色
-    std::vector<GLfloat> yellow{
-         0.0f, -0.8f, 0.4f,
-         0.8f, -0.8f, 0.4f,
-         0.0f,  0.8f, 0.4f,
-         0.8f,  0.8f, 0.4f,
-    };
-
-    // 不透明青色
-    std::vector<GLfloat> cyan{
-        -0.1f, -0.8f, 0.5f,
-         0.1f, -0.8f, 0.5f,
-        -0.1f,  0.8f, 0.5f,
-         0.1f,  0.8f, 0.5f,
-    };
-
-    std::vector<GLfloat> quad{
-        -1.f, -1.f, 0.f,    0.f, 0.f,
-         1.f, -1.f, 0.f,    1.f, 0.f,
-        -1.f,  1.f, 0.f,    0.f, 1.f,
-         1.f,  1.f, 0.f,    1.f, 1.f,
-    };
-    // clang-format on
-
-    InitOpenGL initOpenGL(4, 2);
-    auto window = initOpenGL.GetWindow();
-
-    Renderer rendererRed(red, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererGreen(green, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererBlue(blue, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererYellow(yellow, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererCyan(cyan, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererQuad(quad, { 3, 2 }, GL_TRIANGLE_STRIP);
-
-    ShaderProgram programTransparent("resources/02_08_02_TEST1_transparent.vs", "resources/02_08_02_TEST1_transparent.fs");
-    ShaderProgram programOpaque("resources/02_08_02_TEST1_opaque.vs", "resources/02_08_02_TEST1_opaque.fs");
-    ShaderProgram programComposite("resources/02_08_02_TEST1_composite.vs", "resources/02_08_02_TEST1_composite.fs");
-    ShaderProgram programScreen("resources/02_08_02_TEST1_screen.vs", "resources/02_08_02_TEST1_screen.fs");
-
-    //----------------------------------------------------------------------------------
-    FrameBufferObject opaqueFBO;
-    Texture opaqueTex(windowWidth, windowHeight, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
-    Texture depthTex(windowWidth, windowHeight, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
-    opaqueFBO.AddAttachment(GL_COLOR_ATTACHMENT0, opaqueTex);
-    opaqueFBO.AddAttachment(GL_DEPTH_ATTACHMENT, depthTex);
-
-    FrameBufferObject transparentFBO;
-    Texture accumTex(windowWidth, windowHeight, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
-    Texture revealTex(windowWidth, windowHeight, GL_R8, GL_RED, GL_FLOAT);
-    transparentFBO.AddAttachment(GL_COLOR_ATTACHMENT0, accumTex);
-    transparentFBO.AddAttachment(GL_COLOR_ATTACHMENT1, revealTex);
-    transparentFBO.AddAttachment(GL_DEPTH_ATTACHMENT, depthTex);
-    transparentFBO.SetDrawBuffers({ GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
-
-    glm::vec4 zeroFillerVec(0.0f);
-    glm::vec4 oneFillerVec(1.0f);
-
-    while (!glfwWindowShouldClose(window))
-    {
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
-        opaqueFBO.Bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        programOpaque.Use();
-        programOpaque.SetUniformMat4("mvp", glm::mat4(1.f));
-        programOpaque.SetUniform3f("color", 1.f, 1.f, 0.f);
-        rendererYellow.Draw();
-        programOpaque.SetUniform3f("color", 0.f, 1.f, 1.f);
-        rendererCyan.Draw();
-
-        //-------------------------------------------------------------------------
-        glDepthMask(GL_FALSE);
-        glEnable(GL_BLEND);
-        glBlendFunci(0, GL_ONE, GL_ONE);
-        glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
-        glBlendEquation(GL_FUNC_ADD);
-
-        transparentFBO.Bind();
-        glClearBufferfv(GL_COLOR, 0, &zeroFillerVec[0]);
-        glClearBufferfv(GL_COLOR, 1, &oneFillerVec[0]);
-
-        programTransparent.Use();
-        programTransparent.SetUniformMat4("mvp", glm::mat4(1.f));
-
-        programTransparent.SetUniform4f("color", 1.f, 0.f, 0.f, .5f);
-        rendererRed.Draw();
-
-        programTransparent.SetUniform4f("color", 0.f, 1.f, 0.f, .5f);
-        rendererGreen.Draw();
-
-        programTransparent.SetUniform4f("color", 0.f, 0.f, 1.f, .5f);
-        rendererBlue.Draw();
-
-        //-------------------------------------------------------------------------
-        glDepthFunc(GL_ALWAYS);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        opaqueFBO.Bind();
-        programComposite.Use();
-        accumTex.Use(0);
-        revealTex.Use(1);
-        rendererQuad.Draw();
-
-        //-------------------------------------------------------------------------
-        glDisable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-        programScreen.Use();
-        opaqueTex.Use(0);
-        rendererQuad.Draw();
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    glfwTerminate();
-    return 0;
-}
-
-#endif // TEST2
-
-#ifdef TEST3
+#ifdef TEST12
 
 #include <common.hpp>
 
@@ -350,44 +189,25 @@ constexpr int windowHeight { 600 };
 int main()
 {
     // clang-format off
-    // 透明红色
-    std::vector<GLfloat> red{
-        -0.8f, -0.8f, 0.1f,
-         0.0f, -0.8f, 0.1f,
-        -0.8f,  0.8f, 0.1f,
-         0.0f,  0.8f, 0.1f,
+    std::vector<GLfloat> rect1{
+        -.5f,  .5f,  0.f,
+        -.5f, -.5f,  0.f,
+         .5f,  .5f,  0.f,
+         .5f, -.5f,  0.f,
     };
 
-    // 透明绿色
-    std::vector<GLfloat> green{
-        -0.5f, -0.8f, 0.2f,
-         0.3f, -0.8f, 0.2f,
-        -0.5f,  0.8f, 0.2f,
-         0.3f,  0.8f, 0.2f,
+    std::vector<GLfloat> rect2{
+         0.f,  .5f, -.5f,
+         0.f, -.5f, -.5f,
+         0.f,  .5f,  .5f,
+         0.f, -.5f,  .5f,
     };
 
-    // 透明蓝色
-    std::vector<GLfloat> blue{
-        -0.3f, -0.8f, 0.3f,
-         0.5f, -0.8f, 0.3f,
-        -0.3f,  0.8f, 0.3f,
-         0.5f,  0.8f, 0.3f,
-    };
-
-    // 不透明黄色
-    std::vector<GLfloat> yellow{
-         0.0f, -0.8f, 0.4f,
-         0.8f, -0.8f, 0.4f,
-         0.0f,  0.8f, 0.4f,
-         0.8f,  0.8f, 0.4f,
-    };
-
-    // 不透明青色
-    std::vector<GLfloat> cyan{
-        -0.1f, -0.8f, 0.5f,
-         0.1f, -0.8f, 0.5f,
-        -0.1f,  0.8f, 0.5f,
-         0.1f,  0.8f, 0.5f,
+    std::vector<GLfloat> rect3{
+        -.5f,  .5f,  .2f,
+        -.5f, -.5f,  .2f,
+         .5f,  .5f,  .2f,
+         .5f, -.5f,  .2f,
     };
 
     std::vector<GLfloat> quad{
@@ -401,11 +221,9 @@ int main()
     InitOpenGL initOpenGL(4, 2, Camera({ 0, 0, 5 }, { 0, 1, 0 }, { 0, 0, 0 }));
     auto window = initOpenGL.GetWindow();
 
-    Renderer rendererRed(red, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererGreen(green, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererBlue(blue, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererYellow(yellow, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererCyan(cyan, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererRect1(rect1, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererRect2(rect2, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererRect3(rect3, { 3 }, GL_TRIANGLE_STRIP);
     Renderer rendererQuad(quad, { 3, 2 }, GL_TRIANGLE_STRIP);
 
     ShaderProgram programTransparent("resources/02_08_02_TEST1_transparent.vs", "resources/02_08_02_TEST1_transparent.fs");
@@ -445,12 +263,11 @@ int main()
         opaqueFBO.Bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        programOpaque.Use();
-        programOpaque.SetUniformMat4("mvp", p * v);
-        programOpaque.SetUniform3f("color", 1.f, 1.f, 0.f);
-        rendererYellow.Draw();
-        programOpaque.SetUniform3f("color", 0.f, 1.f, 1.f);
-        rendererCyan.Draw();
+        // 不透明
+        // programOpaque.Use();
+        // programOpaque.SetUniformMat4("mvp", p * v);
+        // programOpaque.SetUniform3f("color", 0.f, 0.f, 1.f);
+        // rendererRect3.Draw();
 
         //-------------------------------------------------------------------------
         glDepthMask(GL_FALSE);
@@ -463,187 +280,13 @@ int main()
         glClearBufferfv(GL_COLOR, 0, &zeroFillerVec[0]);
         glClearBufferfv(GL_COLOR, 1, &oneFillerVec[0]);
 
+        // 半透明
         programTransparent.Use();
         programTransparent.SetUniformMat4("mvp", p * v);
-
         programTransparent.SetUniform4f("color", 1.f, 0.f, 0.f, .5f);
-        rendererRed.Draw();
-
+        rendererRect1.Draw();
         programTransparent.SetUniform4f("color", 0.f, 1.f, 0.f, .5f);
-        rendererGreen.Draw();
-
-        programTransparent.SetUniform4f("color", 0.f, 0.f, 1.f, .5f);
-        rendererBlue.Draw();
-
-        //-------------------------------------------------------------------------
-        glDepthFunc(GL_ALWAYS);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        opaqueFBO.Bind();
-        programComposite.Use();
-        accumTex.Use(0);
-        revealTex.Use(1);
-        rendererQuad.Draw();
-
-        //-------------------------------------------------------------------------
-        glDisable(GL_DEPTH_TEST);
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-        programScreen.Use();
-        opaqueTex.Use(0);
-        rendererQuad.Draw();
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    glfwTerminate();
-    return 0;
-}
-
-#endif // TEST3
-
-#ifdef TEST4
-
-#include <common.hpp>
-
-constexpr int windowWidth { 800 };
-constexpr int windowHeight { 600 };
-
-int main()
-{
-    // clang-format off
-    // 透明红色
-    std::vector<GLfloat> red{
-         .9f,  .6f, -.1f,
-         .9f,  .5f, -.1f,
-        -.9f,  .6f,  .1f,
-        -.9f,  .5f,  .1f,
-    };
-
-    // 透明绿色
-    std::vector<GLfloat> green{
-        -.9f,  .9f, -.1f,
-        -.9f,  .7f, -.1f,
-         .5f, -.7f,  .1f,
-         .5f, -.9f,  .1f,
-    };
-
-    // 透明蓝色
-    std::vector<GLfloat> blue{
-        -.5f, -.7f, -.1f,
-        -.5f, -.9f, -.1f,
-         .9f,  .9f,  .1f,
-         .9f,  .7f,  .1f,
-
-    };
-
-    // 不透明黄色
-    std::vector<GLfloat> yellow{
-         .9f,  .2f,  .1f,
-         .9f,  .1f,  .1f,
-        -.9f,  .2f,  .1f,
-        -.9f,  .1f,  .1f,
-    };
-
-    // 不透明青色
-    std::vector<GLfloat> cyan{
-         .9f, -.5f, -.1f,
-         .9f, -.6f, -.1f,
-        -.9f, -.5f, -.1f,
-        -.9f, -.6f, -.1f,
-    };
-
-    std::vector<GLfloat> quad{
-        -1.f, -1.f, 0.f,    0.f, 0.f,
-         1.f, -1.f, 0.f,    1.f, 0.f,
-        -1.f,  1.f, 0.f,    0.f, 1.f,
-         1.f,  1.f, 0.f,    1.f, 1.f,
-    };
-    // clang-format on
-
-    InitOpenGL initOpenGL(4, 2, Camera({ 0, 0, 5 }, { 0, 1, 0 }, { 0, 0, 0 }));
-    auto window = initOpenGL.GetWindow();
-
-    Renderer rendererRed(red, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererGreen(green, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererBlue(blue, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererYellow(yellow, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererCyan(cyan, { 3 }, GL_TRIANGLE_STRIP);
-    Renderer rendererQuad(quad, { 3, 2 }, GL_TRIANGLE_STRIP);
-
-    ShaderProgram programTransparent("resources/02_08_02_TEST1_transparent.vs", "resources/02_08_02_TEST1_transparent.fs");
-    ShaderProgram programOpaque("resources/02_08_02_TEST1_opaque.vs", "resources/02_08_02_TEST1_opaque.fs");
-    ShaderProgram programComposite("resources/02_08_02_TEST1_composite.vs", "resources/02_08_02_TEST1_composite.fs");
-    ShaderProgram programScreen("resources/02_08_02_TEST1_screen.vs", "resources/02_08_02_TEST1_screen.fs");
-
-    //----------------------------------------------------------------------------------
-    FrameBufferObject opaqueFBO;
-    Texture opaqueTex(windowWidth, windowHeight, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
-    Texture depthTex(windowWidth, windowHeight, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
-    opaqueFBO.AddAttachment(GL_COLOR_ATTACHMENT0, opaqueTex);
-    opaqueFBO.AddAttachment(GL_DEPTH_ATTACHMENT, depthTex);
-
-    FrameBufferObject transparentFBO;
-    Texture accumTex(windowWidth, windowHeight, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
-    Texture revealTex(windowWidth, windowHeight, GL_R8, GL_RED, GL_FLOAT);
-    transparentFBO.AddAttachment(GL_COLOR_ATTACHMENT0, accumTex);
-    transparentFBO.AddAttachment(GL_COLOR_ATTACHMENT1, revealTex);
-    transparentFBO.AddAttachment(GL_DEPTH_ATTACHMENT, depthTex);
-    transparentFBO.SetDrawBuffers({ GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
-
-    glm::vec4 zeroFillerVec(0.0f);
-    glm::vec4 oneFillerVec(1.0f);
-
-    while (!glfwWindowShouldClose(window))
-    {
-        auto v = initOpenGL.GetViewMatrix();
-        auto p = initOpenGL.GetProjectionMatrix();
-
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
-        opaqueFBO.Bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        programOpaque.Use();
-        programOpaque.SetUniformMat4("mvp", p * v);
-        programOpaque.SetUniform3f("color", 1.f, 1.f, 0.f);
-        rendererYellow.Draw();
-        programOpaque.SetUniform3f("color", 0.f, 1.f, 1.f);
-        rendererCyan.Draw();
-
-        //-------------------------------------------------------------------------
-        glDepthMask(GL_FALSE);
-        glEnable(GL_BLEND);
-        glBlendFunci(0, GL_ONE, GL_ONE);
-        glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
-        glBlendEquation(GL_FUNC_ADD);
-
-        transparentFBO.Bind();
-        glClearBufferfv(GL_COLOR, 0, &zeroFillerVec[0]);
-        glClearBufferfv(GL_COLOR, 1, &oneFillerVec[0]);
-
-        programTransparent.Use();
-        programTransparent.SetUniformMat4("mvp", p * v);
-
-        programTransparent.SetUniform4f("color", 1.f, 0.f, 0.f, .5f);
-        rendererRed.Draw();
-
-        programTransparent.SetUniform4f("color", 0.f, 1.f, 0.f, .5f);
-        rendererGreen.Draw();
-
-        programTransparent.SetUniform4f("color", 0.f, 0.f, 1.f, .5f);
-        rendererBlue.Draw();
+        rendererRect2.Draw();
 
         //-------------------------------------------------------------------------
         glDepthFunc(GL_ALWAYS);
@@ -679,7 +322,7 @@ int main()
     return 0;
 }
 
-#endif // TEST4
+#endif // TEST12
 
 #ifdef TEST21
 
@@ -728,8 +371,8 @@ int main()
     Renderer rendererRect2(vertices2, { 3 }, GL_TRIANGLE_STRIP);
     Renderer rendererQuad(quad, { 2 }, GL_TRIANGLE_STRIP);
 
-    ShaderProgram programGeometry("resources/02_08_02_TEST5_geometry.vs", "resources/02_08_02_TEST5_geometry.fs");
-    ShaderProgram programColor("resources/02_08_02_TEST5_color.vs", "resources/02_08_02_TEST5_color.fs");
+    ShaderProgram programGeometry("resources/02_08_02_TEST2_geometry.vs", "resources/02_08_02_TEST2_geometry.fs");
+    ShaderProgram programColor("resources/02_08_02_TEST2_color.vs", "resources/02_08_02_TEST2_color.fs");
 
     //-----------------------------------------------------------------------------------
     // 保存每个像素的队头索引
@@ -773,6 +416,7 @@ int main()
 
     //-----------------------------------------------------------------------------------
     // 不需要开启深度测试，也不需要开启混合
+    // 无法在渲染前知道所需内存的大小，一般用于离线渲染
     // 两个Buffer，一个Buffer和窗口（帧缓冲）大小一致，保存窗口每个像素的最后一个片段索引
     // 另一个Buffer保存所有的片段信息，片段信息包含颜色、深度和当前像素下一个片段的索引
     // 通过找到构成当前像素的所有片段信息，然后根据深度值排序，再把这些片段按顺序混合就是当前像素的实际颜色
@@ -892,8 +536,8 @@ int main()
     Renderer rendererRect3(vertices3, indices, { 3 }, GL_TRIANGLES);
     Renderer rendererQuad(quad, { 2 }, GL_TRIANGLE_STRIP);
 
-    ShaderProgram programGeometry("resources/02_08_02_TEST5_geometry.vs", "resources/02_08_02_TEST5_geometry.fs");
-    ShaderProgram programColor("resources/02_08_02_TEST5_color.vs", "resources/02_08_02_TEST5_color.fs");
+    ShaderProgram programGeometry("resources/02_08_02_TEST2_geometry.vs", "resources/02_08_02_TEST2_geometry.fs");
+    ShaderProgram programColor("resources/02_08_02_TEST2_color.vs", "resources/02_08_02_TEST2_color.fs");
 
     //-----------------------------------------------------------------------------------
     // 保存每个像素的队头索引
@@ -995,3 +639,108 @@ int main()
 }
 
 #endif // TEST22
+
+#ifdef TEST31
+
+#include <common.hpp>
+
+constexpr int width { 800 };
+constexpr int height { 600 };
+
+int main()
+{
+    // clang-format off
+    std::vector<GLfloat> vertices0{
+        -0.5f,  0.5f,  0.0f,
+        -0.5f, -0.5f,  0.0f,
+         0.5f,  0.5f,  0.0f,
+         0.5f, -0.5f,  0.0f,
+    };
+
+    std::vector<GLfloat> vertices1{
+        -0.5f,  0.5f,  0.1f,
+        -0.5f, -0.5f,  0.1f,
+         0.5f,  0.5f,  0.1f,
+         0.5f, -0.5f,  0.1f,
+    };
+
+    std::vector<GLfloat> vertices2{
+        -0.5f,  0.5f,  0.2f,
+        -0.5f, -0.5f,  0.2f,
+         0.5f,  0.5f,  0.2f,
+         0.5f, -0.5f,  0.2f,
+    };
+    // clang-format on
+
+    InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    auto window = initOpenGL.GetWindow();
+
+    ShaderProgram programPass1("resources/02_08_02_TEST3_pass1.vs", "resources/02_08_02_TEST3_pass1.fs");
+    ShaderProgram programPass2("resources/02_08_02_TEST3_pass2.vs", "resources/02_08_02_TEST3_pass2.fs");
+
+    Renderer rendererRect0(vertices0, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererRect1(vertices1, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererRect2(vertices2, { 3 }, GL_TRIANGLE_STRIP);
+
+    // 用来保存距离相机最近的片段的深度值
+    Texture texDepth(width, height, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
+
+    FrameBufferObject pass1;
+    pass1.AddAttachment(GL_DEPTH_ATTACHMENT, texDepth);
+
+    //-----------------------------------------------------------------------------------
+    // 首先绘制整个场景，将距离相机最近的所有片段深度值写入texDepth
+    // 然后再绘制整个场景，当片段的深度值不大于texDepth中的深度值时，则丢弃该片段（通过将深度值设置为1.0，让该片段无法通过深度测试来丢弃该片段）
+    // 最后显示到屏幕上的就是距离相机第二近的片段颜色
+    while (!glfwWindowShouldClose(window))
+    {
+        //-----------------------------------------------------------------------------------
+        // 将距离相机最近的片段的深度值保存到texDepth中
+        pass1.Bind();
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glClearColor(0.f, 0.f, 0.f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        programPass1.Use();
+        programPass1.SetUniformMat4("model", glm::mat4(1.f));
+        programPass1.SetUniformMat4("view", initOpenGL.GetViewMatrix());
+        programPass1.SetUniformMat4("proj", initOpenGL.GetProjectionMatrix());
+
+        rendererRect0.Draw();
+        rendererRect1.Draw();
+        rendererRect2.Draw();
+        pass1.Release();
+
+        //-----------------------------------------------------------------------------------
+        // 绘制距离相机第二近的片段
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glClearColor(0.f, 0.f, 0.f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        programPass2.Use();
+        programPass2.SetUniformMat4("model", glm::mat4(1.f));
+        programPass2.SetUniformMat4("view", initOpenGL.GetViewMatrix());
+        programPass2.SetUniformMat4("proj", initOpenGL.GetProjectionMatrix());
+
+        texDepth.Use();
+
+        programPass2.SetUniform4f("uColor", 1.f, 0.f, 0.f, 1.f);
+        rendererRect0.Draw();
+        programPass2.SetUniform4f("uColor", 0.f, 1.f, 0.f, 1.f);
+        rendererRect1.Draw();
+        programPass2.SetUniform4f("uColor", 0.f, 0.f, 1.f, 1.f);
+        rendererRect2.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST31
