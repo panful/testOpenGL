@@ -8,10 +8,11 @@
  * 7. GL_DEPTH_CLAMP 将视锥体内的所有顶点都显示，不考虑近裁剪平面
  * 8. 图层，后面绘制的图层始终在之前的图层上面
  * 9. 遮挡查询遮挡剔除 Hierachical Z-Buffer(HZB)
- * 10.一次drawcall含有自相交的三角形
+ * 10.一次drawcall含有互相覆盖的三角形，每个片段都会经过片段着色器然后深度测试
+ * 11.读取指定位置的颜色和深度，glsl main()函数中的return和discard效果不一样
  */
 
-#define TEST10
+#define TEST11
 
 #ifdef TEST1
 
@@ -1220,3 +1221,98 @@ int main()
 }
 
 #endif // TEST10
+
+#ifdef TEST11
+
+#include <common.hpp>
+
+constexpr int width { 800 };
+constexpr int height { 600 };
+InitOpenGL* opengl { nullptr };
+Renderer* renderer { nullptr };
+ShaderProgram* program_default { nullptr };
+ShaderProgram* program_depth { nullptr };
+GLuint depthTex { 0 };
+GLuint printFbo { 0 };
+
+void Draw(bool _default)
+{
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.f, 0.f, 0.f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    auto program = _default ? program_default : program_depth;
+
+    program->Use();
+    program->SetUniformMat4("model", glm::mat4(1.f));
+    program->SetUniformMat4("view", opengl->GetViewMatrix());
+    program->SetUniformMat4("proj", opengl->GetProjectionMatrix());
+
+    renderer->Draw();
+}
+
+int main()
+{
+    opengl = new InitOpenGL(Camera({ 0, 0, 5 }, { 0, 1, 0 }, { 0, 0, 0 }));
+
+    auto window = opengl->GetWindow();
+    opengl->SetMiddleButtonCallback(
+        [](int x, int y)
+        {
+            // 将左下角设置为(0, 0)
+            int p_x = x;
+            int p_y = height - y;
+
+            std::cout << "Pick: (" << p_x << ",\t" << p_y << ")\t";
+
+            // 读取指定位置的颜色和深度
+            glBindFramebuffer(GL_FRAMEBUFFER, printFbo);
+            Draw(false);
+
+            glReadBuffer(GL_DEPTH_ATTACHMENT);
+            float depthV { 0.f };
+            glReadPixels(p_x, p_y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depthV);
+            std::cout << "depth: " << depthV << '\t';
+
+            glReadBuffer(GL_COLOR_ATTACHMENT0);
+            unsigned char colorV[4] { 0 };
+            glReadPixels(p_x, p_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, colorV);
+            std::cout << "color: " << (int)colorV[0] << ' ' << (int)colorV[1] << ' ' << (int)colorV[2] << ' ' << (int)colorV[3] << '\n';
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        });
+
+    // clang-format off
+    std::vector<GLfloat> vertices {
+        -0.5f, -0.5f, 0.0f,   1.f, 0.f, 0.f,
+         0.5f, -0.5f, 0.0f,   1.f, 0.f, 0.f,
+         0.0f,  0.5f, 0.0f,   0.f, 1.f, 0.f,
+    };
+    // clang-format on
+
+    renderer        = new Renderer(vertices, { 3, 3 }, GL_TRIANGLES);
+    program_default = new ShaderProgram("resources/02_04_01_TEST11.vs", "resources/02_04_01_TEST11.fs");
+    program_depth   = new ShaderProgram("resources/02_04_01_TEST11.vs", "resources/02_04_01_TEST11_depth.fs");
+
+    FrameBufferObject fbo;
+    Texture texColor(width, height, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+    Texture texDepth(width, height, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
+    fbo.AddAttachment(GL_COLOR_ATTACHMENT0, texColor);
+    fbo.AddAttachment(GL_DEPTH_ATTACHMENT, texDepth);
+    printFbo = fbo.GetHandle();
+    depthTex = texDepth.Get();
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        Draw(true);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST11
