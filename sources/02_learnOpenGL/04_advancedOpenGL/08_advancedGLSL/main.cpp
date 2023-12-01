@@ -541,8 +541,7 @@ int main()
         processInput(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        // 将深度缓冲的值全部置为0.5
-        glClearDepth(0.5f);
+        glClearDepth(0.5f); // 将深度缓冲的值全部置为0.5，默认为1.0
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         program.Use();
