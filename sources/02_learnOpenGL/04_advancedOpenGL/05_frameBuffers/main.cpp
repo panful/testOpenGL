@@ -11,9 +11,10 @@
  * 10. 窗口的右上角绘制一个小窗口
  * 11. 测试自定义FrameBufferObject类
  * 12. MRT(Multiple Render Targets)多渲染目标，一个片段着色器输出到多个颜色附件
+ * 13. 两个FBO执行pingpong操作
  */
 
-#define TEST12
+#define TEST13
 
 #ifdef TEST1
 
@@ -2403,3 +2404,96 @@ int main()
 }
 
 #endif // TEST12
+
+#ifdef TEST13
+
+#include <common.hpp>
+
+constexpr int width { 800 };
+constexpr int height { 600 };
+
+int main()
+{
+    // clang-format off
+    std::vector<GLfloat> quad{
+        -1.f, -1.f, 0.f,    0.f, 0.f,
+         1.f, -1.f, 0.f,    1.f, 0.f,
+        -1.f,  1.f, 0.f,    0.f, 1.f,
+         1.f,  1.f, 0.f,    1.f, 1.f,
+    };
+    // clang-format on
+
+    InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    auto window = initOpenGL.GetWindow();
+
+    ShaderProgram programInit("resources/02_08_02_TEST13_init.vs", "resources/02_08_02_TEST13_init.fs");
+    ShaderProgram programPingPong("resources/02_08_02_TEST13_pingpong.vs", "resources/02_08_02_TEST13_pingpong.fs");
+
+    Renderer rendererQuad(quad, { 3, 2 }, GL_TRIANGLE_STRIP);
+
+    FrameBufferObject initFBO;
+    Texture texture0(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+    initFBO.AddAttachment(GL_COLOR_ATTACHMENT0, texture0);
+
+    FrameBufferObject pingPongFBO;
+    Texture texture1(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+    pingPongFBO.AddAttachment(GL_COLOR_ATTACHMENT0, texture1);
+
+    //--------------------------------------------------------------------------------
+    // 两个FBO切换绘制，当前FBO的输出是下一个FBO的输入，当前FBO的输入是上一个FBO的输出
+    const float clear[4] = { 0.f, 0.f, 0.f, 0.f };
+    while (!glfwWindowShouldClose(window))
+    {
+        //--------------------------------------------------------------------------------
+        // 初始化 texture0
+        initFBO.Bind();
+        // glClearBufferfv(GL_COLOR, 0, clear);
+        programInit.Use();
+        programInit.SetUniform4f("uColor", .1f, .1f, .1f, 1.f);
+        rendererQuad.Draw();
+
+        //--------------------------------------------------------------------------------
+        // 将上一步绘制的texture0绘制到texture1上，并给每个像素增加0.1f
+        pingPongFBO.Bind();
+        // glClearBufferfv(GL_COLOR, 0, clear);
+        programPingPong.Use();
+        texture0.Use();
+        rendererQuad.Draw();
+
+        //--------------------------------------------------------------------------------
+        // 将上一步绘制的texture1绘制到texture0上，并给每个像素增加0.1f
+        initFBO.Bind();
+        // glClearBufferfv(GL_COLOR, 0, clear);
+        programPingPong.Use();
+        texture1.Use();
+        rendererQuad.Draw();
+
+        //--------------------------------------------------------------------------------
+        // 将上一步绘制的texture0绘制到texture1上，并给每个像素增加0.1f
+        pingPongFBO.Bind();
+        // glClearBufferfv(GL_COLOR, 0, clear);
+        programPingPong.Use();
+        texture0.Use();
+        rendererQuad.Draw();
+
+        //--------------------------------------------------------------------------------
+        // 将上一步的texture1每个像素增加0.1f，然后显示到屏幕
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        programPingPong.Use();
+        texture1.Use();
+        rendererQuad.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST13

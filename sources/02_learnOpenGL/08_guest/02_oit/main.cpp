@@ -9,13 +9,16 @@
  * 32. 深度剥离(Depth peeling)实现 OIT
  * 33. 互相交叉图元 OIT （从前往后剥离）
  * 34. 互相交叉图元 OIT （从后往前剥离）
- * 
+ * 35. 获取指定位置深度值最大和最小的片段
+ * 36. 双向深度剥离实现OIT DualDepthPeeling
+ * 37. 互相交叉图元 OIT (Dual Depth Peeling)
+ *
  *
  * 透明度混合 https://zhuanlan.zhihu.com/p/368065919
  * OIT https://blog.csdn.net/qq_35312463/article/details/115827894
  */
 
-#define TEST34
+#define TEST36
 
 #ifdef TEST11
 
@@ -1145,3 +1148,396 @@ int main()
 }
 
 #endif // TEST34
+
+#ifdef TEST35
+
+#include <common.hpp>
+
+constexpr int width { 800 };
+constexpr int height { 600 };
+
+int main()
+{
+    // clang-format off
+    std::vector<GLfloat> vertices0{
+        -0.5f,  0.5f,  0.0f,
+        -0.5f, -0.5f,  0.0f,
+         0.5f,  0.5f,  0.0f,
+         0.5f, -0.5f,  0.0f,
+    };
+
+    std::vector<GLfloat> vertices1{
+        -0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+    };
+        
+    std::vector<GLfloat> quad{
+        -1.f, -1.f, 0.f,    0.f, 0.f,
+         1.f, -1.f, 0.f,    1.f, 0.f,
+        -1.f,  1.f, 0.f,    0.f, 1.f,
+         1.f,  1.f, 0.f,    1.f, 1.f,
+    };
+    // clang-format on
+
+    InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    auto window = initOpenGL.GetWindow();
+
+    ShaderProgram quadProgram("resources/02_08_02_TEST35_quad.vs", "resources/02_08_02_TEST35_quad.fs");
+    ShaderProgram ddpeelProgram("resources/02_08_02_TEST35_minmax_depth.vs", "resources/02_08_02_TEST35_minmax_depth.fs");
+
+    Renderer rendererRect0(vertices0, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererRect1(vertices1, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererQuad(quad, { 3, 2 }, GL_TRIANGLE_STRIP);
+
+    Texture texColor(width, height, GL_RG32F, GL_RG, GL_FLOAT);
+    FrameBufferObject fbo;
+    fbo.AddAttachment(GL_COLOR_ATTACHMENT0, texColor);
+
+    const float depth_clear[4] = { -1.0, -1.0, -1.0, -1.0 };
+
+    while (!glfwWindowShouldClose(window))
+    {
+        // 不开启深度测试，或者深度测试设置为GL_ALWAYS(深度测试如果失败，就不会混合)
+        // 将帧缓冲的颜色附件初始化为{-1,-1}
+        // 开启混合，且混合方式设置为：取两个颜色中的较大者GL_MAX
+        // 着色器输出设置为：vec2(-gl_FragCoord.z, gl_FragCoord.z);
+        // 这样就能获取指定像素位置所有片段的最大和最小深度值
+        fbo.Bind();
+        glEnable(GL_BLEND);
+        glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
+        glBlendEquation(GL_MAX);
+        glClearBufferfv(GL_COLOR, 0, depth_clear);
+
+        ddpeelProgram.Use();
+        ddpeelProgram.SetUniformMat4("model", glm::mat4(1.f));
+        ddpeelProgram.SetUniformMat4("view", initOpenGL.GetViewMatrix());
+        ddpeelProgram.SetUniformMat4("proj", initOpenGL.GetProjectionMatrix());
+
+        rendererRect0.Draw();
+        rendererRect1.Draw();
+        fbo.Release();
+
+        //--------------------------------------------------------------------------------
+        // 可视化最大最小深度值: {Min,Max,0.f,1.f}，红色通道是最小深度值，绿色是最大
+        glDisable(GL_DEPTH_TEST);
+        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        quadProgram.Use();
+        texColor.Use();
+        rendererQuad.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST35
+
+#ifdef TEST36
+
+#include <common.hpp>
+
+constexpr int width { 800 };
+constexpr int height { 600 };
+constexpr size_t numPeels { 5 }; // 实际剥离层数 = (5-1)*2
+
+int main()
+{
+    // clang-format off
+    std::vector<GLfloat> vertices0{
+        -0.5f,  0.5f,  0.0f,
+        -0.5f, -0.5f,  0.0f,
+         0.5f,  0.5f,  0.0f,
+         0.5f, -0.5f,  0.0f,
+    };
+
+    std::vector<GLfloat> vertices1{
+        -0.5f,  0.5f,  0.1f,
+        -0.5f, -0.5f,  0.1f,
+         0.5f,  0.5f,  0.1f,
+         0.5f, -0.5f,  0.1f,
+    };
+
+    std::vector<GLfloat> vertices2{
+        -0.5f,  0.5f,  0.2f,
+        -0.5f, -0.5f,  0.2f,
+         0.5f,  0.5f,  0.2f,
+         0.5f, -0.5f,  0.2f,
+    };
+        
+    std::vector<GLfloat> quad{
+        -1.f, -1.f, 0.f,    0.f, 0.f,
+         1.f, -1.f, 0.f,    1.f, 0.f,
+        -1.f,  1.f, 0.f,    0.f, 1.f,
+         1.f,  1.f, 0.f,    1.f, 1.f,
+    };
+    // clang-format on
+
+    InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    auto window = initOpenGL.GetWindow();
+
+    ShaderProgram programMinMax("resources/02_08_02_TEST36_minmax_depth.vs", "resources/02_08_02_TEST36_minmax_depth.fs");
+    ShaderProgram programDualDp("resources/02_08_02_TEST36_minmax_depth.vs", "resources/02_08_02_TEST36_dualdp.fs");
+    ShaderProgram programBlend("resources/02_08_02_TEST35_quad.vs", "resources/02_08_02_TEST36_blend.fs");
+
+    Renderer rendererRect0(vertices0, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererRect1(vertices1, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererRect2(vertices2, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererQuad(quad, { 3, 2 }, GL_TRIANGLE_STRIP);
+
+    std::vector<Texture*> frontTexs;
+    std::vector<Texture*> backTexs;
+    std::vector<Texture*> depthTexs;
+    std::vector<FrameBufferObject*> ddpFBOs;
+
+    for (size_t i = 0; i < numPeels; ++i)
+    {
+        frontTexs.emplace_back(new Texture(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT));
+        backTexs.emplace_back(new Texture(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT));
+        depthTexs.emplace_back(new Texture(width, height, GL_RG32F, GL_RG, GL_FLOAT));
+        ddpFBOs.emplace_back(new FrameBufferObject());
+        ddpFBOs[i]->AddAttachment(GL_COLOR_ATTACHMENT0, *depthTexs[i]);
+        ddpFBOs[i]->AddAttachment(GL_COLOR_ATTACHMENT1, *frontTexs[i]);
+        ddpFBOs[i]->AddAttachment(GL_COLOR_ATTACHMENT2, *backTexs[i]);
+        ddpFBOs[i]->SetDrawBuffers({ GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 });
+    }
+
+    const float front_clear[4] = { 0.f, 0.f, 0.f, 0.f };
+    const float back_clear[4]  = { 0.f, 0.f, 0.f, 0.f };
+    const float depth_clear[4] = { -1.0, -1.0, -1.0, -1.0 };
+
+    while (!glfwWindowShouldClose(window))
+    {
+        //-----------------------------------------------------------------------
+        // 首先将距离相机最近和最远片段的深度值获取到
+        ddpFBOs[0]->Bind();
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
+        glBlendEquation(GL_MAX);
+        glClearBufferfv(GL_COLOR, 0, depth_clear);
+        glClearBufferfv(GL_COLOR, 1, front_clear);
+        glClearBufferfv(GL_COLOR, 2, back_clear);
+
+        programMinMax.Use();
+        programMinMax.SetUniformMat4("model", glm::mat4(1.f));
+        programMinMax.SetUniformMat4("view", initOpenGL.GetViewMatrix());
+        programMinMax.SetUniformMat4("proj", initOpenGL.GetProjectionMatrix());
+
+        rendererRect0.Draw();
+        rendererRect1.Draw();
+        rendererRect2.Draw();
+        ddpFBOs[0]->Release();
+
+        //--------------------------------------------------------------------------------
+        // 使用上一步获取到的最近和最远深度值，依次向中间夹逼
+        for (size_t i = 1; i < numPeels; ++i)
+        {
+            ddpFBOs[i]->Bind();
+            glDisable(GL_DEPTH_TEST);
+            glEnable(GL_BLEND);
+            glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
+            glBlendEquation(GL_MAX);
+            glClearBufferfv(GL_COLOR, 0, depth_clear);
+            glClearBufferfv(GL_COLOR, 1, front_clear);
+            glClearBufferfv(GL_COLOR, 2, back_clear);
+
+            programDualDp.Use();
+            programDualDp.SetUniformMat4("model", glm::mat4(1.f));
+            programDualDp.SetUniformMat4("view", initOpenGL.GetViewMatrix());
+            programDualDp.SetUniformMat4("proj", initOpenGL.GetProjectionMatrix());
+
+            depthTexs[i - 1]->Use();
+
+            programDualDp.SetUniform4f("uColor", 1.f, 0.f, 0.f, .5f);
+            rendererRect0.Draw();
+            programDualDp.SetUniform4f("uColor", 0.f, 1.f, 0.f, .5f);
+            rendererRect1.Draw();
+            programDualDp.SetUniform4f("uColor", 0.f, 0.f, 1.f, .5f);
+            rendererRect2.Draw();
+        }
+
+        //--------------------------------------------------------------------------------
+        // 使用第二步生成的所有剥离层进行颜色混合
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        programBlend.Use();
+        for (size_t i = 1; i < numPeels; ++i)
+        {
+            programBlend.SetUniform1i("pass" + std::to_string(i - 1), static_cast<GLint>(i - 1));
+            backTexs[i]->Use(static_cast<GLuint>(i - 1));
+
+            programBlend.SetUniform1i("pass" + std::to_string(i - 1 + numPeels - 1), static_cast<GLint>(i - 1 + numPeels - 1));
+            frontTexs[numPeels - i]->Use(static_cast<GLuint>(i - 1 + numPeels - 1));
+        }
+
+        rendererQuad.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST36
+
+#ifdef TEST37
+
+#include <common.hpp>
+
+constexpr int width { 800 };
+constexpr int height { 600 };
+constexpr size_t numPeels { 5 }; // 实际剥离层数 = (5-1)*2
+
+int main()
+{
+    // clang-format off
+    std::vector<GLfloat> vertices0{
+        -0.5f,  0.5f,  0.0f,
+        -0.5f, -0.5f,  0.0f,
+         0.5f,  0.5f,  0.0f,
+         0.5f, -0.5f,  0.0f,
+    };
+
+    std::vector<GLfloat> vertices1{
+         0.0f,  0.5f, -0.5f,
+         0.0f, -0.5f, -0.5f,
+         0.0f,  0.5f,  0.5f,
+         0.0f, -0.5f,  0.5f,
+    };
+        
+    std::vector<GLfloat> quad{
+        -1.f, -1.f, 0.f,    0.f, 0.f,
+         1.f, -1.f, 0.f,    1.f, 0.f,
+        -1.f,  1.f, 0.f,    0.f, 1.f,
+         1.f,  1.f, 0.f,    1.f, 1.f,
+    };
+    // clang-format on
+
+    InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
+    auto window = initOpenGL.GetWindow();
+
+    ShaderProgram programMinMax("resources/02_08_02_TEST36_minmax_depth.vs", "resources/02_08_02_TEST36_minmax_depth.fs");
+    ShaderProgram programDualDp("resources/02_08_02_TEST36_minmax_depth.vs", "resources/02_08_02_TEST36_dualdp.fs");
+    ShaderProgram programBlend("resources/02_08_02_TEST35_quad.vs", "resources/02_08_02_TEST36_blend.fs");
+
+    Renderer rendererRect0(vertices0, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererRect1(vertices1, { 3 }, GL_TRIANGLE_STRIP);
+    Renderer rendererQuad(quad, { 3, 2 }, GL_TRIANGLE_STRIP);
+
+    std::vector<Texture*> frontTexs;
+    std::vector<Texture*> backTexs;
+    std::vector<Texture*> depthTexs;
+    std::vector<FrameBufferObject*> ddpFBOs;
+
+    for (size_t i = 0; i < numPeels; ++i)
+    {
+        frontTexs.emplace_back(new Texture(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT));
+        backTexs.emplace_back(new Texture(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT));
+        depthTexs.emplace_back(new Texture(width, height, GL_RG32F, GL_RG, GL_FLOAT));
+        ddpFBOs.emplace_back(new FrameBufferObject());
+        ddpFBOs[i]->AddAttachment(GL_COLOR_ATTACHMENT0, *depthTexs[i]);
+        ddpFBOs[i]->AddAttachment(GL_COLOR_ATTACHMENT1, *frontTexs[i]);
+        ddpFBOs[i]->AddAttachment(GL_COLOR_ATTACHMENT2, *backTexs[i]);
+        ddpFBOs[i]->SetDrawBuffers({ GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 });
+    }
+
+    const float front_clear[4] = { 0.f, 0.f, 0.f, 0.f };
+    const float back_clear[4]  = { 0.f, 0.f, 0.f, 0.f };
+    const float depth_clear[4] = { -1.0, -1.0, -1.0, -1.0 };
+
+    while (!glfwWindowShouldClose(window))
+    {
+        //-----------------------------------------------------------------------
+        // 首先将距离相机最近和最远片段的深度值获取到
+        ddpFBOs[0]->Bind();
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
+        glBlendEquation(GL_MAX);
+        glClearBufferfv(GL_COLOR, 0, depth_clear);
+        glClearBufferfv(GL_COLOR, 1, front_clear);
+        glClearBufferfv(GL_COLOR, 2, back_clear);
+
+        programMinMax.Use();
+        programMinMax.SetUniformMat4("model", glm::mat4(1.f));
+        programMinMax.SetUniformMat4("view", initOpenGL.GetViewMatrix());
+        programMinMax.SetUniformMat4("proj", initOpenGL.GetProjectionMatrix());
+
+        rendererRect0.Draw();
+        rendererRect1.Draw();
+        ddpFBOs[0]->Release();
+
+        //--------------------------------------------------------------------------------
+        // 使用上一步获取到的最近和最远深度值，依次向中间夹逼
+        for (size_t i = 1; i < numPeels; ++i)
+        {
+            ddpFBOs[i]->Bind();
+            glDisable(GL_DEPTH_TEST);
+            glEnable(GL_BLEND);
+            glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
+            glBlendEquation(GL_MAX);
+            glClearBufferfv(GL_COLOR, 0, depth_clear);
+            glClearBufferfv(GL_COLOR, 1, front_clear);
+            glClearBufferfv(GL_COLOR, 2, back_clear);
+
+            programDualDp.Use();
+            programDualDp.SetUniformMat4("model", glm::mat4(1.f));
+            programDualDp.SetUniformMat4("view", initOpenGL.GetViewMatrix());
+            programDualDp.SetUniformMat4("proj", initOpenGL.GetProjectionMatrix());
+
+            depthTexs[i - 1]->Use();
+
+            programDualDp.SetUniform4f("uColor", 1.f, 0.f, 0.f, .5f);
+            rendererRect0.Draw();
+            programDualDp.SetUniform4f("uColor", 0.f, 1.f, 0.f, .5f);
+            rendererRect1.Draw();
+        }
+
+        //--------------------------------------------------------------------------------
+        // 使用第二步生成的所有剥离层进行颜色混合
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        programBlend.Use();
+        for (size_t i = 1; i < numPeels; ++i)
+        {
+            programBlend.SetUniform1i("pass" + std::to_string(i - 1), static_cast<GLint>(i - 1));
+            backTexs[i]->Use(static_cast<GLuint>(i - 1));
+
+            programBlend.SetUniform1i("pass" + std::to_string(i - 1 + numPeels - 1), static_cast<GLint>(i - 1 + numPeels - 1));
+            frontTexs[numPeels - i]->Use(static_cast<GLuint>(i - 1 + numPeels - 1));
+        }
+
+        rendererQuad.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST37

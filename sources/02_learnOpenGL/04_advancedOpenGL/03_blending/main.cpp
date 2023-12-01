@@ -5,7 +5,7 @@
  * 4. 交叉图像的混合
  */
 
-#define TEST4
+#define TEST1
 
 #ifdef TEST1
 
@@ -126,13 +126,14 @@ int main()
         // glBlendFunc(GL_CONSTANT_ALPHA, GL_CONSTANT_COLOR);
 
         //---------------------------------------------------------------
-        // RGB分量和ALPHA分量分开设置
-        // 前两个参数用来设置rgb，和glBlendColor效果一样
-        // 后两个参数用来设置alpha
+        // RGB分量和ALPHA分量分开设置，glBlendFunc是RGBA一起设置
+        // 前两个参数用来设置rgb，后两个参数用来设置alpha
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 
         //---------------------------------------------------------------
         // 设置源颜色和目标颜色之间的运算符，默认是加法
+        // RGB也是分开计算的，例如红色 R = F(R_src, R_dst); F表示计算符，绿色和蓝色也是如此
+        // glBlendEquationSeparate(rgbMode, alphaMode); // 前面的参数设置RGB，后面的参数设置Alpha
         glBlendEquation(GL_FUNC_ADD);
 
         program.Use();
@@ -149,7 +150,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;
@@ -278,7 +278,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;
@@ -387,7 +386,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;
@@ -451,7 +449,7 @@ namespace {
 // clang-format on
 
 auto transformMat { glm::mat4(1.f) };
-}
+} // namespace
 
 GLuint CreateVAO(const std::array<GLfloat, 4 * 7>& vertices);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -506,7 +504,6 @@ int main()
     }
 
     // remember to delete the buffer
-    
 
     glfwTerminate();
     return 0;
