@@ -1,14 +1,17 @@
-/*
-* 1.着色器支持的最多顶点属性个数
-* 2.uniform值的设置，获取，索引，大小，类型
-* 3.所有着色器中的uniform都是可以共享的，即只要名称相同值就相同
-*/
+/**
+ * 1. 着色器支持的最多顶点属性个数
+ * 2. uniform值的设置，获取，索引，大小，类型
+ * 3. 所有着色器中的uniform都是可以共享的，即只要名称相同值就相同
+ * 4. 设置分辨率（窗口大小）
+ * 5. 设置分辨率 + 时间
+ */
+
 #define TEST3
 
 #ifdef TEST1
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 #include <iostream>
 
@@ -48,35 +51,35 @@ int main()
 
 #ifdef TEST2
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
-#include <iostream>
 #include <cmath>
+#include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_WIDTH  = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos, 1.0);\n"
-"}\0";
+                                 "layout (location = 0) in vec3 aPos;\n"
+                                 "void main()\n"
+                                 "{\n"
+                                 "   gl_Position = vec4(aPos, 1.0);\n"
+                                 "}\0";
 
 const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"uniform float ourGreen;\n"
-"uniform float ourRed;\n"
-"uniform float ourBlue;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(ourRed, ourGreen, 0.f, 0.f);\n"
-"}\n\0";
+                                   "out vec4 FragColor;\n"
+                                   "uniform float ourGreen;\n"
+                                   "uniform float ourRed;\n"
+                                   "uniform float ourBlue;\n"
+                                   "void main()\n"
+                                   "{\n"
+                                   "   FragColor = vec4(ourRed, ourGreen, 0.f, 0.f);\n"
+                                   "}\n\0";
 
 int main()
 {
@@ -132,7 +135,8 @@ int main()
     glLinkProgram(shaderProgram);
     // check for linking errors
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
+    if (!success)
+    {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
@@ -140,9 +144,9 @@ int main()
     glDeleteShader(fragmentShader);
 
     float vertices[] = {
-         0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  // bottom left
-         0.0f,  0.5f, 0.0f   // top 
+        0.5f, -0.5f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f, // bottom left
+        0.0f, 0.5f, 0.0f    // top
     };
 
     unsigned int VBO, VAO;
@@ -183,7 +187,7 @@ int main()
         // 如果uniform只是定义了，但是没有使用，返回的是一个非法值
         // 索引是uniform定义的索引，从0开始，比如a最先定义，那它的索引就是0，接下来的是1
         {
-            GLuint ourUniformIndices{ 0 };
+            GLuint ourUniformIndices { 0 };
             const char* nameOurRed = "ourRed";
             glGetUniformIndices(shaderProgram, 1, &nameOurRed, &ourUniformIndices);
             std::cout << "ourRed indices:\t" << ourUniformIndices << '\n';
@@ -199,8 +203,8 @@ int main()
 
         // 一次获取多个uniform的索引
         {
-            const char* uniformNames[]{ "ourGreen","ourRed" };
-            GLuint uniformIndices[2]{ 0 };
+            const char* uniformNames[] { "ourGreen", "ourRed" };
+            GLuint uniformIndices[2] { 0 };
             glGetUniformIndices(shaderProgram, 2, uniformNames, uniformIndices);
             std::cout << "ourGreen indices:\t" << uniformIndices[0] << '\t' << "ourRed indices:\t" << uniformIndices[1] << '\n';
         }
@@ -251,36 +255,36 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #ifdef TEST3
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
-#include <iostream>
 #include <cmath>
+#include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_WIDTH  = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"uniform float ourGreen;\n"
-"uniform float ourRed;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos, 1.0);\n"
-"}\0";
+                                 "layout (location = 0) in vec3 aPos;\n"
+                                 "uniform float ourGreen;\n"
+                                 "uniform float ourRed;\n"
+                                 "void main()\n"
+                                 "{\n"
+                                 "   gl_Position = vec4(aPos, 1.0);\n"
+                                 "}\0";
 
 const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"uniform float ourGreen;\n"
-"uniform float ourRed;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(ourRed, ourGreen, 0.f, 0.f);\n"
-"}\n\0";
+                                   "out vec4 FragColor;\n"
+                                   "uniform float ourGreen;\n"
+                                   "uniform float ourRed;\n"
+                                   "void main()\n"
+                                   "{\n"
+                                   "   FragColor = vec4(ourRed, ourGreen, 0.f, 0.f);\n"
+                                   "}\n\0";
 
 int main()
 {
@@ -336,7 +340,8 @@ int main()
     glLinkProgram(shaderProgram);
     // check for linking errors
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
+    if (!success)
+    {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
@@ -344,9 +349,9 @@ int main()
     glDeleteShader(fragmentShader);
 
     float vertices[] = {
-         0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  // bottom left
-         0.0f,  0.5f, 0.0f   // top 
+        0.5f, -0.5f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f, // bottom left
+        0.0f, 0.5f, 0.0f    // top
     };
 
     unsigned int VBO, VAO;
@@ -408,3 +413,186 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST3
+
+#ifdef TEST4
+
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+float windowWidth  = 800.0f;
+float windowHeight = 600.0f;
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("resources/03_01_vs.glsl", "resources/03_01_fs.glsl");
+
+    std::vector<float> vertices {
+        -1.0f,
+        -1.0f, // 左下
+        -1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f, // 右上
+        1.0f,
+        -1.0f,
+        -1.0f,
+        -1.0f,
+    };
+
+    // Buffer
+    unsigned int VBO, VAO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(1.f, 1.f, 1.f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // 开启混合
+        // glEnable(GL_BLEND);
+        // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        program.Use();
+        program.SetUniform2f("iResolution", windowWidth, windowHeight);
+
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+
+    windowWidth  = static_cast<float>(width);
+    windowHeight = static_cast<float>(height);
+}
+
+#endif // TEST4
+
+#ifdef TEST5
+
+#include <common.hpp>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+float windowWidth  = 800.0f;
+float windowHeight = 600.0f;
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("resources/03_01_vs.glsl", "resources/03_01_fs.glsl");
+
+    std::vector<float> vertices {
+        -1.0f,
+        -1.0f, // 左下
+        -1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f, // 右上
+        1.0f,
+        -1.0f,
+        -1.0f,
+        -1.0f,
+    };
+
+    // Buffer
+    unsigned int VBO, VAO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+        program.SetUniform2f("iResolution", windowWidth, windowHeight);
+        program.SetUniform1f("iTime", (float)glfwGetTime());
+
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+
+    glfwTerminate();
+    return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+
+    windowWidth  = static_cast<float>(width);
+    windowHeight = static_cast<float>(height);
+}
+
+#endif // TEST5

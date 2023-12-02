@@ -15,13 +15,16 @@ OpenGL测试代码
 | sources\05_softwareRender   | 软渲染器（自定义光栅化渲染器）        |
 
 ## 2. 常用库
-[GLFW]()
-[GLAD]()
-[GLEW]()
-[GLM]()
-[stb_image]()
-[SDL]()
-
+[glad](https://github.com/Dav1dde/glad)
+[glfw](https://github.com/glfw/glfw)
+[glew](https://github.com/nigels-com/glew)
+[glm](https://github.com/g-truc/glm)
+[freetype](https://gitlab.freedesktop.org/freetype/freetype)
+[tinygltf](https://github.com/syoyo/tinygltf)
+[ktx](https://github.com/KhronosGroup/KTX-Software)
+[assimp](https://github.com/assimp/assimp)
+[eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page)
+[stb_image](https://github.com/nothings/stb)
 
 ## 其他
 

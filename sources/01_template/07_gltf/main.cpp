@@ -3,7 +3,7 @@
  * 2. 打印gltf的顶点、索引、材质等信息
  */
 
-#define TEST2
+#define TEST1
 
 #ifdef TEST1
 
@@ -101,14 +101,14 @@ void dbgModel(tinygltf::Model& model)
 int main()
 {
     tinygltf::Model model;
-    if (loadModel(model, "./resources/Poop.glb"))
+    if (loadModel(model, "../resources/models/Poop.glb"))
     {
         dbgModel(model);
     }
 
     std::cout << "---------------------------------------------\n";
 
-    if (loadModel(model, "./resources/singleTriangle.gltf"))
+    if (loadModel(model, "../resources/models/singleTriangle.gltf"))
     {
         dbgModel(model);
     }
@@ -368,15 +368,14 @@ bool LoadModel(const std::filesystem::path& filename)
 
 int main()
 {
-    LoadModel("./resources/Poop.glb");
+    std::cout << "Poop.glb\n---------------------------------------------\n";
+    LoadModel("../resources/models/Poop.glb");
 
-    std::cout << "---------------------------------------------\n";
+    std::cout << "\n\nsingleTriangle.gltf\n---------------------------------------------\n";
+    LoadModel("../resources/models/singleTriangle.gltf");
 
-    LoadModel("./resources/singleTriangle.gltf");
-
-    std::cout << "---------------------------------------------\n";
-
-    LoadModel("./resources/sponza.gltf");
+    std::cout << "\n\nsponza.gltf\n---------------------------------------------\n";
+    LoadModel("../resources/models/sponza.gltf");
 }
 
 #endif // TEST2

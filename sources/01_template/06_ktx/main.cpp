@@ -11,7 +11,8 @@ int main()
 {
     ktxTexture* ktxTexture { nullptr };
 
-    if (ktxResult result = ktxTexture_CreateFromNamedFile("resources/metalplate01_rgba.ktx", KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture))
+    if (ktxResult result
+        = ktxTexture_CreateFromNamedFile("../resources/textures/metalplate01_rgba.ktx", KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture))
     {
         std::cout << "failed to load texture\n";
         return -1;
@@ -22,9 +23,7 @@ int main()
     auto mipLevels = ktxTexture->numLevels;
 
     ktx_uint8_t* ktxTextureData = ktxTexture_GetData(ktxTexture);
-    ktx_size_t ktxTextureSize   = ktxTexture_GetDataSize(ktxTexture);
 
-    std::cout << "load ktx library successful\n"
-              << "load texture metalplate01_rgba.ktx successful\nwidth:\t" << width << "\nheight:\t" << height << "\nmips:\t" << mipLevels
-              << "\nsize:\t" << ktxTextureSize << '\n';
+    std::cout << "load texture metalplate01_rgba.ktx successful" << std::endl
+              << "width:\t" << width << "\nheight:\t" << height << "\nmips:\t" << mipLevels << std::endl;
 }

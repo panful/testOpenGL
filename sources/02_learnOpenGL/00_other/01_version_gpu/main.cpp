@@ -1,27 +1,29 @@
-/*
-* 01.获取OpenGL版本，双显卡切换 https://blog.csdn.net/hhy321/article/details/122322475
-*/
+/**
+ * 01.获取OpenGL版本，双显卡切换 https://blog.csdn.net/hhy321/article/details/122322475
+ */
 
 #define TEST1
 
 #ifdef TEST1
 
+// clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+// clang-format on
 #include <iostream>
 
 int main(int argc, char** argv)
 {
-    const unsigned int SCR_WIDTH = 800;
+    const unsigned int SCR_WIDTH  = 800;
     const unsigned int SCR_HEIGHT = 600;
 
     if (!glfwInit())
     {
         return -1;
     }
-    //glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // 设置窗口隐藏
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
@@ -51,4 +53,3 @@ int main(int argc, char** argv)
     return 0;
 }
 #endif // TEST1
-

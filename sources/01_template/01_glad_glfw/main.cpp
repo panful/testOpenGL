@@ -1,35 +1,37 @@
 
 /*
-* 0 OpenGL画一个最简单的三角形
-*/
+ * 0 OpenGL画一个最简单的三角形
+ */
 
 #define TEST0
 
 #ifdef TEST0
 
+// clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+// clang-format on
 
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
-const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_WIDTH  = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 const char* VS = "#version 330 core                     \n"
-"layout (location = 0) in vec3 aPos;                    \n"
-"void main()                                            \n"
-"{                                                      \n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);    \n"
-"}                                                      \n\0";
+                 "layout (location = 0) in vec3 aPos;                    \n"
+                 "void main()                                            \n"
+                 "{                                                      \n"
+                 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);    \n"
+                 "}                                                      \n\0";
 
 const char* FS = "#version 330 core                     \n"
-"void main()                                            \n"
-"{                                                      \n"
-"   gl_FragColor = vec4(0.0f,0.8f,0.0f,1.0f);           \n"
-"}                                                      \n\0";
+                 "void main()                                            \n"
+                 "{                                                      \n"
+                 "   gl_FragColor = vec4(0.0f,0.8f,0.0f,1.0f);           \n"
+                 "}                                                      \n\0";
 
 int main()
 {
@@ -50,9 +52,9 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // 不依赖glfw窗口
-    //gladLoadGL();
+    // gladLoadGL();
     // 依赖glfw窗口或其他类似库
-    //gladLoadGLLoader((GLADloadproc));
+    // gladLoadGLLoader((GLADloadproc));
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -91,7 +93,8 @@ int main()
     glLinkProgram(shaderProgram);
 
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
+    if (!success)
+    {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
@@ -101,9 +104,9 @@ int main()
     glDeleteShader(fragmentShader);
 
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,  // left  
-         0.5f, -0.5f, 0.0f,  // right 
-         0.0f,  0.5f, 0.0f,  // top   
+        -0.5f, -0.5f, 0.0f, // left
+        0.5f, -0.5f, 0.0f,  // right
+        0.0f, 0.5f, 0.0f,   // top
     };
 
     // Buffer
@@ -157,4 +160,3 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST0
-
