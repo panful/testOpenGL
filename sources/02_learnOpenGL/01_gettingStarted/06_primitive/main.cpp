@@ -22,7 +22,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_06_TEST1.vs", "resources/02_01_06_TEST1.fs");
+    ShaderProgram program("shaders/02_01_06_TEST1.vs", "shaders/02_01_06_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> vertices{
@@ -129,7 +129,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_06_TEST1.vs", "resources/02_01_06_TEST1.fs");
+    ShaderProgram program("shaders/02_01_06_TEST1.vs", "shaders/02_01_06_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 3 * 6> vertices{
@@ -267,7 +267,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_06_TEST1.vs", "resources/02_01_06_TEST1.fs");
+    ShaderProgram program("shaders/02_01_06_TEST1.vs", "shaders/02_01_06_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> vertices{
@@ -374,7 +374,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_06_TEST1.vs", "resources/02_01_06_TEST1.fs");
+    ShaderProgram program("shaders/02_01_06_TEST1.vs", "shaders/02_01_06_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> vertices{
@@ -600,7 +600,7 @@ int main()
     InitOpenGL init(Camera({ 0.f, 0.f, 5.f }, { 0.f, 1.f, 0.f }, { 0.f, 0.f, 0.f }));
     auto window = init.GetWindow();
 
-    ShaderProgram program("resources/02_01_06_TEST1.vs", "resources/02_01_06_TEST1.fs");
+    ShaderProgram program("shaders/02_01_06_TEST1.vs", "shaders/02_01_06_TEST1.fs");
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_DEPTH_TEST);
@@ -708,7 +708,7 @@ int main()
     InitOpenGL init(Camera({ 0.f, 0.f, 5.f }, { 0.f, 1.f, 0.f }, { 0.f, 0.f, 0.f }));
     auto window = init.GetWindow();
 
-    ShaderProgram program("resources/02_01_06_TEST1.vs", "resources/02_01_06_TEST1.fs");
+    ShaderProgram program("shaders/02_01_06_TEST1.vs", "shaders/02_01_06_TEST1.fs");
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_DEPTH_TEST);

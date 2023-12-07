@@ -178,11 +178,11 @@ int main()
     glDepthFunc(GL_LEQUAL);
 
     // 渲染被光照的物体
-    ShaderProgram programPBR("resources/02_06_02_TEST1_pbr.vs", "resources/02_06_02_TEST1_pbr.fs");
+    ShaderProgram programPBR("shaders/02_06_02_TEST1_pbr.vs", "shaders/02_06_02_TEST1_pbr.fs");
     // 背景，通过将深度值设置为1，让立方体贴图始终在物体的后面
-    ShaderProgram programBackground("resources/02_06_02_TEST1_background.vs", "resources/02_06_02_TEST1_background.fs");
+    ShaderProgram programBackground("shaders/02_06_02_TEST1_background.vs", "shaders/02_06_02_TEST1_background.fs");
     // 将HDR图片文件转换为立方体贴图
-    ShaderProgram programCubeMap("resources/02_06_02_TEST1_cubemap.vs", "resources/02_06_02_TEST1_cubemap.fs");
+    ShaderProgram programCubeMap("shaders/02_06_02_TEST1_cubemap.vs", "shaders/02_06_02_TEST1_cubemap.fs");
 
     programPBR.Use();
     programPBR.SetUniform3f("albedo", 0.5f, 0.0f, 0.0f);
@@ -230,7 +230,7 @@ int main()
     fboCapture.AddAttachment(GL_DEPTH_ATTACHMENT, rboCapture);
 
     // 创建HDR图片纹理
-    Texture textureHdr(std::string_view("resources/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
+    Texture textureHdr(std::string_view("shaders/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
 
     glViewport(0, 0, fboWidth, fboHeight);
     fboCapture.Bind();
@@ -483,10 +483,10 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    ShaderProgram programPBR("resources/02_06_02_TEST1_pbr.vs", "resources/02_06_02_TEST2_pbr.fs");
-    ShaderProgram programBackground("resources/02_06_02_TEST1_background.vs", "resources/02_06_02_TEST1_background.fs");
-    ShaderProgram programCubeMap("resources/02_06_02_TEST1_cubemap.vs", "resources/02_06_02_TEST1_cubemap.fs");
-    ShaderProgram programIrradiance("resources/02_06_02_TEST1_cubemap.vs", "resources/02_06_02_TEST2_IBL.fs");
+    ShaderProgram programPBR("shaders/02_06_02_TEST1_pbr.vs", "shaders/02_06_02_TEST2_pbr.fs");
+    ShaderProgram programBackground("shaders/02_06_02_TEST1_background.vs", "shaders/02_06_02_TEST1_background.fs");
+    ShaderProgram programCubeMap("shaders/02_06_02_TEST1_cubemap.vs", "shaders/02_06_02_TEST1_cubemap.fs");
+    ShaderProgram programIrradiance("shaders/02_06_02_TEST1_cubemap.vs", "shaders/02_06_02_TEST2_IBL.fs");
 
     programPBR.Use();
     programPBR.SetUniform1i("irradianceMap", 0);
@@ -534,7 +534,7 @@ int main()
     Texture textureCubeMap(fboWidth, fboHeight, GL_RGB16F, GL_RGB, GL_FLOAT, 0, true);
     fboCapture.AddAttachment(GL_DEPTH_ATTACHMENT, rboCapture);
 
-    Texture textureHdr(std::string_view("resources/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
+    Texture textureHdr(std::string_view("shaders/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
 
     glViewport(0, 0, fboWidth, fboHeight);
     fboCapture.Bind();

@@ -10,8 +10,10 @@
 
 #ifdef TEST1
 
-#include <GLFW/glfw3.h>
+// clang-format off
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
+// clang-format on
 
 #include <iostream>
 
@@ -51,8 +53,10 @@ int main()
 
 #ifdef TEST2
 
-#include <GLFW/glfw3.h>
+// clang-format off
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
+// clang-format on
 
 #include <cmath>
 #include <iostream>
@@ -255,8 +259,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 #ifdef TEST3
 
-#include <GLFW/glfw3.h>
+// clang-format off
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
+// clang-format on
 
 #include <cmath>
 #include <iostream>
@@ -428,7 +434,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/03_01_vs.glsl", "resources/03_01_fs.glsl");
+    ShaderProgram program("shaders/03_01_vs.glsl", "shaders/03_01_fs.glsl");
 
     std::vector<float> vertices {
         -1.0f,
@@ -521,7 +527,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/03_01_vs.glsl", "resources/03_01_fs.glsl");
+    ShaderProgram program("shaders/03_01_vs.glsl", "shaders/03_01_fs.glsl");
 
     std::vector<float> vertices {
         -1.0f,

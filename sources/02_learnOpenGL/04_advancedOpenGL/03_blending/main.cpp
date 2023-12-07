@@ -20,7 +20,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_03_TEST1.vs", "resources/02_04_03_TEST1.fs");
+    ShaderProgram program("shaders/02_04_03_TEST1.vs", "shaders/02_04_03_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 3 * 7> verticesLeftTriangle{
@@ -181,7 +181,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_03_TEST1.vs", "resources/02_04_03_TEST1.fs");
+    ShaderProgram program("shaders/02_04_03_TEST1.vs", "shaders/02_04_03_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 3 * 7> verticesLeftTriangle{
@@ -309,9 +309,9 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_03_TEST3.vs", "resources/02_04_03_TEST3.fs");
-    Texture textureGrass("resources/02_04_03_grass.png");
-    Texture textureWall("resources/02_04_03_wall.jpg");
+    ShaderProgram program("shaders/02_04_03_TEST3.vs", "shaders/02_04_03_TEST3.fs");
+    Texture textureGrass("shaders/02_04_03_grass.png");
+    Texture textureWall("shaders/02_04_03_wall.jpg");
 
     // clang-format off
     std::array<GLfloat, 6 * 5> quadVertices{
@@ -462,7 +462,7 @@ int main()
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
     initOpenGL.SetKeyCB(keyCB);
-    ShaderProgram program("resources/02_04_03_TEST1.vs", "resources/02_04_03_TEST1.fs");
+    ShaderProgram program("shaders/02_04_03_TEST1.vs", "shaders/02_04_03_TEST1.fs");
 
     std::array<GLuint, 5> VAOs {
         CreateVAO(red2),

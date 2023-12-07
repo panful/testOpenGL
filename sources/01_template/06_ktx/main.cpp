@@ -12,7 +12,7 @@ int main()
     ktxTexture* ktxTexture { nullptr };
 
     if (ktxResult result
-        = ktxTexture_CreateFromNamedFile("../resources/textures/metalplate01_rgba.ktx", KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture))
+        = ktxTexture_CreateFromNamedFile("../shaders/textures/metalplate01_rgba.ktx", KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture))
     {
         std::cout << "failed to load texture\n";
         return -1;

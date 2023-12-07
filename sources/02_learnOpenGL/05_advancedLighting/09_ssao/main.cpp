@@ -119,10 +119,10 @@ int main()
     };
     // clang-format on
 
-    ShaderProgram programGBuffer("resources/02_05_08_TEST1_gbuffer.vs", "resources/02_05_08_TEST1_gbuffer.fs");
-    ShaderProgram programDeferred("resources/02_05_08_TEST1_deferred.vs", "resources/02_05_08_TEST1_deferred.fs");
-    ShaderProgram programSsao("resources/02_05_08_TEST1_deferred.vs", "resources/02_05_08_TEST1_ssao.fs");
-    ShaderProgram programSsaoBlur("resources/02_05_08_TEST1_deferred.vs", "resources/02_05_08_TEST1_blur.fs");
+    ShaderProgram programGBuffer("shaders/02_05_08_TEST1_gbuffer.vs", "shaders/02_05_08_TEST1_gbuffer.fs");
+    ShaderProgram programDeferred("shaders/02_05_08_TEST1_deferred.vs", "shaders/02_05_08_TEST1_deferred.fs");
+    ShaderProgram programSsao("shaders/02_05_08_TEST1_deferred.vs", "shaders/02_05_08_TEST1_ssao.fs");
+    ShaderProgram programSsaoBlur("shaders/02_05_08_TEST1_deferred.vs", "shaders/02_05_08_TEST1_blur.fs");
 
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer quad(verticesQuad, { 3, 2 });

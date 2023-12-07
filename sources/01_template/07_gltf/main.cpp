@@ -101,14 +101,14 @@ void dbgModel(tinygltf::Model& model)
 int main()
 {
     tinygltf::Model model;
-    if (loadModel(model, "../resources/models/Poop.glb"))
+    if (loadModel(model, "../shaders/models/Poop.glb"))
     {
         dbgModel(model);
     }
 
     std::cout << "---------------------------------------------\n";
 
-    if (loadModel(model, "../resources/models/singleTriangle.gltf"))
+    if (loadModel(model, "../shaders/models/singleTriangle.gltf"))
     {
         dbgModel(model);
     }
@@ -369,13 +369,13 @@ bool LoadModel(const std::filesystem::path& filename)
 int main()
 {
     std::cout << "Poop.glb\n---------------------------------------------\n";
-    LoadModel("../resources/models/Poop.glb");
+    LoadModel("../shaders/models/Poop.glb");
 
     std::cout << "\n\nsingleTriangle.gltf\n---------------------------------------------\n";
-    LoadModel("../resources/models/singleTriangle.gltf");
+    LoadModel("../shaders/models/singleTriangle.gltf");
 
     std::cout << "\n\nsponza.gltf\n---------------------------------------------\n";
-    LoadModel("../resources/models/sponza.gltf");
+    LoadModel("../shaders/models/sponza.gltf");
 }
 
 #endif // TEST2

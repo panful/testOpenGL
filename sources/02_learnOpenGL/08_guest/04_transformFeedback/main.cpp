@@ -213,8 +213,8 @@ int main()
     }
 
     //--------------------------------------------------------------------------------------------
-    auto vs                   = ReadFile("resources/02_08_04_TEST2.vs");
-    auto fs                   = ReadFile("resources/02_08_04_TEST2.fs");
+    auto vs                   = ReadFile("shaders/02_08_04_TEST2.vs");
+    auto fs                   = ReadFile("shaders/02_08_04_TEST2.fs");
     auto vertexShaderSource   = vs.c_str();
     auto fragmentShaderSource = fs.c_str();
 
@@ -390,8 +390,8 @@ int main()
     }
 
     //--------------------------------------------------------------------------------------------
-    auto vs                   = ReadFile("resources/02_08_04_TEST2.vs");
-    auto fs                   = ReadFile("resources/02_08_04_TEST2.fs");
+    auto vs                   = ReadFile("shaders/02_08_04_TEST2.vs");
+    auto fs                   = ReadFile("shaders/02_08_04_TEST2.fs");
     auto vertexShaderSource   = vs.c_str();
     auto fragmentShaderSource = fs.c_str();
 
@@ -606,8 +606,8 @@ int main()
     }
 
     //--------------------------------------------------------------------------------------------
-    auto vs                   = ReadFile("resources/02_08_04_TEST4.vs");
-    auto fs                   = ReadFile("resources/02_08_04_TEST2.fs");
+    auto vs                   = ReadFile("shaders/02_08_04_TEST4.vs");
+    auto fs                   = ReadFile("shaders/02_08_04_TEST2.fs");
     auto vertexShaderSource   = vs.c_str();
     auto fragmentShaderSource = fs.c_str();
 
@@ -812,8 +812,8 @@ int main()
     }
 
     //--------------------------------------------------------------------------------------------
-    auto vs                   = ReadFile("resources/02_08_04_TEST5.vs");
-    auto fs                   = ReadFile("resources/02_08_04_TEST2.fs");
+    auto vs                   = ReadFile("shaders/02_08_04_TEST5.vs");
+    auto fs                   = ReadFile("shaders/02_08_04_TEST2.fs");
     auto vertexShaderSource   = vs.c_str();
     auto fragmentShaderSource = fs.c_str();
 
@@ -1043,8 +1043,8 @@ int main()
     }
 
     //--------------------------------------------------------------------------------------------
-    auto vs                   = ReadFile("resources/02_08_04_TEST6.vs");
-    auto fs                   = ReadFile("resources/02_08_04_TEST2.fs");
+    auto vs                   = ReadFile("shaders/02_08_04_TEST6.vs");
+    auto fs                   = ReadFile("shaders/02_08_04_TEST2.fs");
     auto vertexShaderSource   = vs.c_str();
     auto fragmentShaderSource = fs.c_str();
 

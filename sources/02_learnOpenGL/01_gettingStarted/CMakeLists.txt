@@ -1,7 +1,0 @@
-add_subdirectory("01_buffer")
-add_subdirectory("02_shader")
-add_subdirectory("03_texture")
-add_subdirectory("04_transform")
-add_subdirectory("05_camera")
-add_subdirectory("06_primitive")
-add_subdirectory("07_interactor")

@@ -196,12 +196,12 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    ShaderProgram programPBR("resources/02_06_03_TEST1_pbr.vs", "resources/02_06_03_TEST1_pbr.fs");
-    ShaderProgram programBackground("resources/02_06_03_TEST1_background.vs", "resources/02_06_03_TEST1_background.fs");
-    ShaderProgram programCubeMap("resources/02_06_03_TEST1_cubemap.vs", "resources/02_06_03_TEST1_cubemap.fs");
-    ShaderProgram programIrradiance("resources/02_06_03_TEST1_cubemap.vs", "resources/02_06_03_TEST1_IBL.fs");
-    ShaderProgram programPrefilter("resources/02_06_03_TEST1_cubemap.vs", "resources/02_06_03_TEST1_prefilter.fs");
-    ShaderProgram programBrdf("resources/02_06_03_TEST1_brdf.vs", "resources/02_06_03_TEST1_brdf.fs");
+    ShaderProgram programPBR("shaders/02_06_03_TEST1_pbr.vs", "shaders/02_06_03_TEST1_pbr.fs");
+    ShaderProgram programBackground("shaders/02_06_03_TEST1_background.vs", "shaders/02_06_03_TEST1_background.fs");
+    ShaderProgram programCubeMap("shaders/02_06_03_TEST1_cubemap.vs", "shaders/02_06_03_TEST1_cubemap.fs");
+    ShaderProgram programIrradiance("shaders/02_06_03_TEST1_cubemap.vs", "shaders/02_06_03_TEST1_IBL.fs");
+    ShaderProgram programPrefilter("shaders/02_06_03_TEST1_cubemap.vs", "shaders/02_06_03_TEST1_prefilter.fs");
+    ShaderProgram programBrdf("shaders/02_06_03_TEST1_brdf.vs", "shaders/02_06_03_TEST1_brdf.fs");
 
     programPBR.Use();
     programPBR.SetUniform1i("irradianceMap", 0);
@@ -254,7 +254,7 @@ int main()
     textureCubeMap.SetFilterParameter(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     fboCapture.AddAttachment(GL_DEPTH_ATTACHMENT, rboCapture);
 
-    Texture textureHdr(std::string_view("resources/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
+    Texture textureHdr(std::string_view("shaders/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
     textureHdr.Bind();
     textureHdr.SetWarpParameter(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
     textureHdr.SetFilterParameter(GL_LINEAR, GL_LINEAR);
@@ -582,43 +582,43 @@ int main()
 
     // rusted iron
     std::vector<std::shared_ptr<Texture>> iron;
-    iron.emplace_back(std::make_shared<Texture>(("resources/textures/rusted_iron/albedo.png")));
-    iron.emplace_back(std::make_shared<Texture>(("resources/textures/rusted_iron/normal.png")));
-    iron.emplace_back(std::make_shared<Texture>(("resources/textures/rusted_iron/metallic.png")));
-    iron.emplace_back(std::make_shared<Texture>(("resources/textures/rusted_iron/roughness.png")));
-    iron.emplace_back(std::make_shared<Texture>(("resources/textures/rusted_iron/ao.png")));
+    iron.emplace_back(std::make_shared<Texture>(("shaders/textures/rusted_iron/albedo.png")));
+    iron.emplace_back(std::make_shared<Texture>(("shaders/textures/rusted_iron/normal.png")));
+    iron.emplace_back(std::make_shared<Texture>(("shaders/textures/rusted_iron/metallic.png")));
+    iron.emplace_back(std::make_shared<Texture>(("shaders/textures/rusted_iron/roughness.png")));
+    iron.emplace_back(std::make_shared<Texture>(("shaders/textures/rusted_iron/ao.png")));
 
     // goldTexture(-
     std::vector<std::shared_ptr<Texture>> gold;
-    gold.emplace_back(std::make_shared<Texture>(("resources/textures/gold/albedo.png")));
-    gold.emplace_back(std::make_shared<Texture>(("resources/textures/gold/normal.png")));
-    gold.emplace_back(std::make_shared<Texture>(("resources/textures/gold/metallic.png")));
-    gold.emplace_back(std::make_shared<Texture>(("resources/textures/gold/roughness.png")));
-    gold.emplace_back(std::make_shared<Texture>(("resources/textures/gold/ao.png")));
+    gold.emplace_back(std::make_shared<Texture>(("shaders/textures/gold/albedo.png")));
+    gold.emplace_back(std::make_shared<Texture>(("shaders/textures/gold/normal.png")));
+    gold.emplace_back(std::make_shared<Texture>(("shaders/textures/gold/metallic.png")));
+    gold.emplace_back(std::make_shared<Texture>(("shaders/textures/gold/roughness.png")));
+    gold.emplace_back(std::make_shared<Texture>(("shaders/textures/gold/ao.png")));
 
     // grass
     std::vector<std::shared_ptr<Texture>> grass;
-    grass.emplace_back(std::make_shared<Texture>(("resources/textures/grass/albedo.png")));
-    grass.emplace_back(std::make_shared<Texture>(("resources/textures/grass/normal.png")));
-    grass.emplace_back(std::make_shared<Texture>(("resources/textures/grass/metallic.png")));
-    grass.emplace_back(std::make_shared<Texture>(("resources/textures/grass/roughness.png")));
-    grass.emplace_back(std::make_shared<Texture>(("resources/textures/grass/ao.png")));
+    grass.emplace_back(std::make_shared<Texture>(("shaders/textures/grass/albedo.png")));
+    grass.emplace_back(std::make_shared<Texture>(("shaders/textures/grass/normal.png")));
+    grass.emplace_back(std::make_shared<Texture>(("shaders/textures/grass/metallic.png")));
+    grass.emplace_back(std::make_shared<Texture>(("shaders/textures/grass/roughness.png")));
+    grass.emplace_back(std::make_shared<Texture>(("shaders/textures/grass/ao.png")));
 
     // plastic
     std::vector<std::shared_ptr<Texture>> plastic;
-    plastic.emplace_back(std::make_shared<Texture>(("resources/textures/plastic/albedo.png")));
-    plastic.emplace_back(std::make_shared<Texture>(("resources/textures/plastic/normal.png")));
-    plastic.emplace_back(std::make_shared<Texture>(("resources/textures/plastic/metallic.png")));
-    plastic.emplace_back(std::make_shared<Texture>(("resources/textures/plastic/roughness.png")));
-    plastic.emplace_back(std::make_shared<Texture>(("resources/textures/plastic/ao.png")));
+    plastic.emplace_back(std::make_shared<Texture>(("shaders/textures/plastic/albedo.png")));
+    plastic.emplace_back(std::make_shared<Texture>(("shaders/textures/plastic/normal.png")));
+    plastic.emplace_back(std::make_shared<Texture>(("shaders/textures/plastic/metallic.png")));
+    plastic.emplace_back(std::make_shared<Texture>(("shaders/textures/plastic/roughness.png")));
+    plastic.emplace_back(std::make_shared<Texture>(("shaders/textures/plastic/ao.png")));
 
     // wall
     std::vector<std::shared_ptr<Texture>> wall;
-    wall.emplace_back(std::make_shared<Texture>(("resources/textures/wall/albedo.png")));
-    wall.emplace_back(std::make_shared<Texture>(("resources/textures/wall/normal.png")));
-    wall.emplace_back(std::make_shared<Texture>(("resources/textures/wall/metallic.png")));
-    wall.emplace_back(std::make_shared<Texture>(("resources/textures/wall/roughness.png")));
-    wall.emplace_back(std::make_shared<Texture>(("resources/textures/wall/ao.png")));
+    wall.emplace_back(std::make_shared<Texture>(("shaders/textures/wall/albedo.png")));
+    wall.emplace_back(std::make_shared<Texture>(("shaders/textures/wall/normal.png")));
+    wall.emplace_back(std::make_shared<Texture>(("shaders/textures/wall/metallic.png")));
+    wall.emplace_back(std::make_shared<Texture>(("shaders/textures/wall/roughness.png")));
+    wall.emplace_back(std::make_shared<Texture>(("shaders/textures/wall/ao.png")));
 
     textures.emplace_back(iron);
     textures.emplace_back(gold);
@@ -631,12 +631,12 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    ShaderProgram programPBR("resources/02_06_03_TEST1_pbr.vs", "resources/02_06_03_TEST2_pbr.fs");
-    ShaderProgram programBackground("resources/02_06_03_TEST1_background.vs", "resources/02_06_03_TEST1_background.fs");
-    ShaderProgram programCubeMap("resources/02_06_03_TEST1_cubemap.vs", "resources/02_06_03_TEST1_cubemap.fs");
-    ShaderProgram programIrradiance("resources/02_06_03_TEST1_cubemap.vs", "resources/02_06_03_TEST1_IBL.fs");
-    ShaderProgram programPrefilter("resources/02_06_03_TEST1_cubemap.vs", "resources/02_06_03_TEST1_prefilter.fs");
-    ShaderProgram programBrdf("resources/02_06_03_TEST1_brdf.vs", "resources/02_06_03_TEST1_brdf.fs");
+    ShaderProgram programPBR("shaders/02_06_03_TEST1_pbr.vs", "shaders/02_06_03_TEST2_pbr.fs");
+    ShaderProgram programBackground("shaders/02_06_03_TEST1_background.vs", "shaders/02_06_03_TEST1_background.fs");
+    ShaderProgram programCubeMap("shaders/02_06_03_TEST1_cubemap.vs", "shaders/02_06_03_TEST1_cubemap.fs");
+    ShaderProgram programIrradiance("shaders/02_06_03_TEST1_cubemap.vs", "shaders/02_06_03_TEST1_IBL.fs");
+    ShaderProgram programPrefilter("shaders/02_06_03_TEST1_cubemap.vs", "shaders/02_06_03_TEST1_prefilter.fs");
+    ShaderProgram programBrdf("shaders/02_06_03_TEST1_brdf.vs", "shaders/02_06_03_TEST1_brdf.fs");
 
     programPBR.Use();
     programPBR.SetUniform1i("irradianceMap", 0);
@@ -687,7 +687,7 @@ int main()
     textureCubeMap.SetFilterParameter(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     fboCapture.AddAttachment(GL_DEPTH_ATTACHMENT, rboCapture);
 
-    Texture textureHdr(std::string_view("resources/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
+    Texture textureHdr(std::string_view("shaders/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
     textureHdr.Bind();
     textureHdr.SetWarpParameter(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
     textureHdr.SetFilterParameter(GL_LINEAR, GL_LINEAR);

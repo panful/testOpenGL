@@ -27,7 +27,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+    ShaderProgram program("shaders/02_04_07_TEST1.vs", "shaders/02_04_07_TEST1.fs");
 
     // clang-format off
     // 顶点数据
@@ -151,7 +151,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+    ShaderProgram program("shaders/02_04_07_TEST1.vs", "shaders/02_04_07_TEST1.fs");
 
     glGenVertexArrays(1, &vertexArrayObject);
     glGenBuffers(1, &vertexBufferObject);
@@ -246,7 +246,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+    ShaderProgram program("shaders/02_04_07_TEST1.vs", "shaders/02_04_07_TEST1.fs");
 
     // clang-format off
     // 顶点数据
@@ -369,7 +369,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+    ShaderProgram program("shaders/02_04_07_TEST1.vs", "shaders/02_04_07_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 5 * 6> vertices{
@@ -488,7 +488,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+    ShaderProgram program("shaders/02_04_07_TEST1.vs", "shaders/02_04_07_TEST1.fs");
 
     // clang-format off
     // 顶点数据
@@ -585,7 +585,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_07_TEST6.vs", "resources/02_04_07_TEST1.fs");
+    ShaderProgram program("shaders/02_04_07_TEST6.vs", "shaders/02_04_07_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 5 * 4> vertices {
@@ -734,7 +734,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+    ShaderProgram program("shaders/02_04_07_TEST1.vs", "shaders/02_04_07_TEST1.fs");
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -832,7 +832,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_04_07_TEST1.vs", "resources/02_04_07_TEST1.fs");
+    ShaderProgram program("shaders/02_04_07_TEST1.vs", "shaders/02_04_07_TEST1.fs");
 
     // clang-format off
     // 顶点数据

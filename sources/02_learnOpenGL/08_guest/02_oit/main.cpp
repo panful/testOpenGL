@@ -70,10 +70,10 @@ int main()
     Renderer rendererBlue(blue, { 3 }, GL_TRIANGLE_STRIP);
     Renderer rendererQuad(quad, { 3, 2 }, GL_TRIANGLE_STRIP);
 
-    ShaderProgram programTransparent("resources/02_08_02_TEST1_transparent.vs", "resources/02_08_02_TEST1_transparent.fs");
-    ShaderProgram programOpaque("resources/02_08_02_TEST1_opaque.vs", "resources/02_08_02_TEST1_opaque.fs");
-    ShaderProgram programComposite("resources/02_08_02_TEST1_composite.vs", "resources/02_08_02_TEST1_composite.fs");
-    ShaderProgram programScreen("resources/02_08_02_TEST1_screen.vs", "resources/02_08_02_TEST1_screen.fs");
+    ShaderProgram programTransparent("shaders/02_08_02_TEST1_transparent.vs", "shaders/02_08_02_TEST1_transparent.fs");
+    ShaderProgram programOpaque("shaders/02_08_02_TEST1_opaque.vs", "shaders/02_08_02_TEST1_opaque.fs");
+    ShaderProgram programComposite("shaders/02_08_02_TEST1_composite.vs", "shaders/02_08_02_TEST1_composite.fs");
+    ShaderProgram programScreen("shaders/02_08_02_TEST1_screen.vs", "shaders/02_08_02_TEST1_screen.fs");
 
     //----------------------------------------------------------------------------------
     FrameBufferObject opaqueFBO;
@@ -232,10 +232,10 @@ int main()
     Renderer rendererRect3(rect3, { 3 }, GL_TRIANGLE_STRIP);
     Renderer rendererQuad(quad, { 3, 2 }, GL_TRIANGLE_STRIP);
 
-    ShaderProgram programTransparent("resources/02_08_02_TEST1_transparent.vs", "resources/02_08_02_TEST1_transparent.fs");
-    ShaderProgram programOpaque("resources/02_08_02_TEST1_opaque.vs", "resources/02_08_02_TEST1_opaque.fs");
-    ShaderProgram programComposite("resources/02_08_02_TEST1_composite.vs", "resources/02_08_02_TEST1_composite.fs");
-    ShaderProgram programScreen("resources/02_08_02_TEST1_screen.vs", "resources/02_08_02_TEST1_screen.fs");
+    ShaderProgram programTransparent("shaders/02_08_02_TEST1_transparent.vs", "shaders/02_08_02_TEST1_transparent.fs");
+    ShaderProgram programOpaque("shaders/02_08_02_TEST1_opaque.vs", "shaders/02_08_02_TEST1_opaque.fs");
+    ShaderProgram programComposite("shaders/02_08_02_TEST1_composite.vs", "shaders/02_08_02_TEST1_composite.fs");
+    ShaderProgram programScreen("shaders/02_08_02_TEST1_screen.vs", "shaders/02_08_02_TEST1_screen.fs");
 
     //----------------------------------------------------------------------------------
     FrameBufferObject opaqueFBO;
@@ -377,8 +377,8 @@ int main()
     Renderer rendererRect2(vertices2, { 3 }, GL_TRIANGLE_STRIP);
     Renderer rendererQuad(quad, { 2 }, GL_TRIANGLE_STRIP);
 
-    ShaderProgram programGeometry("resources/02_08_02_TEST2_geometry.vs", "resources/02_08_02_TEST2_geometry.fs");
-    ShaderProgram programColor("resources/02_08_02_TEST2_color.vs", "resources/02_08_02_TEST2_color.fs");
+    ShaderProgram programGeometry("shaders/02_08_02_TEST2_geometry.vs", "shaders/02_08_02_TEST2_geometry.fs");
+    ShaderProgram programColor("shaders/02_08_02_TEST2_color.vs", "shaders/02_08_02_TEST2_color.fs");
 
     //-----------------------------------------------------------------------------------
     // 保存每个像素的队头索引
@@ -542,8 +542,8 @@ int main()
     Renderer rendererRect3(vertices3, indices, { 3 }, GL_TRIANGLES);
     Renderer rendererQuad(quad, { 2 }, GL_TRIANGLE_STRIP);
 
-    ShaderProgram programGeometry("resources/02_08_02_TEST2_geometry.vs", "resources/02_08_02_TEST2_geometry.fs");
-    ShaderProgram programColor("resources/02_08_02_TEST2_color.vs", "resources/02_08_02_TEST2_color.fs");
+    ShaderProgram programGeometry("shaders/02_08_02_TEST2_geometry.vs", "shaders/02_08_02_TEST2_geometry.fs");
+    ShaderProgram programColor("shaders/02_08_02_TEST2_color.vs", "shaders/02_08_02_TEST2_color.fs");
 
     //-----------------------------------------------------------------------------------
     // 保存每个像素的队头索引
@@ -681,8 +681,8 @@ int main()
     InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram programPass1("resources/02_08_02_TEST31_pass1.vs", "resources/02_08_02_TEST31_pass1.fs");
-    ShaderProgram programPass2("resources/02_08_02_TEST31_pass2.vs", "resources/02_08_02_TEST31_pass2.fs");
+    ShaderProgram programPass1("shaders/02_08_02_TEST31_pass1.vs", "shaders/02_08_02_TEST31_pass1.fs");
+    ShaderProgram programPass2("shaders/02_08_02_TEST31_pass2.vs", "shaders/02_08_02_TEST31_pass2.fs");
 
     Renderer rendererRect0(vertices0, { 3 }, GL_TRIANGLE_STRIP);
     Renderer rendererRect1(vertices1, { 3 }, GL_TRIANGLE_STRIP);
@@ -794,9 +794,9 @@ int main()
     InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram programFirst("resources/02_08_02_TEST32_depthpeeling.vs", "resources/02_08_02_TEST32_dp_first.fs");
-    ShaderProgram programPeeling("resources/02_08_02_TEST32_depthpeeling.vs", "resources/02_08_02_TEST32_dp_peeling.fs");
-    ShaderProgram programBlend("resources/02_08_02_TEST1_screen.vs", "resources/02_08_02_TEST32_dp_blend.fs");
+    ShaderProgram programFirst("shaders/02_08_02_TEST32_depthpeeling.vs", "shaders/02_08_02_TEST32_dp_first.fs");
+    ShaderProgram programPeeling("shaders/02_08_02_TEST32_depthpeeling.vs", "shaders/02_08_02_TEST32_dp_peeling.fs");
+    ShaderProgram programBlend("shaders/02_08_02_TEST1_screen.vs", "shaders/02_08_02_TEST32_dp_blend.fs");
 
     Renderer rendererRect0(vertices0, { 3 }, GL_TRIANGLE_STRIP);
     Renderer rendererRect1(vertices1, { 3 }, GL_TRIANGLE_STRIP);
@@ -928,9 +928,9 @@ int main()
     InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram programFirst("resources/02_08_02_TEST32_depthpeeling.vs", "resources/02_08_02_TEST32_dp_first.fs");
-    ShaderProgram programPeeling("resources/02_08_02_TEST32_depthpeeling.vs", "resources/02_08_02_TEST32_dp_peeling.fs");
-    ShaderProgram programBlend("resources/02_08_02_TEST1_screen.vs", "resources/02_08_02_TEST32_dp_blend.fs");
+    ShaderProgram programFirst("shaders/02_08_02_TEST32_depthpeeling.vs", "shaders/02_08_02_TEST32_dp_first.fs");
+    ShaderProgram programPeeling("shaders/02_08_02_TEST32_depthpeeling.vs", "shaders/02_08_02_TEST32_dp_peeling.fs");
+    ShaderProgram programBlend("shaders/02_08_02_TEST1_screen.vs", "shaders/02_08_02_TEST32_dp_blend.fs");
 
     Renderer rendererRect0(vertices0, { 3 }, GL_TRIANGLE_STRIP);
     Renderer rendererRect1(vertices1, { 3 }, GL_TRIANGLE_STRIP);
@@ -1057,9 +1057,9 @@ int main()
     InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram programFirst("resources/02_08_02_TEST32_depthpeeling.vs", "resources/02_08_02_TEST32_dp_first.fs");
-    ShaderProgram programPeeling("resources/02_08_02_TEST32_depthpeeling.vs", "resources/02_08_02_TEST34_dp_peeling.fs");
-    ShaderProgram programBlend("resources/02_08_02_TEST1_screen.vs", "resources/02_08_02_TEST32_dp_blend.fs");
+    ShaderProgram programFirst("shaders/02_08_02_TEST32_depthpeeling.vs", "shaders/02_08_02_TEST32_dp_first.fs");
+    ShaderProgram programPeeling("shaders/02_08_02_TEST32_depthpeeling.vs", "shaders/02_08_02_TEST34_dp_peeling.fs");
+    ShaderProgram programBlend("shaders/02_08_02_TEST1_screen.vs", "shaders/02_08_02_TEST32_dp_blend.fs");
 
     Renderer rendererRect0(vertices0, { 3 }, GL_TRIANGLE_STRIP);
     Renderer rendererRect1(vertices1, { 3 }, GL_TRIANGLE_STRIP);
@@ -1184,8 +1184,8 @@ int main()
     InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram quadProgram("resources/02_08_02_TEST35_quad.vs", "resources/02_08_02_TEST35_quad.fs");
-    ShaderProgram ddpeelProgram("resources/02_08_02_TEST35_minmax_depth.vs", "resources/02_08_02_TEST35_minmax_depth.fs");
+    ShaderProgram quadProgram("shaders/02_08_02_TEST35_quad.vs", "shaders/02_08_02_TEST35_quad.fs");
+    ShaderProgram ddpeelProgram("shaders/02_08_02_TEST35_minmax_depth.vs", "shaders/02_08_02_TEST35_minmax_depth.fs");
 
     Renderer rendererRect0(vertices0, { 3 }, GL_TRIANGLE_STRIP);
     Renderer rendererRect1(vertices1, { 3 }, GL_TRIANGLE_STRIP);
@@ -1284,9 +1284,9 @@ int main()
     InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram programMinMax("resources/02_08_02_TEST36_minmax_depth.vs", "resources/02_08_02_TEST36_minmax_depth.fs");
-    ShaderProgram programDualDp("resources/02_08_02_TEST36_minmax_depth.vs", "resources/02_08_02_TEST36_dualdp.fs");
-    ShaderProgram programBlend("resources/02_08_02_TEST35_quad.vs", "resources/02_08_02_TEST36_blend.fs");
+    ShaderProgram programMinMax("shaders/02_08_02_TEST36_minmax_depth.vs", "shaders/02_08_02_TEST36_minmax_depth.fs");
+    ShaderProgram programDualDp("shaders/02_08_02_TEST36_minmax_depth.vs", "shaders/02_08_02_TEST36_dualdp.fs");
+    ShaderProgram programBlend("shaders/02_08_02_TEST35_quad.vs", "shaders/02_08_02_TEST36_blend.fs");
 
     Renderer rendererRect0(vertices0, { 3 }, GL_TRIANGLE_STRIP);
     Renderer rendererRect1(vertices1, { 3 }, GL_TRIANGLE_STRIP);
@@ -1433,9 +1433,9 @@ int main()
     InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram programMinMax("resources/02_08_02_TEST36_minmax_depth.vs", "resources/02_08_02_TEST36_minmax_depth.fs");
-    ShaderProgram programDualDp("resources/02_08_02_TEST36_minmax_depth.vs", "resources/02_08_02_TEST36_dualdp.fs");
-    ShaderProgram programBlend("resources/02_08_02_TEST35_quad.vs", "resources/02_08_02_TEST36_blend.fs");
+    ShaderProgram programMinMax("shaders/02_08_02_TEST36_minmax_depth.vs", "shaders/02_08_02_TEST36_minmax_depth.fs");
+    ShaderProgram programDualDp("shaders/02_08_02_TEST36_minmax_depth.vs", "shaders/02_08_02_TEST36_dualdp.fs");
+    ShaderProgram programBlend("shaders/02_08_02_TEST35_quad.vs", "shaders/02_08_02_TEST36_blend.fs");
 
     Renderer rendererRect0(vertices0, { 3 }, GL_TRIANGLE_STRIP);
     Renderer rendererRect1(vertices1, { 3 }, GL_TRIANGLE_STRIP);

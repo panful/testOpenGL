@@ -23,7 +23,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_08_TEST1.vs", "resources/02_04_08_TEST1.fs");
+    ShaderProgram program("shaders/02_04_08_TEST1.vs", "shaders/02_04_08_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> vertices{
@@ -119,7 +119,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_08_TEST2.vs", "resources/02_04_08_TEST2.fs");
+    ShaderProgram program("shaders/02_04_08_TEST2.vs", "shaders/02_04_08_TEST2.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> vertices{
@@ -217,7 +217,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_08_TEST3.vs", "resources/02_04_08_TEST2.fs");
+    ShaderProgram program("shaders/02_04_08_TEST3.vs", "shaders/02_04_08_TEST2.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> vertices{
@@ -359,7 +359,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_08_TEST1.vs", "resources/02_04_08_TEST4.fs");
+    ShaderProgram program("shaders/02_04_08_TEST1.vs", "shaders/02_04_08_TEST4.fs");
 
     // clang-format off
     // 8个顶点
@@ -485,7 +485,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_08_TEST1.vs", "resources/02_04_08_TEST5.fs");
+    ShaderProgram program("shaders/02_04_08_TEST1.vs", "shaders/02_04_08_TEST5.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> verticesPlane{
@@ -589,7 +589,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_08_TEST6.vs", "resources/02_04_08_TEST6.fs");
+    ShaderProgram program("shaders/02_04_08_TEST6.vs", "shaders/02_04_08_TEST6.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> vertices{
@@ -683,10 +683,10 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program_red("resources/02_04_08_TEST7.vs", "resources/02_04_08_TEST7.fs");
-    ShaderProgram program_green("resources/02_04_08_TEST7.vs", "resources/02_04_08_TEST7.fs");
-    ShaderProgram program_blue("resources/02_04_08_TEST7.vs", "resources/02_04_08_TEST7.fs");
-    ShaderProgram program_white("resources/02_04_08_TEST7.vs", "resources/02_04_08_TEST7.fs");
+    ShaderProgram program_red("shaders/02_04_08_TEST7.vs", "shaders/02_04_08_TEST7.fs");
+    ShaderProgram program_green("shaders/02_04_08_TEST7.vs", "shaders/02_04_08_TEST7.fs");
+    ShaderProgram program_blue("shaders/02_04_08_TEST7.vs", "shaders/02_04_08_TEST7.fs");
+    ShaderProgram program_white("shaders/02_04_08_TEST7.vs", "shaders/02_04_08_TEST7.fs");
 
     // clang-format off
     // 8个顶点

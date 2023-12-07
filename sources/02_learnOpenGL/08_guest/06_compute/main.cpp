@@ -65,7 +65,7 @@ int main()
               << max_compute_work_group_invocations << std::endl;
 
     //--------------------------------------------------------------------------------------------
-    auto comp                = ReadFile("resources/02_08_06_TEST1.comp");
+    auto comp                = ReadFile("shaders/02_08_06_TEST1.comp");
     auto computeShaderSource = comp.c_str();
 
     GLint success { 0 };
@@ -126,8 +126,8 @@ int main()
     auto window = opengl.GetWindow();
 
     //--------------------------------------------------------------------------------------------
-    ComputeShader computeShader("resources/02_08_06_TEST2.comp");
-    ShaderProgram program("resources/02_08_06_TEST2.vert", "resources/02_08_06_TEST2.frag");
+    ComputeShader computeShader("shaders/02_08_06_TEST2.comp");
+    ShaderProgram program("shaders/02_08_06_TEST2.vert", "shaders/02_08_06_TEST2.frag");
 
     //--------------------------------------------------------------------------------------------
     // clang-format off
@@ -198,8 +198,8 @@ int main()
     InitOpenGL opengl(4, 3);
     auto window = opengl.GetWindow();
 
-    ShaderProgram shader("resources/02_08_06_TEST3.vert", "resources/02_08_06_TEST3.frag");
-    ComputeShader compute("resources/02_08_06_TEST3.comp");
+    ShaderProgram shader("shaders/02_08_06_TEST3.vert", "shaders/02_08_06_TEST3.frag");
+    ComputeShader compute("shaders/02_08_06_TEST3.comp");
 
     // clang-format off
     float data[] = {
@@ -280,8 +280,8 @@ int main()
     InitOpenGL opengl(4, 3);
     auto window = opengl.GetWindow();
 
-    ShaderProgram shader("resources/02_08_06_TEST3.vert", "resources/02_08_06_TEST3.frag");
-    ComputeShader compute("resources/02_08_06_TEST4.comp");
+    ShaderProgram shader("shaders/02_08_06_TEST3.vert", "shaders/02_08_06_TEST3.frag");
+    ComputeShader compute("shaders/02_08_06_TEST4.comp");
 
     GLuint pos_vel[2] { 0 };
     glGenBuffers(2, pos_vel);
@@ -386,8 +386,8 @@ int main()
     InitOpenGL opengl(4, 3);
     auto window = opengl.GetWindow();
 
-    ShaderProgram shader("resources/02_08_06_TEST3.vert", "resources/02_08_06_TEST3.frag");
-    ComputeShader compute("resources/02_08_06_TEST5.comp");
+    ShaderProgram shader("shaders/02_08_06_TEST3.vert", "shaders/02_08_06_TEST3.frag");
+    ComputeShader compute("shaders/02_08_06_TEST5.comp");
 
     // clang-format off
     float data[] = {
@@ -469,8 +469,8 @@ int main()
     InitOpenGL opengl(4, 3);
     auto window = opengl.GetWindow();
 
-    ShaderProgram shader("resources/02_08_06_TEST6.vert", "resources/02_08_06_TEST3.frag");
-    ComputeShader compute("resources/02_08_06_TEST6.comp");
+    ShaderProgram shader("shaders/02_08_06_TEST6.vert", "shaders/02_08_06_TEST3.frag");
+    ComputeShader compute("shaders/02_08_06_TEST6.comp");
 
     struct Particle
     {
@@ -546,8 +546,8 @@ int main()
     InitOpenGL opengl(4, 3);
     auto window = opengl.GetWindow();
 
-    ShaderProgram shader("resources/02_08_06_TEST6.vert", "resources/02_08_06_TEST3.frag");
-    ComputeShader compute("resources/02_08_06_TEST7.comp");
+    ShaderProgram shader("shaders/02_08_06_TEST6.vert", "shaders/02_08_06_TEST3.frag");
+    ComputeShader compute("shaders/02_08_06_TEST7.comp");
 
     struct Particle
     {

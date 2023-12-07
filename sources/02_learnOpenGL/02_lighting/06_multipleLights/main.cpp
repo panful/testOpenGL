@@ -17,7 +17,7 @@ int main()
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
 
-    ShaderProgram cubeProgram("resources/02_02_06_TEST1_map.vs", "resources/02_02_06_TEST1_map.fs");
+    ShaderProgram cubeProgram("shaders/02_02_06_TEST1_map.vs", "shaders/02_02_06_TEST1_map.fs");
 
     // clang-format off
     std::array<GLfloat, 8 * 6 * 6>  vertices{
@@ -86,9 +86,9 @@ int main()
     }
 
     // 漫反射贴图
-    Texture texture_diffuse("resources/container.png", 0);
+    Texture texture_diffuse("shaders/container.png", 0);
     // 彩色的镜面光贴图
-    Texture texture_specular("resources/container_specular.png", 1);
+    Texture texture_specular("shaders/container_specular.png", 1);
 
     //----------------------------------------------------------------------------------
     // 相机位置

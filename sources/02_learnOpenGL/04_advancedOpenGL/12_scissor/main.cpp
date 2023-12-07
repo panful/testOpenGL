@@ -20,7 +20,7 @@ int main()
     InitOpenGL initOpenGL("viewport", windowWidth, windowHeight);
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_04_12_TEST1.vs", "resources/02_04_12_TEST1.fs");
+    ShaderProgram program("shaders/02_04_12_TEST1.vs", "shaders/02_04_12_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 6 * 3> vertices {
@@ -186,7 +186,7 @@ int main()
     auto window = init.GetWindow();
     auto grid   = CreateGrid();
 
-    ShaderProgram shader("resources/02_04_12_TEST1.vs", "resources/02_04_12_TEST1.fs");
+    ShaderProgram shader("shaders/02_04_12_TEST1.vs", "shaders/02_04_12_TEST1.fs");
 
     glEnable(GL_SCISSOR_TEST);
 

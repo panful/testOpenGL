@@ -31,8 +31,8 @@ int main()
     initOpenGL.SetMouseCB(mouseCB);
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram program("resources/02_05_03_01_TEST1_depth.vs", "resources/02_05_03_01_TEST1_depth.fs");
-    ShaderProgram rectProgram("resources/02_05_03_01_TEST1_FBO.vs", "resources/02_05_03_01_TEST1_FBO.fs");
+    ShaderProgram program("shaders/02_05_03_01_TEST1_depth.vs", "shaders/02_05_03_01_TEST1_depth.fs");
+    ShaderProgram rectProgram("shaders/02_05_03_01_TEST1_FBO.vs", "shaders/02_05_03_01_TEST1_FBO.fs");
 
     // clang-format off
     std::vector<GLfloat> verticesCube{
@@ -206,8 +206,8 @@ int main()
     initOpenGL.SetFramebufferSizeCB(frameResize);
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram depthProgram("resources/02_05_03_01_TEST2_depth.vs", "resources/02_05_03_01_TEST2_depth.fs");
-    ShaderProgram lightProgram("resources/02_05_03_01_TEST2_light.vs", "resources/02_05_03_01_TEST2_light.fs");
+    ShaderProgram depthProgram("shaders/02_05_03_01_TEST2_depth.vs", "shaders/02_05_03_01_TEST2_depth.fs");
+    ShaderProgram lightProgram("shaders/02_05_03_01_TEST2_light.vs", "shaders/02_05_03_01_TEST2_light.fs");
 
     // clang-format off
     std::vector<GLfloat> verticesCube{
@@ -271,8 +271,8 @@ int main()
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer plane(verticesPlane, { 3, 3, 2 });
 
-    Texture woodTexture("resources/02_05_03_01_wood.png", 0);
-    Texture rectpolyTexture("resources/02_05_03_01_rectpoly.jpg", 0);
+    Texture woodTexture("shaders/02_05_03_01_wood.png", 0);
+    Texture rectpolyTexture("shaders/02_05_03_01_rectpoly.jpg", 0);
 
     //----------------------------------------------------------------------------------
     GLuint depthTextureBuffer { 0 };
@@ -499,8 +499,8 @@ int main()
             }
         });
 
-    ShaderProgram depthProgram("resources/02_05_03_01_TEST2_depth.vs", "resources/02_05_03_01_TEST2_depth.fs");
-    ShaderProgram lightProgram("resources/02_05_03_01_TEST2_light.vs", "resources/02_05_03_01_TEST2_light.fs");
+    ShaderProgram depthProgram("shaders/02_05_03_01_TEST2_depth.vs", "shaders/02_05_03_01_TEST2_depth.fs");
+    ShaderProgram lightProgram("shaders/02_05_03_01_TEST2_light.vs", "shaders/02_05_03_01_TEST2_light.fs");
 
     // clang-format off
     std::vector<GLfloat> verticesCube{
@@ -564,8 +564,8 @@ int main()
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer plane(verticesPlane, { 3, 3, 2 });
 
-    Texture woodTexture("resources/02_05_03_01_wood.png", 0);
-    Texture rectpolyTexture("resources/02_05_03_01_rectpoly.jpg", 0);
+    Texture woodTexture("shaders/02_05_03_01_wood.png", 0);
+    Texture rectpolyTexture("shaders/02_05_03_01_rectpoly.jpg", 0);
 
     //----------------------------------------------------------------------------------
     GLuint depthTextureBuffer { 0 };
@@ -740,8 +740,8 @@ int main()
             }
         });
 
-    ShaderProgram depthProgram("resources/02_05_03_01_TEST2_depth.vs", "resources/02_05_03_01_TEST2_depth.fs");
-    ShaderProgram lightProgram("resources/02_05_03_01_TEST2_light.vs", "resources/02_05_03_01_TEST2_light.fs");
+    ShaderProgram depthProgram("shaders/02_05_03_01_TEST2_depth.vs", "shaders/02_05_03_01_TEST2_depth.fs");
+    ShaderProgram lightProgram("shaders/02_05_03_01_TEST2_light.vs", "shaders/02_05_03_01_TEST2_light.fs");
 
     // clang-format off
     std::vector<GLfloat> verticesCube{
@@ -805,8 +805,8 @@ int main()
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer plane(verticesPlane, { 3, 3, 2 });
 
-    Texture woodTexture("resources/02_05_03_01_wood.png", 0);
-    Texture rectpolyTexture("resources/02_05_03_01_rectpoly.jpg", 0);
+    Texture woodTexture("shaders/02_05_03_01_wood.png", 0);
+    Texture rectpolyTexture("shaders/02_05_03_01_rectpoly.jpg", 0);
 
     //----------------------------------------------------------------------------------
     GLuint depthTextureBuffer { 0 };
@@ -1000,8 +1000,8 @@ int main()
             }
         });
 
-    ShaderProgram depthProgram("resources/02_05_03_01_TEST2_depth.vs", "resources/02_05_03_01_TEST2_depth.fs");
-    ShaderProgram lightProgram("resources/02_05_03_01_TEST2_light.vs", "resources/02_05_03_01_TEST5_light.fs");
+    ShaderProgram depthProgram("shaders/02_05_03_01_TEST2_depth.vs", "shaders/02_05_03_01_TEST2_depth.fs");
+    ShaderProgram lightProgram("shaders/02_05_03_01_TEST2_light.vs", "shaders/02_05_03_01_TEST5_light.fs");
 
     // clang-format off
     std::vector<GLfloat> verticesCube{
@@ -1065,8 +1065,8 @@ int main()
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer plane(verticesPlane, { 3, 3, 2 });
 
-    Texture woodTexture("resources/02_05_03_01_wood.png", 0);
-    Texture rectpolyTexture("resources/02_05_03_01_rectpoly.jpg", 0);
+    Texture woodTexture("shaders/02_05_03_01_wood.png", 0);
+    Texture rectpolyTexture("shaders/02_05_03_01_rectpoly.jpg", 0);
 
     //----------------------------------------------------------------------------------
     GLuint depthTextureBuffer { 0 };
@@ -1267,8 +1267,8 @@ int main()
             }
         });
 
-    ShaderProgram depthProgram("resources/02_05_03_01_TEST2_depth.vs", "resources/02_05_03_01_TEST2_depth.fs");
-    ShaderProgram lightProgram("resources/02_05_03_01_TEST2_light.vs", "resources/02_05_03_01_TEST6_light.fs");
+    ShaderProgram depthProgram("shaders/02_05_03_01_TEST2_depth.vs", "shaders/02_05_03_01_TEST2_depth.fs");
+    ShaderProgram lightProgram("shaders/02_05_03_01_TEST2_light.vs", "shaders/02_05_03_01_TEST6_light.fs");
 
     // clang-format off
     std::vector<GLfloat> verticesCube{
@@ -1332,8 +1332,8 @@ int main()
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer plane(verticesPlane, { 3, 3, 2 });
 
-    Texture woodTexture("resources/02_05_03_01_wood.png", 0);
-    Texture rectpolyTexture("resources/02_05_03_01_rectpoly.jpg", 0);
+    Texture woodTexture("shaders/02_05_03_01_wood.png", 0);
+    Texture rectpolyTexture("shaders/02_05_03_01_rectpoly.jpg", 0);
 
     //----------------------------------------------------------------------------------
     GLuint depthTextureBuffer { 0 };
@@ -1528,8 +1528,8 @@ int main()
             }
         });
 
-    ShaderProgram depthProgram("resources/02_05_03_01_TEST2_depth.vs", "resources/02_05_03_01_TEST2_depth.fs");
-    ShaderProgram lightProgram("resources/02_05_03_01_TEST2_light.vs", "resources/02_05_03_01_TEST7_light.fs");
+    ShaderProgram depthProgram("shaders/02_05_03_01_TEST2_depth.vs", "shaders/02_05_03_01_TEST2_depth.fs");
+    ShaderProgram lightProgram("shaders/02_05_03_01_TEST2_light.vs", "shaders/02_05_03_01_TEST7_light.fs");
 
     // clang-format off
     std::vector<GLfloat> verticesCube{
@@ -1593,8 +1593,8 @@ int main()
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer plane(verticesPlane, { 3, 3, 2 });
 
-    Texture woodTexture("resources/02_05_03_01_wood.png", 0);
-    Texture rectpolyTexture("resources/02_05_03_01_rectpoly.jpg", 0);
+    Texture woodTexture("shaders/02_05_03_01_wood.png", 0);
+    Texture rectpolyTexture("shaders/02_05_03_01_rectpoly.jpg", 0);
 
     //----------------------------------------------------------------------------------
     GLuint depthTextureBuffer { 0 };

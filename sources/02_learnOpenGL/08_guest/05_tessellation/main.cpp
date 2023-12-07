@@ -30,13 +30,13 @@ int main()
             }
         });
 
-    ShaderProgram shader("resources/02_08_05_TEST1.vs", "resources/02_08_05_TEST1.fs");
+    ShaderProgram shader("shaders/02_08_05_TEST1.vs", "shaders/02_08_05_TEST1.fs");
 
     stbi_set_flip_vertically_on_load(true);
     int width { 0 }, height { 0 }, nrChannels { 0 };
-    unsigned char* data = stbi_load("resources/iceland_heightmap.png", &width, &height, &nrChannels, 0);
-    // unsigned char* data = stbi_load("resources/river_heightmap.png", &width, &height, &nrChannels, 0);
-    // unsigned char* data = stbi_load("resources/river2_heightmap.png", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load("shaders/iceland_heightmap.png", &width, &height, &nrChannels, 0);
+    // unsigned char* data = stbi_load("shaders/river_heightmap.png", &width, &height, &nrChannels, 0);
+    // unsigned char* data = stbi_load("shaders/river2_heightmap.png", &width, &height, &nrChannels, 0);
 
     if (data)
     {
@@ -179,10 +179,10 @@ int main()
     }
 
     //--------------------------------------------------------------------------------------------
-    auto vert                 = ReadFile("resources/02_08_05_TEST2.vert");
-    auto frag                 = ReadFile("resources/02_08_05_TEST2.frag");
-    auto tesc                 = ReadFile("resources/02_08_05_TEST2.tesc"); // tessellation control
-    auto tese                 = ReadFile("resources/02_08_05_TEST2.tese"); // tessellation evaluation
+    auto vert                 = ReadFile("shaders/02_08_05_TEST2.vert");
+    auto frag                 = ReadFile("shaders/02_08_05_TEST2.frag");
+    auto tesc                 = ReadFile("shaders/02_08_05_TEST2.tesc"); // tessellation control
+    auto tese                 = ReadFile("shaders/02_08_05_TEST2.tese"); // tessellation evaluation
     auto vertexShaderSource   = vert.c_str();
     auto fragmentShaderSource = frag.c_str();
     auto tescShaderSource     = tesc.c_str();
@@ -348,10 +348,10 @@ int main()
     }
 
     //--------------------------------------------------------------------------------------------
-    auto vert                 = ReadFile("resources/02_08_05_TEST2.vert");
-    auto frag                 = ReadFile("resources/02_08_05_TEST2.frag");
-    auto tesc                 = ReadFile("resources/02_08_05_TEST3.tesc"); // tessellation control
-    auto tese                 = ReadFile("resources/02_08_05_TEST3.tese"); // tessellation evaluation
+    auto vert                 = ReadFile("shaders/02_08_05_TEST2.vert");
+    auto frag                 = ReadFile("shaders/02_08_05_TEST2.frag");
+    auto tesc                 = ReadFile("shaders/02_08_05_TEST3.tesc"); // tessellation control
+    auto tese                 = ReadFile("shaders/02_08_05_TEST3.tese"); // tessellation evaluation
     auto vertexShaderSource   = vert.c_str();
     auto fragmentShaderSource = frag.c_str();
     auto tescShaderSource     = tesc.c_str();
@@ -521,9 +521,9 @@ int main()
     }
 
     //--------------------------------------------------------------------------------------------
-    auto vert                 = ReadFile("resources/02_08_05_TEST2.vert");
-    auto frag                 = ReadFile("resources/02_08_05_TEST2.frag");
-    auto tese                 = ReadFile("resources/02_08_05_TEST4.tese"); // tessellation evaluation
+    auto vert                 = ReadFile("shaders/02_08_05_TEST2.vert");
+    auto frag                 = ReadFile("shaders/02_08_05_TEST2.frag");
+    auto tese                 = ReadFile("shaders/02_08_05_TEST4.tese"); // tessellation evaluation
     auto vertexShaderSource   = vert.c_str();
     auto fragmentShaderSource = frag.c_str();
     auto teseShaderSource     = tese.c_str();
@@ -679,10 +679,10 @@ int main()
     std::cout << "Max available tess level: " << maxTessLevel << std::endl;
 
     //--------------------------------------------------------------------------------------------
-    auto vert                 = ReadFile("resources/02_08_05_TEST5.vert");
-    auto frag                 = ReadFile("resources/02_08_05_TEST5.frag");
-    auto tesc                 = ReadFile("resources/02_08_05_TEST5.tesc"); // tessellation control
-    auto tese                 = ReadFile("resources/02_08_05_TEST5.tese"); // tessellation evaluation
+    auto vert                 = ReadFile("shaders/02_08_05_TEST5.vert");
+    auto frag                 = ReadFile("shaders/02_08_05_TEST5.frag");
+    auto tesc                 = ReadFile("shaders/02_08_05_TEST5.tesc"); // tessellation control
+    auto tese                 = ReadFile("shaders/02_08_05_TEST5.tese"); // tessellation evaluation
     auto vertexShaderSource   = vert.c_str();
     auto fragmentShaderSource = frag.c_str();
     auto tescShaderSource     = tesc.c_str();
@@ -767,9 +767,9 @@ int main()
     //--------------------------------------------------------------------------------------------
     stbi_set_flip_vertically_on_load(true);
     int width { 0 }, height { 0 }, nrChannels { 0 };
-    unsigned char* data = stbi_load("resources/iceland_heightmap.png", &width, &height, &nrChannels, 0);
-    // unsigned char* data = stbi_load("resources/river_heightmap.png", &width, &height, &nrChannels, 0);
-    // unsigned char* data = stbi_load("resources/river2_heightmap.png", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load("shaders/iceland_heightmap.png", &width, &height, &nrChannels, 0);
+    // unsigned char* data = stbi_load("shaders/river_heightmap.png", &width, &height, &nrChannels, 0);
+    // unsigned char* data = stbi_load("shaders/river2_heightmap.png", &width, &height, &nrChannels, 0);
 
     uint32_t texture { 0 };
     glGenTextures(1, &texture);

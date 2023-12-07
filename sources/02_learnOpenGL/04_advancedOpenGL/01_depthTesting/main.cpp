@@ -27,7 +27,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_01_TEST1.vs", "resources/02_04_01_TEST1.fs");
+    ShaderProgram program("shaders/02_04_01_TEST1.vs", "shaders/02_04_01_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -203,7 +203,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_01_TEST1.vs", "resources/02_04_01_TEST1.fs");
+    ShaderProgram program("shaders/02_04_01_TEST1.vs", "shaders/02_04_01_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -375,7 +375,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_01_TEST1.vs", "resources/02_04_01_TEST1.fs");
+    ShaderProgram program("shaders/02_04_01_TEST1.vs", "shaders/02_04_01_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -541,7 +541,7 @@ int main()
     InitOpenGL initOpenGL("Depth Test", 800, 800);
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_01_TEST4.vs", "resources/02_04_01_TEST4.fs");
+    ShaderProgram program("shaders/02_04_01_TEST4.vs", "shaders/02_04_01_TEST4.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> verticesPlane{
@@ -646,7 +646,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_01_TEST5.vs", "resources/02_04_01_TEST5.fs");
+    ShaderProgram program("shaders/02_04_01_TEST5.vs", "shaders/02_04_01_TEST5.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 3> verticesPlane{
@@ -741,7 +741,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_01_TEST1.vs", "resources/02_04_01_TEST1.fs");
+    ShaderProgram program("shaders/02_04_01_TEST1.vs", "shaders/02_04_01_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -917,7 +917,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_01_TEST1.vs", "resources/02_04_01_TEST1.fs");
+    ShaderProgram program("shaders/02_04_01_TEST1.vs", "shaders/02_04_01_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> verticesCube{
@@ -1042,7 +1042,7 @@ int main()
     auto above  = CreateAboveGrid();
     auto below  = CreateBelowGrid();
 
-    ShaderProgram shader("resources/02_04_01_TEST1.vs", "resources/02_04_01_TEST1.fs");
+    ShaderProgram shader("shaders/02_04_01_TEST1.vs", "shaders/02_04_01_TEST1.fs");
 
     glEnable(GL_DEPTH_TEST);
 
@@ -1086,7 +1086,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_04_01_TEST9.vs", "resources/02_04_01_TEST9.fs");
+    ShaderProgram program("shaders/02_04_01_TEST9.vs", "shaders/02_04_01_TEST9.fs");
 
     // clang-format off
     std::vector<GLfloat> vertices1 {
@@ -1177,7 +1177,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_04_01_TEST9.vs", "resources/02_04_01_TEST9.fs");
+    ShaderProgram program("shaders/02_04_01_TEST9.vs", "shaders/02_04_01_TEST9.fs");
 
     // clang-format off
     std::vector<GLfloat> vertices {
@@ -1291,8 +1291,8 @@ int main()
     // clang-format on
 
     renderer        = new Renderer(vertices, { 3, 3 }, GL_TRIANGLES);
-    program_default = new ShaderProgram("resources/02_04_01_TEST11.vs", "resources/02_04_01_TEST11.fs");
-    program_depth   = new ShaderProgram("resources/02_04_01_TEST11.vs", "resources/02_04_01_TEST11_depth.fs");
+    program_default = new ShaderProgram("shaders/02_04_01_TEST11.vs", "shaders/02_04_01_TEST11.fs");
+    program_depth   = new ShaderProgram("shaders/02_04_01_TEST11.vs", "shaders/02_04_01_TEST11_depth.fs");
 
     FrameBufferObject fbo;
     Texture texColor(width, height, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);

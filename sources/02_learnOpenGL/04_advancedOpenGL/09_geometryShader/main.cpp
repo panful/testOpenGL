@@ -26,7 +26,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_09_TEST1.vs", "resources/02_04_09_TEST1.fs", "resources/02_04_09_TEST1.gs");
+    ShaderProgram program("shaders/02_04_09_TEST1.vs", "shaders/02_04_09_TEST1.fs", "shaders/02_04_09_TEST1.gs");
 
     // clang-format off
     std::array<GLfloat, 3 * 3> vertices{
@@ -106,7 +106,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_09_TEST2.vs", "resources/02_04_09_TEST2.fs", "resources/02_04_09_TEST2.gs");
+    ShaderProgram program("shaders/02_04_09_TEST2.vs", "shaders/02_04_09_TEST2.fs", "shaders/02_04_09_TEST2.gs");
 
     // clang-format off
     std::array<GLfloat, 3 * 2 * 6> vertices{
@@ -194,7 +194,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_09_TEST3.vs", "resources/02_04_09_TEST2.fs", "resources/02_04_09_TEST3.gs");
+    ShaderProgram program("shaders/02_04_09_TEST3.vs", "shaders/02_04_09_TEST2.fs", "shaders/02_04_09_TEST3.gs");
 
     // clang-format off
     std::array<GLfloat, 2 * 7> vertices{
@@ -287,7 +287,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_09_TEST1.vs", "resources/02_04_09_TEST2.fs", "resources/02_04_09_TEST4.gs");
+    ShaderProgram program("shaders/02_04_09_TEST1.vs", "shaders/02_04_09_TEST2.fs", "shaders/02_04_09_TEST4.gs");
 
     // clang-format off
     std::array<GLfloat, 3 * 4> vertices{
@@ -369,7 +369,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_09_TEST1.vs", "resources/02_04_09_TEST2.fs", "resources/02_04_09_TEST5.gs");
+    ShaderProgram program("shaders/02_04_09_TEST1.vs", "shaders/02_04_09_TEST2.fs", "shaders/02_04_09_TEST5.gs");
 
     // clang-format off
     std::array<GLfloat, 3 * 8> vertices{
@@ -457,7 +457,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_09_TEST1.vs", "resources/02_04_09_TEST6.fs", "resources/02_04_09_TEST6.gs");
+    ShaderProgram program("shaders/02_04_09_TEST1.vs", "shaders/02_04_09_TEST6.fs", "shaders/02_04_09_TEST6.gs");
 
     // clang-format off
     std::array<GLfloat, 3 * 3> vertices{
@@ -560,7 +560,7 @@ int main()
         return -1;
     }
 
-    ShaderProgram program("resources/02_04_09_TEST1.vs", "resources/02_04_09_TEST2.fs", "resources/02_04_09_TEST7.gs");
+    ShaderProgram program("shaders/02_04_09_TEST1.vs", "shaders/02_04_09_TEST2.fs", "shaders/02_04_09_TEST7.gs");
 
     // clang-format off
     std::array<GLfloat, 3 * 3> vertices{
@@ -643,8 +643,8 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_09_TEST8.vs", "resources/02_04_09_TEST1.fs");
-    ShaderProgram billBoardProgram("resources/02_04_09_TEST1.vs", "resources/02_04_09_TEST1.fs", "resources/02_04_09_TEST8.gs");
+    ShaderProgram program("shaders/02_04_09_TEST8.vs", "shaders/02_04_09_TEST1.fs");
+    ShaderProgram billBoardProgram("shaders/02_04_09_TEST1.vs", "shaders/02_04_09_TEST1.fs", "shaders/02_04_09_TEST8.gs");
 
     // clang-format off
     std::array<GLfloat, 2 * 3> vertices{
@@ -798,7 +798,7 @@ int main()
     auto window    = init.GetWindow();
     auto triangles = CreateTriangles();
 
-    ShaderProgram shader("resources/02_04_09_TEST9.vs", "resources/02_04_09_TEST9.fs");
+    ShaderProgram shader("shaders/02_04_09_TEST9.vs", "shaders/02_04_09_TEST9.fs");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -852,7 +852,7 @@ int main()
     auto window = init.GetWindow();
     auto grid   = CreateGrid();
 
-    ShaderProgram shader("resources/02_04_09_TEST10.vs", "resources/02_04_09_TEST10.fs", "resources/02_04_09_TEST10.gs");
+    ShaderProgram shader("shaders/02_04_09_TEST10.vs", "shaders/02_04_09_TEST10.fs", "shaders/02_04_09_TEST10.gs");
 
     // 用二进制表示三角形的三条边是不是多边形的边框
     // 例如四边形由两个三角形构成，两个三角形重合的边并不是四边形的边框

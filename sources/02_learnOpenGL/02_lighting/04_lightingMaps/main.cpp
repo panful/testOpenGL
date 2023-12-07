@@ -16,8 +16,8 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram cubeProgram("resources/02_02_04_TEST1_map.vs", "resources/02_02_04_TEST1_map.fs");
-    ShaderProgram lightProgram("resources/02_02_04_TEST1_light.vs", "resources/02_02_04_TEST1_light.fs");
+    ShaderProgram cubeProgram("shaders/02_02_04_TEST1_map.vs", "shaders/02_02_04_TEST1_map.fs");
+    ShaderProgram lightProgram("shaders/02_02_04_TEST1_light.vs", "shaders/02_02_04_TEST1_light.fs");
 
     // clang-format off
     std::array<GLfloat, 8 * 6 * 6>  vertices{
@@ -104,7 +104,7 @@ int main()
     }
 
     // 漫反射贴图
-    Texture texture("resources/container.png");
+    Texture texture("shaders/container.png");
 
     //----------------------------------------------------------------------------------
     // 相机位置
@@ -196,8 +196,8 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram cubeProgram("resources/02_02_04_TEST2_map.vs", "resources/02_02_04_TEST2_map.fs");
-    ShaderProgram lightProgram("resources/02_02_04_TEST1_light.vs", "resources/02_02_04_TEST1_light.fs");
+    ShaderProgram cubeProgram("shaders/02_02_04_TEST2_map.vs", "shaders/02_02_04_TEST2_map.fs");
+    ShaderProgram lightProgram("shaders/02_02_04_TEST1_light.vs", "shaders/02_02_04_TEST1_light.fs");
 
     // clang-format off
     std::array<GLfloat, 8 * 6 * 6>  vertices{
@@ -283,11 +283,11 @@ int main()
     }
 
     // 漫反射贴图
-    Texture texture_diffuse("resources/container.png", 0);
+    Texture texture_diffuse("shaders/container.png", 0);
     // 黑白的镜面光照贴图
-    // Texture texture_specular("resources/container_specular.png", 1);
+    // Texture texture_specular("shaders/container_specular.png", 1);
     // 彩色的镜面光贴图
-    Texture texture_specular("resources/container_specular_colored.png", 1);
+    Texture texture_specular("shaders/container_specular_colored.png", 1);
 
     //----------------------------------------------------------------------------------
     // 相机位置
@@ -381,8 +381,8 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram cubeProgram("resources/02_02_04_TEST3_map.vs", "resources/02_02_04_TEST3_map.fs");
-    ShaderProgram lightProgram("resources/02_02_04_TEST1_light.vs", "resources/02_02_04_TEST1_light.fs");
+    ShaderProgram cubeProgram("shaders/02_02_04_TEST3_map.vs", "shaders/02_02_04_TEST3_map.fs");
+    ShaderProgram lightProgram("shaders/02_02_04_TEST1_light.vs", "shaders/02_02_04_TEST1_light.fs");
 
     // clang-format off
     std::array<GLfloat, 8 * 6 * 6>  vertices{
@@ -468,13 +468,13 @@ int main()
     }
 
     // 漫反射贴图
-    Texture texture_diffuse("resources/container.png", 0);
+    Texture texture_diffuse("shaders/container.png", 0);
     // 黑白的镜面光照贴图
-    // Texture texture_specular("resources/container_specular.png", 1);
+    // Texture texture_specular("shaders/container_specular.png", 1);
     // 彩色的镜面光贴图
-    Texture texture_specular("resources/container_specular_colored.png", 1);
+    Texture texture_specular("shaders/container_specular_colored.png", 1);
     // 放射光贴图
-    Texture texture_emission("resources/emission.jpg", 2);
+    Texture texture_emission("shaders/emission.jpg", 2);
 
     //----------------------------------------------------------------------------------
     // 相机位置

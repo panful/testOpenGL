@@ -15,7 +15,7 @@ int main()
     auto lightPos = glm::vec3(0.f, 5.f, 0.f);
     InitOpenGL initOpenGL(Camera({ 0.f, 5.f, 0.f }, { 0.f, 0.f, -1.f }, { 0.f, 0.f, 0.f }));
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_05_05_TEST1.vs", "resources/02_05_05_TEST1.fs");
+    ShaderProgram program("shaders/02_05_05_TEST1.vs", "shaders/02_05_05_TEST1.fs");
 
     // clang-format off
     glm::vec3 pos1(-1.0f,  0.0f, -1.0f);
@@ -78,9 +78,9 @@ int main()
     // clang-format on
 
     Renderer renderer(vertices, { 3, 3, 2, 3, 3 });
-    Texture diffuseMap("resources/bricks.jpg", 0);       // 纹理贴图
-    Texture normalMap("resources/bricks_normal.jpg", 1); // 法线贴图
-    Texture heightMap("resources/bricks_disp.jpg", 2);   // 高度贴图
+    Texture diffuseMap("shaders/bricks.jpg", 0);       // 纹理贴图
+    Texture normalMap("shaders/bricks_normal.jpg", 1); // 法线贴图
+    Texture heightMap("shaders/bricks_disp.jpg", 2);   // 高度贴图
 
     //----------------------------------------------------------------------------------
     // 视差贴图：对顶点进行位移或偏移，就能将平坦的平面变换为凹凸不平的表面
@@ -131,7 +131,7 @@ int main()
     auto lightPos = glm::vec3(0.f, 5.f, 0.f);
     InitOpenGL initOpenGL(Camera({ 0.f, 5.f, 0.f }, { 0.f, 0.f, -1.f }, { 0.f, 0.f, 0.f }));
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_05_05_TEST1.vs", "resources/02_05_05_TEST2.fs");
+    ShaderProgram program("shaders/02_05_05_TEST1.vs", "shaders/02_05_05_TEST2.fs");
 
     // clang-format off
     glm::vec3 pos1(-1.0f,  0.0f, -1.0f);
@@ -194,9 +194,9 @@ int main()
     // clang-format on
 
     Renderer renderer(vertices, { 3, 3, 2, 3, 3 });
-    Texture diffuseMap("resources/bricks.jpg", 0);       // 纹理贴图
-    Texture normalMap("resources/bricks_normal.jpg", 1); // 法线贴图
-    Texture heightMap("resources/bricks_disp.jpg", 2);   // 高度贴图
+    Texture diffuseMap("shaders/bricks.jpg", 0);       // 纹理贴图
+    Texture normalMap("shaders/bricks_normal.jpg", 1); // 法线贴图
+    Texture heightMap("shaders/bricks_disp.jpg", 2);   // 高度贴图
 
     //----------------------------------------------------------------------------------
     // 将深度范围划分为多个层，从每个层中沿着viewDir(眼睛看向片段的方向)移动采样纹理
@@ -247,7 +247,7 @@ int main()
     auto lightPos = glm::vec3(0.f, 5.f, 0.f);
     InitOpenGL initOpenGL(Camera({ 0.f, 5.f, 0.f }, { 0.f, 0.f, -1.f }, { 0.f, 0.f, 0.f }));
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_05_05_TEST1.vs", "resources/02_05_05_TEST3.fs");
+    ShaderProgram program("shaders/02_05_05_TEST1.vs", "shaders/02_05_05_TEST3.fs");
 
     // clang-format off
     glm::vec3 pos1(-1.0f,  0.0f, -1.0f);
@@ -310,9 +310,9 @@ int main()
     // clang-format on
 
     Renderer renderer(vertices, { 3, 3, 2, 3, 3 });
-    Texture diffuseMap("resources/bricks.jpg", 0);       // 纹理贴图
-    Texture normalMap("resources/bricks_normal.jpg", 1); // 法线贴图
-    Texture heightMap("resources/bricks_disp.jpg", 2);   // 高度贴图
+    Texture diffuseMap("shaders/bricks.jpg", 0);       // 纹理贴图
+    Texture normalMap("shaders/bricks_normal.jpg", 1); // 法线贴图
+    Texture heightMap("shaders/bricks_disp.jpg", 2);   // 高度贴图
 
     //----------------------------------------------------------------------------------
     // 视差遮蔽映射(Parallax Occlusion Mapping)和陡峭视差映射的原理相同，

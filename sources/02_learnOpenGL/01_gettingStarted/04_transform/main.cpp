@@ -211,7 +211,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_04_TEST2.vs", "resources/02_01_04_TEST2.fs");
+    ShaderProgram program("shaders/02_01_04_TEST2.vs", "shaders/02_01_04_TEST2.fs");
 
     // clang-format off
     // 8个顶点
@@ -325,7 +325,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_04_TEST2.vs", "resources/02_01_04_TEST2.fs");
+    ShaderProgram program("shaders/02_01_04_TEST2.vs", "shaders/02_01_04_TEST2.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> vertices{
@@ -452,7 +452,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_04_TEST2.vs", "resources/02_01_04_TEST2.fs");
+    ShaderProgram program("shaders/02_01_04_TEST2.vs", "shaders/02_01_04_TEST2.fs");
 
     // clang-format off
     // 8个顶点
@@ -571,7 +571,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_04_TEST2.vs", "resources/02_01_04_TEST2.fs");
+    ShaderProgram program("shaders/02_01_04_TEST2.vs", "shaders/02_01_04_TEST2.fs");
 
     // clang-format off
     // 8个顶点
@@ -711,7 +711,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_04_TEST2.vs", "resources/02_01_04_TEST2.fs");
+    ShaderProgram program("shaders/02_01_04_TEST2.vs", "shaders/02_01_04_TEST2.fs");
 
     // NDC可以看作一个XYZ三个方向都属于[-1,1]范围的立方体
     // 只有坐标xyz分量都属于这个范围才能显示，其他顶点都会被丢弃
@@ -809,7 +809,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_04_TEST7.vs", "resources/02_01_04_TEST7.fs");
+    ShaderProgram program("shaders/02_01_04_TEST7.vs", "shaders/02_01_04_TEST7.fs");
 
     // clang-format off
     // NDC范围内的坐标
@@ -928,7 +928,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_04_TEST2.vs", "resources/02_01_04_TEST2.fs");
+    ShaderProgram program("shaders/02_01_04_TEST2.vs", "shaders/02_01_04_TEST2.fs");
 
     constexpr GLfloat offset { 0.01f };
 
@@ -1109,7 +1109,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_04_TEST2.vs", "resources/02_01_04_TEST2.fs");
+    ShaderProgram program("shaders/02_01_04_TEST2.vs", "shaders/02_01_04_TEST2.fs");
 
     constexpr GLfloat offset { 0.01f };
 
@@ -1292,7 +1292,7 @@ int main()
     InitOpenGL opengl(Camera({ 2.f, 2.f, 8.f }));
     auto window = opengl.GetWindow();
 
-    ShaderProgram program("resources/02_01_04_TEST10.vs", "resources/02_01_04_TEST10.fs");
+    ShaderProgram program("shaders/02_01_04_TEST10.vs", "shaders/02_01_04_TEST10.fs");
 
     // clang-format off
     std::vector<float> vertices {

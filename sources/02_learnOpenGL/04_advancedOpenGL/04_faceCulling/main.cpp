@@ -19,7 +19,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_04_TEST1.vs", "resources/02_04_04_TEST1.fs");
+    ShaderProgram program("shaders/02_04_04_TEST1.vs", "shaders/02_04_04_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -159,7 +159,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_04_TEST1.vs", "resources/02_04_04_TEST1.fs");
+    ShaderProgram program("shaders/02_04_04_TEST1.vs", "shaders/02_04_04_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> vertices{

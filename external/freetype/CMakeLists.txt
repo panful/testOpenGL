@@ -8,8 +8,8 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${3rdPartyArchiveOutputDir})
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/include/freetype DESTINATION ${3rdPartyHeadersOutputDir}/freetype)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/include/ft2build.h DESTINATION ${3rdPartyHeadersOutputDir}/freetype)
+#file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/include/freetype DESTINATION ${3rdPartyHeadersOutputDir}/freetype)
+#file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/include/ft2build.h DESTINATION ${3rdPartyHeadersOutputDir}/freetype)
 
 set(target_name "freetype")
 

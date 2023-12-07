@@ -33,8 +33,8 @@ int main()
     auto window = initOpenGL.GetWindow();
 
     ShaderProgram depthProgram(
-        "resources/02_05_03_02_TEST1_depth.vs", "resources/02_05_03_02_TEST1_depth.fs", "resources/02_05_03_02_TEST1_depth.gs");
-    ShaderProgram lightProgram("resources/02_05_03_02_TEST1_light.vs", "resources/02_05_03_02_TEST1_light.fs");
+        "shaders/02_05_03_02_TEST1_depth.vs", "shaders/02_05_03_02_TEST1_depth.fs", "shaders/02_05_03_02_TEST1_depth.gs");
+    ShaderProgram lightProgram("shaders/02_05_03_02_TEST1_light.vs", "shaders/02_05_03_02_TEST1_light.fs");
 
     // clang-format off
     std::vector<GLfloat> verticesCube{
@@ -85,8 +85,8 @@ int main()
 
     Renderer cube(verticesCube, { 3, 3, 2 });
 
-    Texture woodTexture("resources/02_05_03_02_wood.png", 0);
-    Texture rectpolyTexture("resources/02_05_03_02_rectpoly.jpg", 0);
+    Texture woodTexture("shaders/02_05_03_02_wood.png", 0);
+    Texture rectpolyTexture("shaders/02_05_03_02_rectpoly.jpg", 0);
 
     //----------------------------------------------------------------------------------
     GLuint depthTextureBuffer { 0 };
@@ -274,8 +274,8 @@ int main()
         });
 
     ShaderProgram depthProgram(
-        "resources/02_05_03_02_TEST1_depth.vs", "resources/02_05_03_02_TEST1_depth.fs", "resources/02_05_03_02_TEST1_depth.gs");
-    ShaderProgram lightProgram("resources/02_05_03_02_TEST2_light.vs", "resources/02_05_03_02_TEST2_light.fs");
+        "shaders/02_05_03_02_TEST1_depth.vs", "shaders/02_05_03_02_TEST1_depth.fs", "shaders/02_05_03_02_TEST1_depth.gs");
+    ShaderProgram lightProgram("shaders/02_05_03_02_TEST2_light.vs", "shaders/02_05_03_02_TEST2_light.fs");
 
     // clang-format off
     std::vector<GLfloat> verticesCube{
@@ -326,8 +326,8 @@ int main()
 
     Renderer cube(verticesCube, { 3, 3, 2 });
 
-    Texture woodTexture("resources/02_05_03_02_wood.png", 0);
-    Texture rectpolyTexture("resources/02_05_03_02_rectpoly.jpg", 0);
+    Texture woodTexture("shaders/02_05_03_02_wood.png", 0);
+    Texture rectpolyTexture("shaders/02_05_03_02_rectpoly.jpg", 0);
 
     //----------------------------------------------------------------------------------
     GLuint depthTextureBuffer { 0 };

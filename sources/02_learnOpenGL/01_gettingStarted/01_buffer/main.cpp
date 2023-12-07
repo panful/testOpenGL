@@ -1179,7 +1179,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_01_01_TEST8.vs", "resources/02_01_01_TEST8.fs");
+    ShaderProgram program("shaders/02_01_01_TEST8.vs", "shaders/02_01_01_TEST8.fs");
 
     // clang-format off
     std::array<GLfloat, 2 * 5> vertices{
@@ -1291,7 +1291,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_01_01_TEST9.vs", "resources/02_01_01_TEST9.fs");
+    ShaderProgram program("shaders/02_01_01_TEST9.vs", "shaders/02_01_01_TEST9.fs");
 
     // clang-format off
     std::vector<GLfloat> vertices {

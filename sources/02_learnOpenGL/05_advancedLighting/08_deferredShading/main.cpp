@@ -141,13 +141,13 @@ int main()
     };
     // clang-format on
 
-    ShaderProgram programGBuffer("resources/02_05_08_TEST1_gbuffer.vs", "resources/02_05_08_TEST1_gbuffer.fs");
-    ShaderProgram programDeferred("resources/02_05_08_TEST1_deferred.vs", "resources/02_05_08_TEST1_deferred.fs");
+    ShaderProgram programGBuffer("shaders/02_05_08_TEST1_gbuffer.vs", "shaders/02_05_08_TEST1_gbuffer.fs");
+    ShaderProgram programDeferred("shaders/02_05_08_TEST1_deferred.vs", "shaders/02_05_08_TEST1_deferred.fs");
 
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer quad(verticesQuad, { 3, 2 });
 
-    Texture woodTex("resources/wood.png");
+    Texture woodTex("shaders/wood.png");
 
     //---------------------------------------------------------------------------------------
     // 三个纹理分别保存位置向量、法向量、颜色和镜面反光度
@@ -334,13 +334,13 @@ int main()
     };
     // clang-format on
 
-    ShaderProgram programGBuffer("resources/02_05_08_TEST1_gbuffer.vs", "resources/02_05_08_TEST1_gbuffer.fs");
-    ShaderProgram programDeferred("resources/02_05_08_TEST1_deferred.vs", "resources/02_05_08_TEST2_deferred.fs");
+    ShaderProgram programGBuffer("shaders/02_05_08_TEST1_gbuffer.vs", "shaders/02_05_08_TEST1_gbuffer.fs");
+    ShaderProgram programDeferred("shaders/02_05_08_TEST1_deferred.vs", "shaders/02_05_08_TEST2_deferred.fs");
 
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer quad(verticesQuad, { 3, 2 });
 
-    Texture woodTex("resources/wood.png");
+    Texture woodTex("shaders/wood.png");
 
     //---------------------------------------------------------------------------------------
     // 三个纹理分别保存位置向量、法向量、颜色和镜面反光度
@@ -537,12 +537,12 @@ int main()
     };
     // clang-format on
 
-    ShaderProgram programGBuffer("resources/02_05_08_TEST3_forward.vs", "resources/02_05_08_TEST3_forward.fs");
+    ShaderProgram programGBuffer("shaders/02_05_08_TEST3_forward.vs", "shaders/02_05_08_TEST3_forward.fs");
 
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer quad(verticesQuad, { 3, 2 });
 
-    Texture woodTex("resources/wood.png");
+    Texture woodTex("shaders/wood.png");
 
     // 八个光源
     std::vector<std::pair<glm::vec3, glm::vec3>> lights {
@@ -704,13 +704,13 @@ int main()
     };
     // clang-format on
 
-    ShaderProgram programGBuffer("resources/02_05_08_TEST1_gbuffer.vs", "resources/02_05_08_TEST4_gbuffer.fs");
-    ShaderProgram programDeferred("resources/02_05_08_TEST1_deferred.vs", "resources/02_05_08_TEST4_deferred.fs");
+    ShaderProgram programGBuffer("shaders/02_05_08_TEST1_gbuffer.vs", "shaders/02_05_08_TEST4_gbuffer.fs");
+    ShaderProgram programDeferred("shaders/02_05_08_TEST1_deferred.vs", "shaders/02_05_08_TEST4_deferred.fs");
 
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer quad(verticesQuad, { 3, 2 });
 
-    Texture woodTex("resources/wood.png");
+    Texture woodTex("shaders/wood.png");
 
     //---------------------------------------------------------------------------------------
     // 三个纹理分别保存位置向量、法向量、颜色和镜面反光度
@@ -920,15 +920,15 @@ int main()
     };
     // clang-format on
 
-    ShaderProgram programGBuffer("resources/02_05_08_TEST1_gbuffer.vs", "resources/02_05_08_TEST1_gbuffer.fs");
-    ShaderProgram programDeferred("resources/02_05_08_TEST1_deferred.vs", "resources/02_05_08_TEST2_deferred.fs");
-    ShaderProgram programDeferredDepth("resources/02_05_08_TEST5_deferred_depth.vs", "resources/02_05_08_TEST5_deferred_depth.fs");
+    ShaderProgram programGBuffer("shaders/02_05_08_TEST1_gbuffer.vs", "shaders/02_05_08_TEST1_gbuffer.fs");
+    ShaderProgram programDeferred("shaders/02_05_08_TEST1_deferred.vs", "shaders/02_05_08_TEST2_deferred.fs");
+    ShaderProgram programDeferredDepth("shaders/02_05_08_TEST5_deferred_depth.vs", "shaders/02_05_08_TEST5_deferred_depth.fs");
 
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer quad(verticesQuad, { 3, 2 });
 
-    Texture woodTex("resources/wood.png");
-    Texture rect_poly("resources/rect_poly.jpg");
+    Texture woodTex("shaders/wood.png");
+    Texture rect_poly("shaders/rect_poly.jpg");
 
     //---------------------------------------------------------------------------------------
     // 三个纹理分别保存位置向量、法向量、颜色和镜面反光度
@@ -1137,13 +1137,13 @@ int main()
     };
     // clang-format on
 
-    ShaderProgram programGBuffer("resources/02_05_08_TEST1_gbuffer.vs", "resources/02_05_08_TEST1_gbuffer.fs");
-    ShaderProgram programDeferred("resources/02_05_08_TEST1_deferred.vs", "resources/02_05_08_TEST6_deferred.fs");
+    ShaderProgram programGBuffer("shaders/02_05_08_TEST1_gbuffer.vs", "shaders/02_05_08_TEST1_gbuffer.fs");
+    ShaderProgram programDeferred("shaders/02_05_08_TEST1_deferred.vs", "shaders/02_05_08_TEST6_deferred.fs");
 
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer quad(verticesQuad, { 3, 2 });
 
-    Texture woodTex("resources/wood.png");
+    Texture woodTex("shaders/wood.png");
 
     //---------------------------------------------------------------------------------------
     // 三个纹理分别保存位置向量、法向量、颜色和镜面反光度

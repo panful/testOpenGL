@@ -15,7 +15,7 @@
  * 14. 使用 GL_TEXTURE_2D_ARRAY
  */
 
-#define TEST1
+#define TEST11
 
 #ifdef TEST1
 
@@ -29,7 +29,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_03_TEST1.vs", "resources/02_01_03_TEST1.fs");
+    ShaderProgram program("shaders/02_01_03_TEST1.vs", "shaders/02_01_03_TEST1.fs");
 
     float vertices[] = {
         // clang-format off
@@ -82,7 +82,7 @@ int main()
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // 翻转图片，OpenGL要求图片的y轴从下到上，图片的y轴一般是从上到下
-    unsigned char* data = stbi_load("resources/02_01_03_barce.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load("textures/rect_poly.jpg", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -146,7 +146,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_03_TEST1.vs", "resources/02_01_03_TEST1.fs");
+    ShaderProgram program("shaders/02_01_03_TEST1.vs", "shaders/02_01_03_TEST1.fs");
 
     float vertices[] = {
         // clang-format off
@@ -223,7 +223,7 @@ int main()
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // 翻转图片，OpenGL要求图片的y轴从下到上，图片的y轴一般是从上到下
-    unsigned char* data = stbi_load("resources/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load("textures/rect_poly.jpg", &width, &height, &nrChannels, 0);
     if (data)
     {
         // 当调用glTexImage2D时，当前绑定的纹理对象就会被附加上纹理图像
@@ -299,7 +299,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_03_TEST3.vs", "resources/02_01_03_TEST3.fs");
+    ShaderProgram program("shaders/02_01_03_TEST3.vs", "shaders/02_01_03_TEST3.fs");
 
     float vertices[] = {
         // clang-format off
@@ -356,7 +356,7 @@ int main()
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true);
 
-    auto data0 = stbi_load("resources/02_01_03_barce.jpg", &width, &height, &nrChannels, 0);
+    auto data0 = stbi_load("textures/wood.png", &width, &height, &nrChannels, 0);
     if (data0)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data0);
@@ -377,7 +377,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    auto data1 = stbi_load("resources/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
+    auto data1 = stbi_load("textures/rect_poly.jpg", &width, &height, &nrChannels, 0);
     if (data1)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
@@ -455,7 +455,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_03_TEST4.vs", "resources/02_01_03_TEST4.fs");
+    ShaderProgram program("shaders/02_01_03_TEST4.vs", "shaders/02_01_03_TEST4.fs");
 
     // 图1 -> 四边形
     //-------------------------------------------------------------------------
@@ -542,7 +542,7 @@ int main()
     glBindTexture(GL_TEXTURE_2D, texture1);
     // 加载纹理图片1
     int width, height, nrChannels;
-    unsigned char* data1 = stbi_load("resources/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data1 = stbi_load("shaders/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
     if (data1)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
@@ -557,7 +557,7 @@ int main()
     // 绑定第二个纹理
     glBindTexture(GL_TEXTURE_2D, texture2);
     // 加载纹理图片2
-    unsigned char* data2 = stbi_load("resources/02_01_03_barce.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data2 = stbi_load("shaders/02_01_03_barce.jpg", &width, &height, &nrChannels, 0);
     if (data2)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
@@ -626,7 +626,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_03_TEST4.vs", "resources/02_01_03_TEST4.fs");
+    ShaderProgram program("shaders/02_01_03_TEST4.vs", "shaders/02_01_03_TEST4.fs");
 
     // 图1 左边
     float vertices1[] = {
@@ -707,7 +707,7 @@ int main()
 
     // 加载纹理图片1
     glBindTexture(GL_TEXTURE_2D, texture1);
-    auto data1 = stbi_load("resources/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
+    auto data1 = stbi_load("shaders/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
     if (data1)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
@@ -770,7 +770,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_03_TEST4.vs", "resources/02_01_03_TEST4.fs");
+    ShaderProgram program("shaders/02_01_03_TEST4.vs", "shaders/02_01_03_TEST4.fs");
 
     // 图1 左边
     float vertices1[] = {
@@ -882,7 +882,7 @@ int main()
 
     // 加载纹理图片1
     glBindTexture(GL_TEXTURE_2D, texture1);
-    auto data1 = stbi_load("resources/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
+    auto data1 = stbi_load("shaders/02_01_03_rectpoly.jpg", &width, &height, &nrChannels, 0);
     if (data1)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
@@ -895,7 +895,7 @@ int main()
 
     // 加载纹理图片2
     glBindTexture(GL_TEXTURE_2D, texture2);
-    auto data2 = stbi_load("resources/02_01_03_barce.jpg", &width, &height, &nrChannels, 0);
+    auto data2 = stbi_load("shaders/02_01_03_barce.jpg", &width, &height, &nrChannels, 0);
     if (data2)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
@@ -977,7 +977,7 @@ int main()
     initOpenGL.SetCursorPosCB(cursorPosCB);
     initOpenGL.SetMouseCB(mouseCB);
 
-    ShaderProgram program("resources/02_01_03_TEST7.vs", "resources/02_01_03_TEST7.fs");
+    ShaderProgram program("shaders/02_01_03_TEST7.vs", "shaders/02_01_03_TEST7.fs");
 
     float vertices[] = {
         // clang-format off
@@ -1025,7 +1025,7 @@ int main()
 
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // 翻转图片，OpenGL要求图片的y轴从下到上，图片的y轴一般是从上到下
-    data = stbi_load("resources/02_01_03_alpha.png", &width, &height, &nrChannels, 0);
+    data = stbi_load("shaders/02_01_03_alpha.png", &width, &height, &nrChannels, 0);
     std::cout << "image: " << width << '\t' << height << '\n';
     // 带alpha值的图像通道应该为4
     if (data && nrChannels == 4)
@@ -1157,7 +1157,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_03_TEST8.vs", "resources/02_01_03_TEST8.fs");
+    ShaderProgram program("shaders/02_01_03_TEST8.vs", "shaders/02_01_03_TEST8.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 4> vertices {
@@ -1401,8 +1401,8 @@ int main()
     background.Bind();
     background.SetWarpParameter(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
-    ShaderProgram shaderCube("resources/02_01_03_TEST9.vs", "resources/02_01_03_TEST9.fs");
-    ShaderProgram shaderBackground("resources/02_01_03_TEST9_back.vs", "resources/02_01_03_TEST9_back.fs");
+    ShaderProgram shaderCube("shaders/02_01_03_TEST9.vs", "shaders/02_01_03_TEST9.fs");
+    ShaderProgram shaderBackground("shaders/02_01_03_TEST9_back.vs", "shaders/02_01_03_TEST9_back.fs");
 
     glEnable(GL_DEPTH_TEST);
 
@@ -1472,7 +1472,7 @@ int main()
     auto window    = init.GetWindow();
     auto triangles = CreateTriangles();
 
-    ShaderProgram shader("resources/02_01_03_TEST10.vs", "resources/02_01_03_TEST10.fs");
+    ShaderProgram shader("shaders/02_01_03_TEST10.vs", "shaders/02_01_03_TEST10.fs");
 
     // clang-format off
 
@@ -1561,7 +1561,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_01_03_TEST11.vs", "resources/02_01_03_TEST11.fs");
+    ShaderProgram program("shaders/02_01_03_TEST11.vs", "shaders/02_01_03_TEST11.fs");
 
     // clang-format off
     std::vector<float> vertices {
@@ -1573,7 +1573,7 @@ int main()
     // clang-format on
 
     Renderer points(vertices, { 3 }, GL_POINTS);
-    Texture texture(std::string_view("resources/02_01_03_snow.png"));
+    Texture texture("textures/star.png");
 
     // 设置点的大小
     // glPointSize(10.f);
@@ -1667,7 +1667,7 @@ int main()
             glBindTexture(GL_TEXTURE_2D, 0);
         });
 
-    ShaderProgram shader("resources/02_01_03_TEST9.vs", "resources/02_01_03_TEST9.fs");
+    ShaderProgram shader("shaders/02_01_03_TEST9.vs", "shaders/02_01_03_TEST9.fs");
 
     // clang-format off
     std::vector<float> vertices{
@@ -1722,7 +1722,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram program("resources/02_01_03_TEST1.vs", "resources/02_01_03_TEST1.fs");
+    ShaderProgram program("shaders/02_01_03_TEST1.vs", "shaders/02_01_03_TEST1.fs");
 
     float vertices[] = {
         // clang-format off
@@ -1764,17 +1764,19 @@ int main()
     // 创建并绑定纹理
     unsigned int texture;
     glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture); // 绑定之后，接下来使用了GL_TEXTURE_2D作为参数的函数都对该纹理生效，直到绑定下一个纹理
+    glBindTexture(GL_TEXTURE_2D, texture);
+
     // 纹理环绕
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
     // 纹理过滤
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     ktxTexture* ktxTexture { nullptr };
 
-    if (ktxResult result = ktxTexture_CreateFromNamedFile("resources/metalplate01_rgba.ktx", KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture))
+    if (ktxResult result = ktxTexture_CreateFromNamedFile("textures/metalplate01_rgba.ktx", KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture))
     {
         std::cout << "failed to load texture\n";
         return -1;
@@ -1785,10 +1787,9 @@ int main()
     auto mipLevels = ktxTexture->numLevels;
     auto numDims   = ktxTexture->numDimensions;
 
-    ktx_uint8_t* ktxTextureData = ktxTexture_GetData(ktxTexture);
-    ktx_size_t ktxTextureSize   = ktxTexture_GetDataSize(ktxTexture);
+    std::cout << width << '\t' << height << '\t' << mipLevels << '\t' << numDims << '\n';
 
-    std::cout << width << '\t' << height << '\t' << mipLevels << '\t' << numDims << '\t' << ktxTextureSize << '\n';
+    ktx_uint8_t* ktxTextureData = ktxTexture_GetData(ktxTexture);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ktxTextureData);
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -1825,6 +1826,7 @@ int main()
 #ifdef TEST14
 
 #include <common.hpp>
+#include <format>
 #include <ktx.h>
 
 int main()
@@ -1832,7 +1834,7 @@ int main()
     InitOpenGL initOpenGL(Camera({ 0.f, 0.f, 3.f }, { 0.f, 1.f, 0.f }, { 0.f, 0.f, 0.f }));
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram program("resources/02_01_03_TEST14.vs", "resources/02_01_03_TEST14.fs");
+    ShaderProgram program("shaders/02_01_03_TEST14.vs", "shaders/02_01_03_TEST14.fs");
 
     // GL_TEXTURE_2D_ARRAY 纹理坐标的最后一个值表示采样第几层，例如层数为7，那么最后一个值应该为[0,6]
     // GL_TEXTURE_3D 纹理坐标的最后一个值需要归一化到[0,1]
@@ -1862,7 +1864,7 @@ int main()
 
     ktxTexture* ktxTexture { nullptr };
 
-    if (ktxResult result = ktxTexture_CreateFromNamedFile("resources/texturearray_rgba.ktx", KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture))
+    if (ktxResult result = ktxTexture_CreateFromNamedFile("textures/texturearray_rgba.ktx", KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture))
     {
         std::cout << "failed to load texture\n";
         return -1;
@@ -1877,8 +1879,8 @@ int main()
     auto numFaces  = ktxTexture->numFaces;
 
     ktx_uint8_t* ktxTextureData = ktxTexture_GetData(ktxTexture);
-
-    std::cout << width << '\t' << height << '\t' << mipLevels << '\t' << numDims << '\t' << isArray << '\t' << numLayers << '\t' << numFaces << '\n';
+    std::cout << std::format("width: {}\nheight: {}\nmipLevels: {}\nnumDims: {}\nisArray: {}\nnumLayers: {}\nnumFaces: {}\n", width, height,
+        mipLevels, numDims, isArray, numLayers, numFaces);
 
     // 将纹理数据传递给GPU需要使用 glTexImage3D
     // numLayers 表示array的大小

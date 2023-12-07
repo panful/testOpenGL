@@ -19,8 +19,8 @@ int main()
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
 
-    ShaderProgram cubeProgram("resources/02_02_01_TEST1.vs", "resources/02_02_01_TEST1.fs");
-    ShaderProgram lightProgram("resources/02_02_01_TEST1_light.vs", "resources/02_02_01_TEST1_light.fs");
+    ShaderProgram cubeProgram("shaders/02_02_01_TEST1.vs", "shaders/02_02_01_TEST1.fs");
+    ShaderProgram lightProgram("shaders/02_02_01_TEST1_light.vs", "shaders/02_02_01_TEST1_light.fs");
 
     // clang-format off
     std::array<GLfloat, 6 * 6 * 6>  vertices{
@@ -184,7 +184,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram program("resources/02_02_01_TEST2.vs", "resources/02_02_01_TEST2.fs");
+    ShaderProgram program("shaders/02_02_01_TEST2.vs", "shaders/02_02_01_TEST2.fs");
 
     // clang-format off
     std::array<GLfloat, 5 * 5> vertices{

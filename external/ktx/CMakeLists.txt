@@ -2,7 +2,7 @@
 project ("KTX_LIB_GENERATOR")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${3rdPartyArchiveOutputDir})
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/include/ktx.h DESTINATION ${3rdPartyHeadersOutputDir}/ktx)
+#file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/include/ktx.h DESTINATION ${3rdPartyHeadersOutputDir}/ktx)
 
 set(target_name "ktx")
 set(KTX_SOURCES

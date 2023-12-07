@@ -45,13 +45,13 @@ int main()
         });
 
     // 场景，输出两个颜色附件到帧缓冲
-    ShaderProgram lightProgram("resources/02_05_07_TEST1_light.vs", "resources/02_05_07_TEST1_light.fs");
+    ShaderProgram lightProgram("shaders/02_05_07_TEST1_light.vs", "shaders/02_05_07_TEST1_light.fs");
     // 光源
-    ShaderProgram lightBoxProgram("resources/02_05_07_TEST1_light.vs", "resources/02_05_07_TEST1_light_box.fs");
+    ShaderProgram lightBoxProgram("shaders/02_05_07_TEST1_light.vs", "shaders/02_05_07_TEST1_light_box.fs");
     // 高斯模糊，光源的光晕效果
-    ShaderProgram blurProgram("resources/02_05_07_TEST1_blur.vs", "resources/02_05_07_TEST1_blur.fs");
+    ShaderProgram blurProgram("shaders/02_05_07_TEST1_blur.vs", "shaders/02_05_07_TEST1_blur.fs");
     // 纹理合并
-    ShaderProgram finalProgram("resources/02_05_07_TEST1_bloom_final.vs", "resources/02_05_07_TEST1_bloom_final.fs");
+    ShaderProgram finalProgram("shaders/02_05_07_TEST1_bloom_final.vs", "shaders/02_05_07_TEST1_bloom_final.fs");
 
     // clang-format off
     std::vector<GLfloat> verticesCube {
@@ -114,7 +114,7 @@ int main()
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer quad(vertices_quad, { 3, 2 });
 
-    Texture texture(std::string_view("resources/wood.png"), 0, true);
+    Texture texture(std::string_view("shaders/wood.png"), 0, true);
 
     Texture fboTexture0(windowWidth, windowHeight, GL_RGBA16F, GL_RGBA, GL_FLOAT, 0);
     Texture fboTexture1(windowWidth, windowHeight, GL_RGBA16F, GL_RGBA, GL_FLOAT);

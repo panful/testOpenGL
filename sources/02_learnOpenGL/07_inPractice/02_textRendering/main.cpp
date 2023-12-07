@@ -36,7 +36,7 @@ int main()
     InitOpenGL initOpenGL("textRendering", WIDTH, HEIGHT);
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram program("resources/02_07_02_TEST1.vs", "resources/02_07_02_TEST1.fs");
+    ShaderProgram program("shaders/02_07_02_TEST1.vs", "shaders/02_07_02_TEST1.fs");
 
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
@@ -56,7 +56,7 @@ int main()
 
     // 将字体信息保存到FT_Face
     FT_Face face;
-    if (FT_New_Face(ft, "resources/arial.ttf", 0, &face))
+    if (FT_New_Face(ft, "shaders/arial.ttf", 0, &face))
     {
         std::cerr << "ERROR::FREETYPE: Failed to load font\n";
     }

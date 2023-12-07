@@ -32,8 +32,8 @@ int main()
     InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST1_Default_FBO.vs", "resources/02_04_05_TEST1_Default_FBO.fs");
-    ShaderProgram customFBOProgram("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST1_Custom_FBO.fs");
+    ShaderProgram defaultFBOProgram("shaders/02_04_05_TEST1_Default_FBO.vs", "shaders/02_04_05_TEST1_Default_FBO.fs");
+    ShaderProgram customFBOProgram("shaders/02_04_05_TEST1_Custom_FBO.vs", "shaders/02_04_05_TEST1_Custom_FBO.fs");
 
     // clang-format off
     // 三角形，绘制到自定义的帧缓冲
@@ -223,8 +223,8 @@ int main()
     InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST1_Default_FBO.vs", "resources/02_04_05_TEST1_Default_FBO.fs");
-    ShaderProgram customFBOProgram("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST1_Custom_FBO.fs");
+    ShaderProgram defaultFBOProgram("shaders/02_04_05_TEST1_Default_FBO.vs", "shaders/02_04_05_TEST1_Default_FBO.fs");
+    ShaderProgram customFBOProgram("shaders/02_04_05_TEST1_Custom_FBO.vs", "shaders/02_04_05_TEST1_Custom_FBO.fs");
 
     // clang-format off
     // 三角形，绘制到自定义的帧缓冲
@@ -395,8 +395,8 @@ int main()
     InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST1_Default_FBO.vs", "resources/02_04_05_TEST1_Default_FBO.fs");
-    ShaderProgram customFBOProgram("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST1_Custom_FBO.fs");
+    ShaderProgram defaultFBOProgram("shaders/02_04_05_TEST1_Default_FBO.vs", "shaders/02_04_05_TEST1_Default_FBO.fs");
+    ShaderProgram customFBOProgram("shaders/02_04_05_TEST1_Custom_FBO.vs", "shaders/02_04_05_TEST1_Custom_FBO.fs");
 
     // clang-format off
     // 三角形，绘制到自定义的帧缓冲
@@ -581,7 +581,7 @@ int main()
     initOpenGL.SetCursorPosCB(cursorPosCB);
     initOpenGL.SetMouseCB(mouseCB);
 
-    ShaderProgram program("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST1_Custom_FBO.fs");
+    ShaderProgram program("shaders/02_04_05_TEST1_Custom_FBO.vs", "shaders/02_04_05_TEST1_Custom_FBO.fs");
 
     // clang-format off
     std::array<GLfloat, 3 * 6> vertices{
@@ -769,8 +769,8 @@ int main()
     InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST1_Default_FBO.vs", "resources/02_04_05_TEST1_Default_FBO.fs");
-    ShaderProgram customFBOProgram("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST1_Custom_FBO.fs");
+    ShaderProgram defaultFBOProgram("shaders/02_04_05_TEST1_Default_FBO.vs", "shaders/02_04_05_TEST1_Default_FBO.fs");
+    ShaderProgram customFBOProgram("shaders/02_04_05_TEST1_Custom_FBO.vs", "shaders/02_04_05_TEST1_Custom_FBO.fs");
 
     // clang-format off
     // 8个顶点
@@ -991,8 +991,8 @@ int main()
     InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST1_Default_FBO.vs", "resources/02_04_05_TEST1_Default_FBO.fs");
-    ShaderProgram customFBOProgram("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST1_Custom_FBO.fs");
+    ShaderProgram defaultFBOProgram("shaders/02_04_05_TEST1_Default_FBO.vs", "shaders/02_04_05_TEST1_Default_FBO.fs");
+    ShaderProgram customFBOProgram("shaders/02_04_05_TEST1_Custom_FBO.vs", "shaders/02_04_05_TEST1_Custom_FBO.fs");
 
     // clang-format off
     // 8个顶点
@@ -1211,8 +1211,8 @@ int main()
     InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST1_Default_FBO.vs", "resources/02_04_05_TEST1_Default_FBO.fs");
-    ShaderProgram customFBOProgram("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST1_Custom_FBO.fs");
+    ShaderProgram defaultFBOProgram("shaders/02_04_05_TEST1_Default_FBO.vs", "shaders/02_04_05_TEST1_Default_FBO.fs");
+    ShaderProgram customFBOProgram("shaders/02_04_05_TEST1_Custom_FBO.vs", "shaders/02_04_05_TEST1_Custom_FBO.fs");
 
     // clang-format off
     // 8个顶点
@@ -1427,8 +1427,8 @@ int main()
     InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST7_Default_FBO.vs", "resources/02_04_05_TEST7_Default_FBO.fs");
-    ShaderProgram customFBOProgram("resources/02_04_05_TEST7_Custom_FBO.vs", "resources/02_04_05_TEST7_Custom_FBO.fs");
+    ShaderProgram defaultFBOProgram("shaders/02_04_05_TEST7_Default_FBO.vs", "shaders/02_04_05_TEST7_Default_FBO.fs");
+    ShaderProgram customFBOProgram("shaders/02_04_05_TEST7_Custom_FBO.vs", "shaders/02_04_05_TEST7_Custom_FBO.fs");
 
     // clang-format off
     // 立方体
@@ -1525,8 +1525,8 @@ int main()
         glEnableVertexAttribArray(1);
     }
 
-    Texture myTexture("resources/02_04_05_wall.jpg");
-    // Texture myTexture("resources/02_04_05_container.jpg");
+    Texture myTexture("shaders/02_04_05_wall.jpg");
+    // Texture myTexture("shaders/02_04_05_container.jpg");
 
     // 注意，核在对屏幕纹理的边缘进行采样的时候，由于还会对中心像素周围的8个像素进行采样，其实会取到纹理之外的像素。
     // 由于环绕方式默认是GL_REPEAT，所以在没有设置的情况下取到的是屏幕另一边的像素，
@@ -1671,8 +1671,8 @@ int main()
     initOpenGL.SetCursorPosCB(cursorPosCB);
     initOpenGL.SetMouseCB(mouseCB);
 
-    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST1_Default_FBO.vs", "resources/02_04_05_TEST1_Default_FBO.fs");
-    ShaderProgram customFBOProgram("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST1_Custom_FBO.fs");
+    ShaderProgram defaultFBOProgram("shaders/02_04_05_TEST1_Default_FBO.vs", "shaders/02_04_05_TEST1_Default_FBO.fs");
+    ShaderProgram customFBOProgram("shaders/02_04_05_TEST1_Custom_FBO.vs", "shaders/02_04_05_TEST1_Custom_FBO.fs");
 
     // clang-format off
     // 8个顶点
@@ -1953,8 +1953,8 @@ int main()
     InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST7_Default_FBO.vs", "resources/02_04_05_TEST7_Default_FBO.fs");
-    ShaderProgram customFBOProgram("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST1_Custom_FBO.fs");
+    ShaderProgram defaultFBOProgram("shaders/02_04_05_TEST7_Default_FBO.vs", "shaders/02_04_05_TEST7_Default_FBO.fs");
+    ShaderProgram customFBOProgram("shaders/02_04_05_TEST1_Custom_FBO.vs", "shaders/02_04_05_TEST1_Custom_FBO.fs");
 
     // clang-format off
     // 8个顶点
@@ -2173,8 +2173,8 @@ int main()
     InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST1_Default_FBO.vs", "resources/02_04_05_TEST1_Default_FBO.fs");
-    ShaderProgram customFBOProgram("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST1_Custom_FBO.fs");
+    ShaderProgram defaultFBOProgram("shaders/02_04_05_TEST1_Default_FBO.vs", "shaders/02_04_05_TEST1_Default_FBO.fs");
+    ShaderProgram customFBOProgram("shaders/02_04_05_TEST1_Custom_FBO.vs", "shaders/02_04_05_TEST1_Custom_FBO.fs");
 
     // clang-format off
     // 8个顶点
@@ -2291,8 +2291,8 @@ int main()
 {
     InitOpenGL initOpenGL("Frame Buffer", windowWidth, windowHeight);
     auto window = initOpenGL.GetWindow();
-    ShaderProgram defaultFBOProgram("resources/02_04_05_TEST1_Default_FBO.vs", "resources/02_04_05_TEST1_Default_FBO.fs");
-    ShaderProgram customFBOProgram("resources/02_04_05_TEST1_Custom_FBO.vs", "resources/02_04_05_TEST12_Custom_FBO.fs");
+    ShaderProgram defaultFBOProgram("shaders/02_04_05_TEST1_Default_FBO.vs", "shaders/02_04_05_TEST1_Default_FBO.fs");
+    ShaderProgram customFBOProgram("shaders/02_04_05_TEST1_Custom_FBO.vs", "shaders/02_04_05_TEST12_Custom_FBO.fs");
 
     // clang-format off
     std::vector<GLfloat> vertices{
@@ -2426,8 +2426,8 @@ int main()
     InitOpenGL initOpenGL(4, 5, Camera({ 0, 0, 3 }, { 0, 1, 0 }, { 0, 0, 0 }));
     auto window = initOpenGL.GetWindow();
 
-    ShaderProgram programInit("resources/02_08_02_TEST13_init.vs", "resources/02_08_02_TEST13_init.fs");
-    ShaderProgram programPingPong("resources/02_08_02_TEST13_pingpong.vs", "resources/02_08_02_TEST13_pingpong.fs");
+    ShaderProgram programInit("shaders/02_08_02_TEST13_init.vs", "shaders/02_08_02_TEST13_init.fs");
+    ShaderProgram programPingPong("shaders/02_08_02_TEST13_pingpong.vs", "shaders/02_08_02_TEST13_pingpong.fs");
 
     Renderer rendererQuad(quad, { 3, 2 }, GL_TRIANGLE_STRIP);
 

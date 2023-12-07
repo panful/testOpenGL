@@ -15,7 +15,7 @@ int main()
 {
     InitOpenGL initOpenGL("Ray March", (uint32_t)windowWidth, (uint32_t)windowHeight);
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_08_07_TEST1.vert", "resources/02_08_07_TEST1.frag");
+    ShaderProgram program("shaders/02_08_07_TEST1.vert", "shaders/02_08_07_TEST1.frag");
 
     // clang-format off
     std::vector<float> vertices {
@@ -61,7 +61,7 @@ int main()
 {
     InitOpenGL initOpenGL("Ray March", (uint32_t)windowWidth, (uint32_t)windowHeight);
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_08_07_TEST1.vert", "resources/02_08_07_TEST2.frag");
+    ShaderProgram program("shaders/02_08_07_TEST1.vert", "shaders/02_08_07_TEST2.frag");
 
     // clang-format off
     std::vector<float> vertices {

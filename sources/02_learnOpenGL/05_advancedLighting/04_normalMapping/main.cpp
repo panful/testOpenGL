@@ -43,7 +43,7 @@ int main()
             }
         });
 
-    ShaderProgram program("resources/02_05_04_TEST1.vs", "resources/02_05_04_TEST1.fs");
+    ShaderProgram program("shaders/02_05_04_TEST1.vs", "shaders/02_05_04_TEST1.fs");
 
     // clang-format off
     std::vector<GLfloat> vertices{
@@ -57,8 +57,8 @@ int main()
 
     Renderer renderer(vertices, { 3, 3, 2 });
 
-    Texture diffuseMap("resources/brickwall.jpg", 0);
-    Texture normalMap("resources/brickwall_normal.jpg", 1);
+    Texture diffuseMap("shaders/brickwall.jpg", 0);
+    Texture normalMap("shaders/brickwall_normal.jpg", 1);
 
     //----------------------------------------------------------------------------------
     auto lightPos      = glm::vec3(0.f, 0.f, 5.f);
@@ -120,7 +120,7 @@ int main()
     auto lightPos = glm::vec3(0.f, 5.f, 0.f);
     InitOpenGL initOpenGL(Camera({ 0.f, 5.f, 0.f }, { 0.f, 0.f, -1.f }, { 0.f, 0.f, 0.f }));
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_05_04_TEST2.vs", "resources/02_05_04_TEST2.fs");
+    ShaderProgram program("shaders/02_05_04_TEST2.vs", "shaders/02_05_04_TEST2.fs");
 
     // clang-format off
     glm::vec3 pos1(-1.0f,  0.0f, -1.0f);
@@ -183,8 +183,8 @@ int main()
     // clang-format on
 
     Renderer renderer(vertices, { 3, 3, 2, 3, 3 });
-    Texture diffuseMap("resources/brickwall.jpg", 0);
-    Texture normalMap("resources/brickwall_normal.jpg", 1);
+    Texture diffuseMap("shaders/brickwall.jpg", 0);
+    Texture normalMap("shaders/brickwall_normal.jpg", 1);
 
     //----------------------------------------------------------------------------------
 
@@ -238,7 +238,7 @@ int main()
 #endif
 
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_05_04_TEST3.vs", "resources/02_05_04_TEST3.fs");
+    ShaderProgram program("shaders/02_05_04_TEST3.vs", "shaders/02_05_04_TEST3.fs");
 
     // clang-format off
 #ifdef PLANE_FACING_Z
@@ -281,8 +281,8 @@ int main()
 
     Renderer renderer(vertices, { 3, 3, 2 });
 
-    Texture diffuseMap("resources/brickwall.jpg", 0);
-    Texture normalMap("resources/brickwall_normal.jpg", 1);
+    Texture diffuseMap("shaders/brickwall.jpg", 0);
+    Texture normalMap("shaders/brickwall_normal.jpg", 1);
 
     //----------------------------------------------------------------------------------
 

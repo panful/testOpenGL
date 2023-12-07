@@ -72,7 +72,7 @@ int main()
             draw        = false;
         });
 
-    ShaderProgram shader("resources/02_01_07_TEST1.vs", "resources/02_01_07_TEST1.fs");
+    ShaderProgram shader("shaders/02_01_07_TEST1.vs", "shaders/02_01_07_TEST1.fs");
 
     GLuint VAO { 0 };
     glGenVertexArrays(1, &VAO);
@@ -123,7 +123,7 @@ int main()
 
 InitOpenGL init(Camera({ 0, 0, 25 }, { 0, 1, 0 }, { 0, 0, 0 }));
 
-ShaderProgram shader("resources/02_01_07_TEST2.vs", "resources/02_01_07_TEST2.fs");
+ShaderProgram shader("shaders/02_01_07_TEST2.vs", "shaders/02_01_07_TEST2.fs");
 
 // 用来拾取的FBO
 GLuint pick_fbo { 0 };
@@ -514,10 +514,10 @@ int main()
             }
         });
 
-    ShaderProgram program_quad("resources/02_01_07_TEST1.vs", "resources/02_01_07_TEST1.fs");
+    ShaderProgram program_quad("shaders/02_01_07_TEST1.vs", "shaders/02_01_07_TEST1.fs");
 
-    program_triangle = new ShaderProgram("resources/02_01_07_TEST3.vs", "resources/02_01_07_TEST3.fs");
-    program_point    = new ShaderProgram("resources/02_01_07_TEST3_point.vs", "resources/02_01_07_TEST3_point.fs");
+    program_triangle = new ShaderProgram("shaders/02_01_07_TEST3.vs", "shaders/02_01_07_TEST3.fs");
+    program_point    = new ShaderProgram("shaders/02_01_07_TEST3_point.vs", "shaders/02_01_07_TEST3_point.fs");
 
     FrameBufferObject fbo;
     Texture tex(window_width, window_height, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);

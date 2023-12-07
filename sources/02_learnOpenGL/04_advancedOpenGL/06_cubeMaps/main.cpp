@@ -21,7 +21,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_06_TEST1.vs", "resources/02_04_06_TEST1.fs");
+    ShaderProgram program("shaders/02_04_06_TEST1.vs", "shaders/02_04_06_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -60,12 +60,12 @@ int main()
     };
 
     std::array<std::string_view, 6> cubeFaces{
-        "resources/02_04_06_skybox_right.jpg",
-        "resources/02_04_06_skybox_left.jpg",
-        "resources/02_04_06_skybox_top.jpg",
-        "resources/02_04_06_skybox_bottom.jpg",
-        "resources/02_04_06_skybox_front.jpg",
-        "resources/02_04_06_skybox_back.jpg"
+        "shaders/02_04_06_skybox_right.jpg",
+        "shaders/02_04_06_skybox_left.jpg",
+        "shaders/02_04_06_skybox_top.jpg",
+        "shaders/02_04_06_skybox_bottom.jpg",
+        "shaders/02_04_06_skybox_front.jpg",
+        "shaders/02_04_06_skybox_back.jpg"
     };
     // clang-format on
 
@@ -181,8 +181,8 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram skyBoxprogram("resources/02_04_06_TEST1.vs", "resources/02_04_06_TEST1.fs");
-    ShaderProgram cubeProgram("resources/02_04_06_TEST2_cube.vs", "resources/02_04_06_TEST2_cube.fs");
+    ShaderProgram skyBoxprogram("shaders/02_04_06_TEST1.vs", "shaders/02_04_06_TEST1.fs");
+    ShaderProgram cubeProgram("shaders/02_04_06_TEST2_cube.vs", "shaders/02_04_06_TEST2_cube.fs");
 
     // clang-format off
     // 8个顶点
@@ -221,12 +221,12 @@ int main()
     };
 
     std::array<std::string_view, 6> cubeFaces{
-        "resources/02_04_06_skybox_right.jpg",
-        "resources/02_04_06_skybox_left.jpg",
-        "resources/02_04_06_skybox_top.jpg",
-        "resources/02_04_06_skybox_bottom.jpg",
-        "resources/02_04_06_skybox_front.jpg",
-        "resources/02_04_06_skybox_back.jpg"
+        "shaders/02_04_06_skybox_right.jpg",
+        "shaders/02_04_06_skybox_left.jpg",
+        "shaders/02_04_06_skybox_top.jpg",
+        "shaders/02_04_06_skybox_bottom.jpg",
+        "shaders/02_04_06_skybox_front.jpg",
+        "shaders/02_04_06_skybox_back.jpg"
     };
     // clang-format on
 
@@ -383,8 +383,8 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram skyBoxprogram("resources/02_04_06_TEST3_skybox.vs", "resources/02_04_06_TEST1.fs");
-    ShaderProgram cubeProgram("resources/02_04_06_TEST2_cube.vs", "resources/02_04_06_TEST2_cube.fs");
+    ShaderProgram skyBoxprogram("shaders/02_04_06_TEST3_skybox.vs", "shaders/02_04_06_TEST1.fs");
+    ShaderProgram cubeProgram("shaders/02_04_06_TEST2_cube.vs", "shaders/02_04_06_TEST2_cube.fs");
 
     // clang-format off
     // 8个顶点
@@ -423,12 +423,12 @@ int main()
     };
 
     std::array<std::string_view, 6> cubeFaces{
-        "resources/02_04_06_skybox_right.jpg",
-        "resources/02_04_06_skybox_left.jpg",
-        "resources/02_04_06_skybox_top.jpg",
-        "resources/02_04_06_skybox_bottom.jpg",
-        "resources/02_04_06_skybox_front.jpg",
-        "resources/02_04_06_skybox_back.jpg"
+        "shaders/02_04_06_skybox_right.jpg",
+        "shaders/02_04_06_skybox_left.jpg",
+        "shaders/02_04_06_skybox_top.jpg",
+        "shaders/02_04_06_skybox_bottom.jpg",
+        "shaders/02_04_06_skybox_front.jpg",
+        "shaders/02_04_06_skybox_back.jpg"
     };
     // clang-format on
 
@@ -584,8 +584,8 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram skyBoxprogram("resources/02_04_06_TEST3_skybox.vs", "resources/02_04_06_TEST1.fs");
-    ShaderProgram cubeProgram("resources/02_04_06_TEST4_cube.vs", "resources/02_04_06_TEST4_cube.fs");
+    ShaderProgram skyBoxprogram("shaders/02_04_06_TEST3_skybox.vs", "shaders/02_04_06_TEST1.fs");
+    ShaderProgram cubeProgram("shaders/02_04_06_TEST4_cube.vs", "shaders/02_04_06_TEST4_cube.fs");
 
     // clang-format off
     // 8个顶点
@@ -635,12 +635,12 @@ int main()
     };
 
     std::array<std::string_view, 6> cubeFaces{
-        "resources/02_04_06_skybox_back.jpg",
-        "resources/02_04_06_skybox_back.jpg",
-        "resources/02_04_06_skybox_back.jpg",
-        "resources/02_04_06_skybox_back.jpg",
-        "resources/02_04_06_skybox_back.jpg",
-        "resources/02_04_06_skybox_back.jpg"
+        "shaders/02_04_06_skybox_back.jpg",
+        "shaders/02_04_06_skybox_back.jpg",
+        "shaders/02_04_06_skybox_back.jpg",
+        "shaders/02_04_06_skybox_back.jpg",
+        "shaders/02_04_06_skybox_back.jpg",
+        "shaders/02_04_06_skybox_back.jpg"
     };
     // clang-format on
 
@@ -788,8 +788,8 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram skyBoxprogram("resources/02_04_06_TEST3_skybox.vs", "resources/02_04_06_TEST1.fs");
-    ShaderProgram cubeProgram("resources/02_04_06_TEST4_cube.vs", "resources/02_04_06_TEST5_cube.fs");
+    ShaderProgram skyBoxprogram("shaders/02_04_06_TEST3_skybox.vs", "shaders/02_04_06_TEST1.fs");
+    ShaderProgram cubeProgram("shaders/02_04_06_TEST4_cube.vs", "shaders/02_04_06_TEST5_cube.fs");
 
     // clang-format off
     // 8个顶点
@@ -839,12 +839,12 @@ int main()
     };
 
     std::array<std::string_view, 6> cubeFaces{
-        "resources/02_04_06_skybox_back.jpg",
-        "resources/02_04_06_skybox_back.jpg",
-        "resources/02_04_06_skybox_back.jpg",
-        "resources/02_04_06_skybox_back.jpg",
-        "resources/02_04_06_skybox_back.jpg",
-        "resources/02_04_06_skybox_back.jpg"
+        "shaders/02_04_06_skybox_back.jpg",
+        "shaders/02_04_06_skybox_back.jpg",
+        "shaders/02_04_06_skybox_back.jpg",
+        "shaders/02_04_06_skybox_back.jpg",
+        "shaders/02_04_06_skybox_back.jpg",
+        "shaders/02_04_06_skybox_back.jpg"
     };
     // clang-format on
 

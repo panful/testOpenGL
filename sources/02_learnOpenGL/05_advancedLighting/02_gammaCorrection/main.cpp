@@ -44,7 +44,7 @@ int main()
             }
         });
 
-    ShaderProgram program("resources/02_05_02_TEST1.vs", "resources/02_05_02_TEST1.fs");
+    ShaderProgram program("shaders/02_05_02_TEST1.vs", "shaders/02_05_02_TEST1.fs");
 
     // clang-format off
     std::vector<GLfloat>  vertices{
@@ -60,7 +60,7 @@ int main()
     // clang-format on
 
     Renderer renderer(vertices, { 3, 3, 2 });
-    Texture texture("resources/wood.png");
+    Texture texture("shaders/wood.png");
 
     //----------------------------------------------------------------------------------
     auto lightPos      = glm::vec3(0.f, 0.f, 0.f);
@@ -147,7 +147,7 @@ int main()
             }
         });
 
-    ShaderProgram program("resources/02_05_02_TEST1.vs", "resources/02_05_02_TEST2.fs");
+    ShaderProgram program("shaders/02_05_02_TEST1.vs", "shaders/02_05_02_TEST2.fs");
 
     // clang-format off
     std::vector<GLfloat>  vertices{
@@ -163,7 +163,7 @@ int main()
     // clang-format on
 
     Renderer renderer(vertices, { 3, 3, 2 });
-    Texture texture("resources/wood.png");
+    Texture texture("shaders/wood.png");
 
     //----------------------------------------------------------------------------------
     auto lightPos      = glm::vec3(0.f, 0.f, 0.f);
@@ -232,7 +232,7 @@ int main()
             }
         });
 
-    ShaderProgram program("resources/02_05_02_TEST1.vs", "resources/02_05_02_TEST1.fs");
+    ShaderProgram program("shaders/02_05_02_TEST1.vs", "shaders/02_05_02_TEST1.fs");
 
     // clang-format off
     std::vector<GLfloat>  vertices{
@@ -250,7 +250,7 @@ int main()
     Renderer renderer(vertices, { 3, 3, 2 });
 
     int width { 0 }, height { 0 }, channels { 0 };
-    auto imageData = stbi_load("resources/wood.png", &width, &height, &channels, 0);
+    auto imageData = stbi_load("shaders/wood.png", &width, &height, &channels, 0);
     std::clog << width << '\t' << height << '\t' << channels << '\n';
 
     GLuint texture { 0 };
@@ -353,7 +353,7 @@ int main()
             }
         });
 
-    ShaderProgram program("resources/02_05_02_TEST1.vs", "resources/02_05_02_TEST4.fs");
+    ShaderProgram program("shaders/02_05_02_TEST1.vs", "shaders/02_05_02_TEST4.fs");
 
     // clang-format off
     std::vector<GLfloat>  vertices{
@@ -369,7 +369,7 @@ int main()
     // clang-format on
 
     Renderer renderer(vertices, { 3, 3, 2 });
-    Texture texture("resources/wood.png");
+    Texture texture("shaders/wood.png");
 
     //----------------------------------------------------------------------------------
     auto lightPos      = glm::vec3(0.f, 0.f, 0.f);

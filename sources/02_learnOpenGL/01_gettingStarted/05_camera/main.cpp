@@ -26,7 +26,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
+    ShaderProgram program("shaders/02_01_05_TEST1.vs", "shaders/02_01_05_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -150,7 +150,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
+    ShaderProgram program("shaders/02_01_05_TEST1.vs", "shaders/02_01_05_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -284,7 +284,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
+    ShaderProgram program("shaders/02_01_05_TEST1.vs", "shaders/02_01_05_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -441,7 +441,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
+    ShaderProgram program("shaders/02_01_05_TEST1.vs", "shaders/02_01_05_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -591,7 +591,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
+    ShaderProgram program("shaders/02_01_05_TEST1.vs", "shaders/02_01_05_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -744,7 +744,7 @@ int main()
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
     initOpenGL.SetCursorPosCB(mouse_callback);
-    ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
+    ShaderProgram program("shaders/02_01_05_TEST1.vs", "shaders/02_01_05_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -911,7 +911,7 @@ int main()
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
     initOpenGL.SetCursorPosCB(mouse_callback);
-    ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
+    ShaderProgram program("shaders/02_01_05_TEST1.vs", "shaders/02_01_05_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -1063,7 +1063,7 @@ int main()
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetKeyCallback([](char key) { std::cout << "key: " << key << '\n'; });
     initOpenGL.SetMiddleButtonCallback([](int x, int y) { std::cout << "x: " << x << '\t' << "y: " << y << '\n'; });
-    ShaderProgram program("resources/02_01_05_TEST1.vs", "resources/02_01_05_TEST1.fs");
+    ShaderProgram program("shaders/02_01_05_TEST1.vs", "shaders/02_01_05_TEST1.fs");
 
     // clang-format off
     std::vector<GLfloat> vertices{

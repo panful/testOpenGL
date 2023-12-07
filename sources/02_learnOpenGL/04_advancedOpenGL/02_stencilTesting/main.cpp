@@ -19,8 +19,8 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_02_TEST1.vs", "resources/02_04_02_TEST1.fs");
-    ShaderProgram border("resources/02_04_02_TEST1.vs", "resources/02_04_02_TEST1_border.fs");
+    ShaderProgram program("shaders/02_04_02_TEST1.vs", "shaders/02_04_02_TEST1.fs");
+    ShaderProgram border("shaders/02_04_02_TEST1.vs", "shaders/02_04_02_TEST1_border.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> vertices{
@@ -157,7 +157,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_02_TEST1.vs", "resources/02_04_02_TEST1.fs");
+    ShaderProgram program("shaders/02_04_02_TEST1.vs", "shaders/02_04_02_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> verticesPlane1{
@@ -294,10 +294,10 @@ int main()
 {
     InitOpenGL init(Camera({ 5, 5, 5 }, { 0, 1, 0 }, { 0, 0, 0 }));
     auto window = init.GetWindow();
-    ShaderProgram program_model("resources/02_04_02_TEST3_model.vs", "resources/02_04_02_TEST3_model.fs");
-    ShaderProgram program_plane("resources/02_04_02_TEST3_plane.vs", "resources/02_04_02_TEST3_plane.fs");
+    ShaderProgram program_model("shaders/02_04_02_TEST3_model.vs", "shaders/02_04_02_TEST3_model.fs");
+    ShaderProgram program_plane("shaders/02_04_02_TEST3_plane.vs", "shaders/02_04_02_TEST3_plane.fs");
 
-    ModelLoading::Model ourModel("resources/backpack/backpack.obj");
+    ModelLoading::Model ourModel("shaders/backpack/backpack.obj");
 
     // clang-format off
     std::vector<GLuint> indices{

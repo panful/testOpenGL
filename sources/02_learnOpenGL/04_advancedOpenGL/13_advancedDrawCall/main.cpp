@@ -16,7 +16,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_04_13_TEST1.vs", "resources/02_04_13_TEST1.fs");
+    ShaderProgram program("shaders/02_04_13_TEST1.vs", "shaders/02_04_13_TEST1.fs");
 
     // clang-format off
     std::vector<GLfloat> vertices {
@@ -92,7 +92,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_04_13_TEST1.vs", "resources/02_04_13_TEST1.fs");
+    ShaderProgram program("shaders/02_04_13_TEST1.vs", "shaders/02_04_13_TEST1.fs");
 
     // clang-format off
     std::vector<GLfloat> vertices {
@@ -171,7 +171,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_04_13_TEST1.vs", "resources/02_04_13_TEST1.fs");
+    ShaderProgram program("shaders/02_04_13_TEST1.vs", "shaders/02_04_13_TEST1.fs");
 
     // clang-format off
     std::vector<GLfloat> vertices {
@@ -257,7 +257,7 @@ int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("resources/02_04_13_TEST1.vs", "resources/02_04_13_TEST1.fs");
+    ShaderProgram program("shaders/02_04_13_TEST1.vs", "shaders/02_04_13_TEST1.fs");
 
     // clang-format off
     std::vector<GLfloat> vertices {
@@ -300,7 +300,7 @@ int main()
         GLuint ind1[] { 0, 2, 3 };
         GLuint ind2[] { 4, 5, 6 };
         GLuint ind3[] { 4, 6, 7 };
-        std::vector<void*> indices { ind0, ind1, ind2, ind3 };
+        std::vector<const void*> indices { ind0, ind1, ind2, ind3 };
 
         program.Use();
         glBindVertexArray(VAO);

@@ -38,7 +38,7 @@ int main()
         return -1;
     }
 
-    ShaderProgram program("resources/02_04_11_TEST1.vs", "resources/02_04_11_TEST1.fs");
+    ShaderProgram program("shaders/02_04_11_TEST1.vs", "shaders/02_04_11_TEST1.fs");
 
     // clang-format off
     // 8个顶点
@@ -173,8 +173,8 @@ int main()
     InitOpenGL initOpenGL("offscreen MSAA", windowWidth, windowHeight);
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram FBOProgram("resources/02_04_11_TEST1.vs", "resources/02_04_11_TEST1.fs");
-    ShaderProgram ScreenProgram("resources/02_04_11_TEST2.vs", "resources/02_04_11_TEST2.fs");
+    ShaderProgram FBOProgram("shaders/02_04_11_TEST1.vs", "shaders/02_04_11_TEST1.fs");
+    ShaderProgram ScreenProgram("shaders/02_04_11_TEST2.vs", "shaders/02_04_11_TEST2.fs");
 
     // clang-format off
     // 立方体，绘制到帧缓冲

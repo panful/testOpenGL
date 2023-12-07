@@ -21,7 +21,7 @@ int main()
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
 
-    ShaderProgram program("resources/02_05_01_TEST1.vs", "resources/02_05_01_TEST1.fs");
+    ShaderProgram program("shaders/02_05_01_TEST1.vs", "shaders/02_05_01_TEST1.fs");
 
     // clang-format off
     // 纹理坐标设置为10可以重复更多纹理
@@ -61,7 +61,7 @@ int main()
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
     }
 
-    Texture texture("resources/wood.png");
+    Texture texture("shaders/wood.png");
 
     //----------------------------------------------------------------------------------
     // 使用'a'切换PHONG模型 使用'b'切换BLINN-PHONG
@@ -154,7 +154,7 @@ int main()
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
 
-    ShaderProgram program("resources/02_05_01_TEST1.vs", "resources/02_05_01_TEST2.fs");
+    ShaderProgram program("shaders/02_05_01_TEST1.vs", "shaders/02_05_01_TEST2.fs");
 
     // clang-format off
     // 纹理坐标设置为10可以重复更多纹理
@@ -194,7 +194,7 @@ int main()
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
     }
 
-    Texture texture("resources/wood.png");
+    Texture texture("shaders/wood.png");
 
     //----------------------------------------------------------------------------------
     // 使用'a'切换PHONG模型 使用'b'切换BLINN-PHONG

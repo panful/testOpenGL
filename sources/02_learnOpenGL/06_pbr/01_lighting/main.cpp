@@ -135,7 +135,7 @@ int main()
 
     auto sphere = CreateSphere();
 
-    ShaderProgram program("resources/02_06_01_TEST1.vs", "resources/02_06_01_TEST1.fs");
+    ShaderProgram program("shaders/02_06_01_TEST1.vs", "shaders/02_06_01_TEST1.fs");
     program.Use();
     program.SetUniform3f("albedo", 0.5f, 0.0f, 0.0f);
     program.SetUniform1f("ao", 1.0f);
@@ -291,13 +291,13 @@ int main()
 
     auto sphere = CreateSphere(64, 64);
 
-    Texture texAlbedo("resources/02_06_01_albedo.png");
-    Texture texNormal("resources/02_06_01_normal.png");
-    Texture texMetallic("resources/02_06_01_metallic.png");
-    Texture texRoughness("resources/02_06_01_roughness.png");
-    Texture texAo("resources/02_06_01_ao.png");
+    Texture texAlbedo("textures/rusted_iron/albedo.png");
+    Texture texNormal("textures/rusted_iron/normal.png");
+    Texture texMetallic("textures/rusted_iron/metallic.png");
+    Texture texRoughness("textures/rusted_iron/roughness.png");
+    Texture texAo("textures/rusted_iron/ao.png");
 
-    ShaderProgram program("resources/02_06_01_TEST1.vs", "resources/02_06_01_TEST2.fs");
+    ShaderProgram program("shaders/02_06_01_TEST1.vs", "shaders/02_06_01_TEST2.fs");
     program.Use();
     program.SetUniform1i("albedoMap", 0);
     program.SetUniform1i("normalMap", 1);

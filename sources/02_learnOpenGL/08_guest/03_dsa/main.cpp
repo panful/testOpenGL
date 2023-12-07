@@ -37,8 +37,8 @@ int main()
         return -1;
     }
     
-    auto vs                   = ReadFile("resources/02_08_03_TEST1.vs");
-    auto fs                   = ReadFile("resources/02_08_03_TEST1.fs");
+    auto vs                   = ReadFile("shaders/02_08_03_TEST1.vs");
+    auto fs                   = ReadFile("shaders/02_08_03_TEST1.fs");
     auto vertexShaderSource   = vs.c_str();
     auto fragmentShaderSource = fs.c_str();
 

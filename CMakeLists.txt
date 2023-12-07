@@ -19,5 +19,9 @@ endif()
 set(3rdPartyArchiveOutputDir "${CMAKE_CURRENT_SOURCE_DIR}/libs")
 set(3rdPartyHeadersOutputDir "${CMAKE_CURRENT_SOURCE_DIR}/includes")
 
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/fonts DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/target)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/models DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/target)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/textures DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/target)
+
 add_subdirectory("external")
 add_subdirectory("sources")

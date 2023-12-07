@@ -19,7 +19,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_10_TEST1.vs", "resources/02_04_10_TEST1.fs");
+    ShaderProgram program("shaders/02_04_10_TEST1.vs", "shaders/02_04_10_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 2 * 3> vertices {
@@ -108,7 +108,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_10_TEST2.vs", "resources/02_04_10_TEST2.fs");
+    ShaderProgram program("shaders/02_04_10_TEST2.vs", "shaders/02_04_10_TEST2.fs");
 
     // clang-format off
     std::array<GLfloat, 5 * 4> vertices {
@@ -229,7 +229,7 @@ int main()
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
     initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
-    ShaderProgram program("resources/02_04_10_TEST1.vs", "resources/02_04_10_TEST1.fs");
+    ShaderProgram program("shaders/02_04_10_TEST1.vs", "shaders/02_04_10_TEST1.fs");
 
     // clang-format off
     std::array<GLfloat, 2 * 4> vertices {
