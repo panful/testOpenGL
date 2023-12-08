@@ -1593,8 +1593,8 @@ int main()
     Renderer cube(verticesCube, { 3, 3, 2 });
     Renderer plane(verticesPlane, { 3, 3, 2 });
 
-    Texture woodTexture("shaders/02_05_03_01_wood.png", 0);
-    Texture rectpolyTexture("shaders/02_05_03_01_rectpoly.jpg", 0);
+    Texture woodTexture("textures/wood.png", 0);
+    Texture rectpolyTexture("textures/rect_poly.jpg", 0);
 
     //----------------------------------------------------------------------------------
     GLuint depthTextureBuffer { 0 };
