@@ -8,7 +8,7 @@ layout(location = 4) in vec3 bitangent;
 layout(location = 5) in ivec4 boneIds; 
 layout(location = 6) in vec4 weights;
 
-uniform mat4 projection;
+uniform mat4 proj;
 uniform mat4 view;
 uniform mat4 model;
 
@@ -36,6 +36,6 @@ void main()
    }
 	
     mat4 viewModel = view * model;
-    gl_Position =  projection * viewModel * totalPosition;
+    gl_Position =  proj * viewModel * totalPosition;
 	TexCoords = tex;
 }

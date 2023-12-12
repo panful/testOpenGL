@@ -1,10 +1,22 @@
 
-/*
+/**
  * 1. 渲染*.dae格式的模型文件
  * 2. 对*.dae格式的模型以动画渲染
  */
 
-#define TEST2
+#define TEST0
+
+#ifdef TEST0
+
+#include <iostream>
+
+int main()
+{
+    std::cout << "Please download Assimp from https://kimkulling.itch.io/the-asset-importer-lib first\n";
+    std::cout << "Or download the source code from https://github.com/assimp/assimp and compile it\n";
+}
+
+#endif // TEST0
 
 #ifdef TEST1
 
@@ -16,7 +28,7 @@ int main()
     auto window = init.GetWindow();
     ShaderProgram program("shaders/02_08_01_TEST1.vs", "shaders/02_08_01_TEST1.fs");
 
-    ModelLoading::Model ourModel("shaders/dancing_vampire.dae", false);
+    ModelLoading::Model ourModel("models/vampire/dancing_vampire.dae", false);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -30,8 +42,8 @@ int main()
         auto model = glm::scale(glm::mat4(1.f), glm::vec3(0.01f, 0.01f, 0.01f));
         model      = glm::translate(model, glm::vec3(0.0f, -100.f, 0.0f));
         program.SetUniformMat4("model", model);
-        program.SetUniformMat4("projection", init.GetProjectionMatrix());
         program.SetUniformMat4("view", init.GetViewMatrix());
+        program.SetUniformMat4("proj", init.GetProjectionMatrix());
 
         ourModel.Draw(program);
 
@@ -55,8 +67,8 @@ int main()
     auto window = init.GetWindow();
     ShaderProgram program("shaders/02_08_01_TEST2.vs", "shaders/02_08_01_TEST1.fs");
 
-    ModelLoading::Model ourModel("shaders/dancing_vampire.dae", false);
-    Animation::Animation danceAnimation("shaders/dancing_vampire.dae", &ourModel);
+    ModelLoading::Model ourModel("models/vampire/dancing_vampire.dae", false);
+    Animation::Animation danceAnimation("models/vampire/dancing_vampire.dae", &ourModel);
     Animation::Animator animator(&danceAnimation);
 
     glEnable(GL_DEPTH_TEST);
@@ -85,8 +97,8 @@ int main()
 
         glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(0.0f, -0.5f, 0.0f));
         program.SetUniformMat4("model", model);
-        program.SetUniformMat4("projection", init.GetProjectionMatrix());
         program.SetUniformMat4("view", init.GetViewMatrix());
+        program.SetUniformMat4("proj", init.GetProjectionMatrix());
 
         ourModel.Draw(program);
 
