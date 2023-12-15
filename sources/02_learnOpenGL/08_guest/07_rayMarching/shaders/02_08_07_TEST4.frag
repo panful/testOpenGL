@@ -8,29 +8,37 @@ uniform vec2 uCloudZ;
 uniform vec3 uCameraPos;
 uniform sampler2D uPerlinNosize;
 
+uniform float uCoordWeight;
+uniform float uThreshold;
+uniform float uSampling1;
+uniform float uSampling2;
+uniform float uSampling3;
+uniform float uSampling;
+
 in vec4 worldPos;
 out vec4 FragColor;
 
 float GetDensity(vec3 pos)
 {
-    vec2 coord = pos.xz * 0.0025;
+    vec2 coord = pos.xz * uCoordWeight;
     float nosize = texture(uPerlinNosize, coord).x;
 
     // 多次采样并将结果合并
-    nosize += texture(uPerlinNosize, coord * 3.5).x / 3.5;
-    nosize += texture(uPerlinNosize, coord * 12.25).x / 12.25;
-    nosize += texture(uPerlinNosize, coord * 42.87).x / 42.87;
-    nosize /= 1.4472;
+    nosize += texture(uPerlinNosize, coord * uSampling1).x / uSampling1;
+    nosize += texture(uPerlinNosize, coord * uSampling2).x / uSampling2;
+    nosize += texture(uPerlinNosize, coord * uSampling3).x / uSampling3;
+    nosize /= uSampling;
 
     // 云层中部的密度最大，因此做一个高度衰减
-    float mid = (uCloudY.y + uCloudY.x) / 2.f;
-    float h   = uCloudY.y - uCloudY.x;
+    float mid    = (uCloudY.y + uCloudY.x) / 2.f;
+    float h      = uCloudY.y - uCloudY.x;
     float weight = 1.f - 2.f * abs(mid - pos.y) / h;
-    weight = pow(weight, .5f);
+
+    weight  = pow(weight, .5f);
     nosize *= weight;
 
-    // 截取，只保留大于0.4的部分
-    if(nosize < 0.4)
+    // 截取，只保留大于阈值的部分
+    if(nosize < uThreshold)
     {
         nosize = 0.f;
     }

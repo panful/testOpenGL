@@ -9,7 +9,7 @@
 
 #ifdef TEST1
 
-#include "common.hpp"
+#include <common.hpp>
 
 float windowWidth  = 800.0f;
 float windowHeight = 800.0f;
@@ -54,7 +54,7 @@ int main()
 
 #ifdef TEST2
 
-#include "common.hpp"
+#include <common.hpp>
 #include <random>
 
 float windowWidth  = 800.0f;
@@ -212,11 +212,22 @@ int main()
 #ifdef TEST4
 
 #include <common.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 int main()
 {
     InitOpenGL initOpenGL({ { 0, 0, 10 }, { 0, 1, 0 }, { 0, 0, 0 } });
     auto window = initOpenGL.GetWindow();
+
+    //---------------------------------------------------------------------------------
+    // 初始化Dear ImGui
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+    ImGui::StyleColorsDark();
 
     ShaderProgram program("shaders/02_08_07_TEST3.vert", "shaders/02_08_07_TEST4.frag");
 
@@ -246,21 +257,23 @@ int main()
     // 体积云所在的立方体（该立方体将体积云全部包裹在里边）
     Renderer cloud(vertices, indices, { 3 }, GL_TRIANGLES);
 
-    //  纹理最好使用边缘镜像的，这样边缘的云朵就不会很突兀
+    // 纹理最好使用边缘镜像的，这样边缘的云朵就不会很突兀
     Texture perlinNosize("textures/perlinNosize.jpg");
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-
     glEnable(GL_DEPTH_TEST);
+
+    float uCoordWeight { 0.0025f };
+    float uThreshold { 0.4f };
+    float uSampling { 1.4472f };
+    float uSampling1 { 3.5f };
+    float uSampling2 { 12.25f };
+    float uSampling3 { 42.87f };
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        static double time { 0. };
-        std::cout << 1. / (glfwGetTime() - time) << '\n';
-        time = glfwGetTime();
 
         program.Use();
         program.SetUniformMat4("model", glm::mat4(1.f));
@@ -273,8 +286,32 @@ int main()
         program.SetUniform2f("uCloudY", -1.f, 1.f);
         program.SetUniform2f("uCloudZ", -1.f, 1.f);
 
+        program.SetUniform1f("uCoordWeight", uCoordWeight);
+        program.SetUniform1f("uThreshold", uThreshold);
+        program.SetUniform1f("uSampling", uSampling);
+        program.SetUniform1f("uSampling1", uSampling1);
+        program.SetUniform1f("uSampling2", uSampling2);
+        program.SetUniform1f("uSampling3", uSampling3);
+
         perlinNosize.Use();
         cloud.Draw();
+
+        //---------------------------------------------------------------------------------
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        {
+            ImGui::Begin("FlowMap");
+            ImGui::SliderFloat("coord weight", &uCoordWeight, 0.f, .01f);
+            ImGui::SliderFloat("threshold", &uThreshold, 0.f, 1.f);
+            ImGui::SliderFloat("sampling", &uSampling, 0.f, 5.f);
+            ImGui::SliderFloat("sampling 1", &uSampling1, 0.f, 10.f);
+            ImGui::SliderFloat("sampling 2", &uSampling2, 0.f, 50.f);
+            ImGui::SliderFloat("sampling 3", &uSampling3, 0.f, 100.f);
+            ImGui::End();
+        }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
         glfwPollEvents();
