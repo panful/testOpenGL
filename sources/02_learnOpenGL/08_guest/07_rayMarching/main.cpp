@@ -1,8 +1,11 @@
-/*
+/**
  * 1. 光线步进
  * 2. 3D纹理，光线步进
+ * 3. 光线步进绘制体积云（立方体的云）
+ * 4. 通过perlin噪声生成云朵
  */
-#define TEST2
+
+#define TEST4
 
 #ifdef TEST1
 
@@ -137,3 +140,148 @@ int main()
 }
 
 #endif // TEST2
+
+#ifdef TEST3
+
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL initOpenGL({ { 0, 0, 10 }, { 0, 1, 0 }, { 0, 0, 0 } });
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("shaders/02_08_07_TEST3.vert", "shaders/02_08_07_TEST3.frag");
+
+    // clang-format off
+    std::vector<GLfloat> vertices{
+        -1.f, -1.f,  1.f,    // 前左下
+         1.f, -1.f,  1.f,    // 前右下
+         1.f,  1.f,  1.f,    // 前右上
+        -1.f,  1.f,  1.f,    // 前左上
+
+        -1.f, -1.f, -1.f,    // 后左下
+         1.f, -1.f, -1.f,    // 后右下
+         1.f,  1.f, -1.f,    // 后右上
+        -1.f,  1.f, -1.f,    // 后左上
+    };
+
+    std::vector<GLuint> indices{
+        0, 1, 3,    1, 2, 3,    // 前
+        1, 5, 2,    5, 6, 2,    // 右
+        5, 4, 6,    4, 7, 6,    // 后
+        4, 0, 7,    0, 3, 7,    // 左
+        3, 2, 7,    2, 6, 7,    // 上
+        4, 1, 0,    4, 5, 1,    // 下
+    };
+    // clang-format on
+
+    // 体积云所在的立方体（该立方体将体积云全部包裹在里边）
+    Renderer cloud(vertices, indices, { 3 }, GL_TRIANGLES);
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    glEnable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+        program.SetUniformMat4("model", glm::mat4(1.f));
+        program.SetUniformMat4("view", initOpenGL.GetViewMatrix());
+        program.SetUniformMat4("proj", initOpenGL.GetProjectionMatrix());
+        program.SetUniform3fv("uCameraPos", initOpenGL.GetViewPosition());
+
+        // 体积云的范围，就是立方体的范围
+        program.SetUniform2f("uCloudX", -1.f, 1.f);
+        program.SetUniform2f("uCloudY", -1.f, 1.f);
+        program.SetUniform2f("uCloudZ", -1.f, 1.f);
+
+        cloud.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST3
+
+#ifdef TEST4
+
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL initOpenGL({ { 0, 0, 10 }, { 0, 1, 0 }, { 0, 0, 0 } });
+    auto window = initOpenGL.GetWindow();
+
+    ShaderProgram program("shaders/02_08_07_TEST3.vert", "shaders/02_08_07_TEST4.frag");
+
+    // clang-format off
+    std::vector<GLfloat> vertices{
+        -1.f, -1.f,  1.f,    // 前左下
+         1.f, -1.f,  1.f,    // 前右下
+         1.f,  1.f,  1.f,    // 前右上
+        -1.f,  1.f,  1.f,    // 前左上
+
+        -1.f, -1.f, -1.f,    // 后左下
+         1.f, -1.f, -1.f,    // 后右下
+         1.f,  1.f, -1.f,    // 后右上
+        -1.f,  1.f, -1.f,    // 后左上
+    };
+
+    std::vector<GLuint> indices{
+        0, 1, 3,    1, 2, 3,    // 前
+        1, 5, 2,    5, 6, 2,    // 右
+        5, 4, 6,    4, 7, 6,    // 后
+        4, 0, 7,    0, 3, 7,    // 左
+        3, 2, 7,    2, 6, 7,    // 上
+        4, 1, 0,    4, 5, 1,    // 下
+    };
+    // clang-format on
+
+    // 体积云所在的立方体（该立方体将体积云全部包裹在里边）
+    Renderer cloud(vertices, indices, { 3 }, GL_TRIANGLES);
+
+    //  纹理最好使用边缘镜像的，这样边缘的云朵就不会很突兀
+    Texture perlinNosize("textures/perlinNosize.jpg");
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    glEnable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        static double time { 0. };
+        std::cout << 1. / (glfwGetTime() - time) << '\n';
+        time = glfwGetTime();
+
+        program.Use();
+        program.SetUniformMat4("model", glm::mat4(1.f));
+        program.SetUniformMat4("view", initOpenGL.GetViewMatrix());
+        program.SetUniformMat4("proj", initOpenGL.GetProjectionMatrix());
+        program.SetUniform3fv("uCameraPos", initOpenGL.GetViewPosition());
+
+        // 体积云的范围，就是立方体的范围
+        program.SetUniform2f("uCloudX", -1.f, 1.f);
+        program.SetUniform2f("uCloudY", -1.f, 1.f);
+        program.SetUniform2f("uCloudZ", -1.f, 1.f);
+
+        perlinNosize.Use();
+        cloud.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST4
