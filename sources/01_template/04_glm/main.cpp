@@ -7,7 +7,7 @@
  * 6. glm::scale rotate translate ortho perspective lookAt frustum
  */
 
-#define TEST2
+#define TEST5
 
 #ifdef TEST1
 
@@ -163,26 +163,16 @@ int main()
 
     // glm::mat3和glm::mat3x3等价，glm::mat4和glm::mat4x4等价
     {
-        glm::mat3 m31(
-            1, 2, 3,
-            4, 5, 6,
-            7, 8, 9);
+        glm::mat3 m31(1, 2, 3, 4, 5, 6, 7, 8, 9);
 
-        glm::mat3x3 m32(
-            1, 2, 3,
-            4, 5, 6,
-            7, 8, 9);
+        glm::mat3x3 m32(1, 2, 3, 4, 5, 6, 7, 8, 9);
 
         if (m31 == m32)
         {
             std::cout << "glm::mat3 == glm::mat3x3\n";
         }
 
-        std::cout << "m31 :\n"
-                  << m31
-                  << "m32 :\n"
-                  << m32
-                  << '\n';
+        std::cout << "m31 :\n" << m31 << "m32 :\n" << m32 << '\n';
     }
 
     std::cout << "-------------------------------------------\n";
@@ -190,21 +180,14 @@ int main()
     // 矩阵和向量相乘
     // 向量在前和在后是没有区别的
     {
-        glm::mat3 m31(
-            1, 2, 3,
-            2, 3, 4,
-            3, 4, 5);
+        glm::mat3 m31(1, 2, 3, 2, 3, 4, 3, 4, 5);
 
         glm::vec3 v3(3, 6, 9);
 
         auto mv3 = m31 * v3;
         auto vm3 = v3 * m31;
 
-        std::cout << "mat * vec :\n"
-                  << mv3
-                  << "vec * mat :\n"
-                  << vm3
-                  << '\n';
+        std::cout << "mat * vec :\n" << mv3 << "vec * mat :\n" << vm3 << '\n';
 
         if (mv3 == vm3)
         {
@@ -220,20 +203,11 @@ int main()
 
     // 矩阵的左乘和右乘结果是不一样的
     {
-        glm::mat3 m31(
-            1, 2, 3,
-            4, 5, 6,
-            7, 8, 9);
+        glm::mat3 m31(1, 2, 3, 4, 5, 6, 7, 8, 9);
 
-        glm::mat3 m32(
-            3, 6, 9,
-            2, 5, 8,
-            1, 4, 7);
+        glm::mat3 m32(3, 6, 9, 2, 5, 8, 1, 4, 7);
 
-        std::cout << "m31 * m32 = \n"
-                  << m31 * m32
-                  << "m32 * m31 = \n"
-                  << m32 * m31;
+        std::cout << "m31 * m32 = \n" << m31 * m32 << "m32 * m31 = \n" << m32 * m31;
     }
 
     return 0;
@@ -279,12 +253,7 @@ int main()
 int main()
 {
     glm::vec4 v1 { 1.1, 2.2, 3.3, 0. };
-    glm::mat4 mat1 {
-        1.f, 2.f, 3.f, 4.f,
-        12.f, 16.f, 14.f, 5.f,
-        11.f, 13.f, 15.f, 6.f,
-        10.f, 9.f, 8.f, 7.f
-    };
+    glm::mat4 mat1 { 1.f, 2.f, 3.f, 4.f, 12.f, 16.f, 14.f, 5.f, 11.f, 13.f, 15.f, 6.f, 10.f, 9.f, 8.f, 7.f };
 
     // 逆矩阵 AB=BA=E 则称B是A的逆矩阵
     auto inverseMat = glm::inverse(mat1);
@@ -309,24 +278,15 @@ int main()
     auto mat3 = mat1 * glm::inverse(mat1);
 
     // 1 和 6 以及 9 相等
-    std::cout << "----- v1 ----- \n"
-              << v1 << '\n'; //
-    std::cout << "----- v2 ----- \n"
-              << v2 << '\n';
-    std::cout << "----- v3 ----- \n"
-              << v3 << '\n';
-    std::cout << "----- v4 ----- \n"
-              << v4 << '\n';
-    std::cout << "----- v5 ----- \n"
-              << v5 << '\n';
-    std::cout << "----- v6 ----- \n"
-              << v6 << '\n'; //
-    std::cout << "----- v7 ----- \n"
-              << v7 << '\n';
-    std::cout << "----- v8 ----- \n"
-              << v8 << '\n';
-    std::cout << "----- v9 ----- \n"
-              << v9 << '\n'; //
+    std::cout << "----- v1 ----- \n" << v1 << '\n'; //
+    std::cout << "----- v2 ----- \n" << v2 << '\n';
+    std::cout << "----- v3 ----- \n" << v3 << '\n';
+    std::cout << "----- v4 ----- \n" << v4 << '\n';
+    std::cout << "----- v5 ----- \n" << v5 << '\n';
+    std::cout << "----- v6 ----- \n" << v6 << '\n'; //
+    std::cout << "----- v7 ----- \n" << v7 << '\n';
+    std::cout << "----- v8 ----- \n" << v8 << '\n';
+    std::cout << "----- v9 ----- \n" << v9 << '\n'; //
 }
 
 #endif // TEST4
@@ -353,86 +313,42 @@ int main()
     double m31 = 6.;
     double m32 = 9.;
 
+    // clang-format off
     glm::mat4 resultMat {
-        m00,
-        m10,
-        m20,
-        m30,
-        m01,
-        m11,
-        m21,
-        m31,
-        m02,
-        m12,
-        m22,
-        m32,
-        0,
-        0,
-        0,
-        1,
+        m00, m10, m20, m30,
+        m01, m11, m21, m31,
+        m02, m12, m22, m32,
+          0,   0,   0,   1,
     };
+    // clang-format on
 
     // 每一列的向量长度
     auto l0 = std::hypot(m00, m01, m02);
     auto l1 = std::hypot(m10, m11, m12);
     auto l2 = std::hypot(m20, m21, m22);
 
+    // clang-format off
     glm::mat4 rotateMat {
-        m00 / l0,
-        m10 / l1,
-        m20 / l2,
-        0,
-        m01 / l0,
-        m11 / l1,
-        m21 / l2,
-        0,
-        m02 / l0,
-        m12 / l1,
-        m22 / l2,
-        0,
-        0,
-        0,
-        0,
-        1,
+        m00 / l0, m10 / l1, m20 / l2, 0,
+        m01 / l0, m11 / l1, m21 / l2, 0,
+        m02 / l0, m12 / l1, m22 / l2, 0,
+               0,        0,        0, 1,
     };
 
     glm::mat4 translationMat {
-        1,
-        0,
-        0,
-        m30,
-        0,
-        1,
-        0,
-        m31,
-        0,
-        0,
-        1,
-        m32,
-        0,
-        0,
-        0,
-        1,
+        1, 0, 0, m30,
+        0, 1, 0, m31,
+        0, 0, 1, m32,
+        0, 0, 0, 1,
     };
 
     glm::mat4 scaleMat {
-        l0,
-        0,
-        0,
-        0,
-        0,
-        l1,
-        0,
-        0,
-        0,
-        0,
-        l2,
-        0,
-        0,
-        0,
-        0,
-        1,
+        l0,  0,  0, 0,
+         0, l1,  0, 0,
+         0,  0, l2, 0,
+         0,  0,  0, 1,
     };
+    // clang-format on
 
     std::cout << "-----------result mat:--------------\n"
               << resultMat << "-----------rotate mat:--------------\n"
@@ -440,22 +356,9 @@ int main()
               << scaleMat << "-----------translation mat:--------------\n"
               << translationMat << '\n';
 
-    // 只有这个resultMat和定义的相同
+    // 先缩放再旋转最后再平移
     resultMat = scaleMat * rotateMat * translationMat;
-    std::cout << "-----------result mat:--------------\n"
-              << resultMat;
-
-    resultMat = translationMat * scaleMat * rotateMat;
-    std::cout << "-----------result mat:--------------\n"
-              << resultMat;
-
-    resultMat = translationMat * rotateMat * scaleMat;
-    std::cout << "-----------result mat:--------------\n"
-              << resultMat;
-
-    resultMat = rotateMat * scaleMat * translationMat;
-    std::cout << "-----------result mat:--------------\n"
-              << resultMat;
+    std::cout << "-----------result mat:--------------\n" << resultMat;
 
     return 0;
 }
@@ -502,26 +405,19 @@ int main()
     // 观察(视图）矩阵
     // 创建一个视图矩阵，其中相机的位置为 (0, 0, 3)，相机朝向的目标位置为 (0, 0, 0)，相机的上方向为 (0, 1, 0)。
     // 这个矩阵可以用于渲染一个相机观察的3D场景，将场景中的物体坐标转换为相机坐标。
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+    glm::vec3 cameraPos    = glm::vec3(0.0f, 0.0f, 3.0f);
     glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::mat4 viewMat = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+    glm::vec3 cameraUp     = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::mat4 viewMat      = glm::lookAt(cameraPos, cameraTarget, cameraUp);
 
     std::cout << "--------------- origin mat\n"
-              << originMat
-              << "--------------- scale mat\n"
-              << scaleMat
-              << "--------------- translate mat\n"
-              << translateMat
-              << "--------------- rotate mat\n"
-              << rotateMat
-              << "--------------- ortho mat\n"
-              << orthoMat
-              << "--------------- perspective mat\n"
-              << perspectiveMat
-              << "--------------- view mat\n"
-              << viewMat
-              << "--------------- frustum mat\n"
+              << originMat << "--------------- scale mat\n"
+              << scaleMat << "--------------- translate mat\n"
+              << translateMat << "--------------- rotate mat\n"
+              << rotateMat << "--------------- ortho mat\n"
+              << orthoMat << "--------------- perspective mat\n"
+              << perspectiveMat << "--------------- view mat\n"
+              << viewMat << "--------------- frustum mat\n"
               << frustumMat;
 
     return 0;

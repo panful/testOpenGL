@@ -1,5 +1,5 @@
 /**
- * 1. 光线步进
+ * 1. 光线步进(Ray marching) 有向距离场(SDF)
  * 2. 3D纹理，光线步进
  * 3. 光线步进绘制体积云（立方体的云）
  * 4. 通过perlin噪声生成云朵
@@ -215,6 +215,10 @@ int main()
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
+
+// https://blog.csdn.net/whl0071/article/details/127986949
+// https://advances.realtimerendering.com/s2015/
+// https://advances.realtimerendering.com/s2017/
 
 int main()
 {
