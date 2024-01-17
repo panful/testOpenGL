@@ -1,9 +1,10 @@
 /*
  * 1. 使用glfw的多重采样功能，实现MSAA抗锯齿
  * 2. FBO（离屏渲染）使用MSAA抗锯齿
+ * 3. GL_LINE_SMOOTH OpenGL自带的线条抗锯齿
  */
 
-#define TEST2
+#define TEST3
 
 #ifdef TEST1
 
@@ -109,8 +110,8 @@ int main()
 
         program.Use();
 
-        auto modleMat = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1, 1, 0));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modleMat       = glm::rotate(glm::mat4(1.0f), (float)glfwGetTime(), glm::vec3(1, 1, 0));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         program.SetUniformMat4("transform", projectiongMat * viewMat * modleMat);
@@ -306,8 +307,8 @@ int main()
         glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto modelMat = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
-        auto viewMat = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto modelMat       = glm::rotate(glm::mat4(1.f), static_cast<float>(glfwGetTime()), glm::vec3(1.f, 1.f, 0.f));
+        auto viewMat        = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
         auto projectiongMat = glm::perspective(glm::radians(30.0f), 8 / 6.f, 0.1f, 100.f);
 
         FBOProgram.Use();
@@ -364,3 +365,75 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST2
+
+#ifdef TEST3
+
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL initOpenGL(Camera({ 0.f, 0.f, 3.f }, { 0.f, 1.f, 0.f }, { 0.f, 0.f, 0.f }));
+    auto window = initOpenGL.GetWindow();
+
+    ShaderProgram program("shaders/02_04_11_TEST1.vs", "shaders/02_04_11_TEST1.fs");
+
+    // clang-format off
+    // 8个顶点
+    std::vector<GLfloat> verticesCube{
+        // pos
+        -0.5f, -0.5f, 0.5f,  1.f, 0.f, 0.f,  // 前左下
+         0.5f, -0.5f, 0.5f,  1.f, 0.f, 0.f,  // 前右下
+         0.5f,  0.5f, 0.5f,  1.f, 0.f, 0.f,  // 前右上
+        -0.5f,  0.5f, 0.5f,  1.f, 0.f, 0.f,  // 前左上
+
+        -0.5f, -0.5f, -.5f,  0.f, 1.f, 0.f,  // 后左下
+         0.5f, -0.5f, -.5f,  0.f, 1.f, 0.f,  // 后右下
+         0.5f,  0.5f, -.5f,  0.f, 1.f, 0.f,  // 后右上
+        -0.5f,  0.5f, -.5f,  0.f, 1.f, 0.f,  // 后左上
+    };
+
+    // 6个面，12个三角形
+    std::vector<GLuint> indicesCube{
+        0, 1, 3,    1, 2, 3,    // 前
+        1, 5, 2,    5, 6, 2,    // 右
+        5, 4, 6,    4, 7, 6,    // 后
+        4, 0, 7,    0, 3, 7,    // 左
+        3, 2, 7,    2, 6, 7,    // 上
+        4, 1, 0,    4, 5, 1,    // 下
+    };
+    // clang-format on
+
+    Renderer cube(verticesCube, indicesCube, { 3, 3 }, GL_TRIANGLES);
+
+    glEnable(GL_DEPTH_TEST);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    glLineWidth(3.f);
+
+    // 开启线段平滑（抗锯齿）
+    glEnable(GL_LINE_SMOOTH);               // GL_POINT_SMOOTH 在OpenGL3.3以后弃用
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST); // 第二个参数可选：GL_FASTEST GL_NICEST GL_DONT_CARE
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto proj = initOpenGL.GetProjectionMatrix();
+        auto view = initOpenGL.GetViewMatrix();
+
+        program.Use();
+        program.SetUniformMat4("transform", proj * view);
+        cube.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffers and programs
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST3

@@ -1579,10 +1579,10 @@ int main()
     // glPointSize(10.f);
     // 开启在着色器中设置点的大小，否则只能使用glPointSize设置大小
     glEnable(GL_PROGRAM_POINT_SIZE);
-    // 设置纹理坐标gl_PointCoord.y的方向
+    // 将点精灵的坐标原点设置为左下角，gl_PointCoord左下角为(0,0)右上角为(1,1)
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
-    // 设置点精灵渐隐效果
-    glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 1.f);
+    // 设置点精灵渐隐效果，只有点的大小大于或等于10时，点才会开始渐变淡出，点的大小如果小于10，它将完全保持不透明
+    glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 10.f);
 
     while (!glfwWindowShouldClose(window))
     {

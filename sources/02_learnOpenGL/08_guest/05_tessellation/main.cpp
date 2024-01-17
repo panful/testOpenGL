@@ -6,7 +6,7 @@
  * 5. 对TEST1实现基于GPU的曲面细分
  */
 
-#define TEST5
+#define TEST1
 
 #ifdef TEST1
 
@@ -34,9 +34,9 @@ int main()
 
     stbi_set_flip_vertically_on_load(true);
     int width { 0 }, height { 0 }, nrChannels { 0 };
-    unsigned char* data = stbi_load("shaders/iceland_heightmap.png", &width, &height, &nrChannels, 0);
-    // unsigned char* data = stbi_load("shaders/river_heightmap.png", &width, &height, &nrChannels, 0);
-    // unsigned char* data = stbi_load("shaders/river2_heightmap.png", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load("textures/heightmap/iceland_heightmap.png", &width, &height, &nrChannels, 0);
+    // unsigned char* data = stbi_load("textures/heightmap/river_heightmap.png", &width, &height, &nrChannels, 0);
+    // unsigned char* data = stbi_load("textures/heightmap/river2_heightmap.png", &width, &height, &nrChannels, 0);
 
     if (data)
     {
