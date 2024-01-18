@@ -7,11 +7,12 @@
  * 6. 鼠标控制相机绕(0,0,0)旋转，本质是修改相机位置
  * 7. 鼠标控制相机观察的方向，俯仰角，偏航角
  * 8. 测试自定义相机
+ * 9. 正交投影 透视投影互相转换
  */
 
 // 万向节死锁 https://zhuanlan.zhihu.com/p/344050856
 
-#define TEST8
+#define TEST9
 
 #ifdef TEST1
 
@@ -1037,3 +1038,181 @@ int main()
 }
 
 #endif // TEST8
+
+#ifdef TEST9
+
+#include <common.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+#include <numbers>
+
+// @brief 创建一个球心在(0,0,0)的球体
+// @param [in] longitude 经线上的顶点个数
+// @param [in] latitude 纬线上的顶点个数
+// @param [in] radius 半径
+Renderer CreateSphere(uint32_t longitude = 32, uint32_t latitude = 32, float radius = 10.f)
+{
+    longitude = longitude > 3 ? longitude : 3;
+    latitude  = latitude > 3 ? latitude : 3;
+
+    std::vector<float> vertices;
+    vertices.reserve((latitude * (longitude - 2) + 2) * 3);
+    std::vector<uint32_t> indices;
+    indices.reserve((longitude - 2) * latitude * 2);
+
+    auto deltaLatitude  = (2 * std::numbers::pi_v<float> / latitude);
+    auto deltaLongitude = (std::numbers::pi_v<float> / (longitude - 1));
+
+    // 最上面单独的一个点
+    vertices.emplace_back(0.f);
+    vertices.emplace_back(radius);
+    vertices.emplace_back(0.f);
+
+    // 每一层，即纬线所在的圈
+    for (size_t i = 1; i < longitude - 1; ++i)
+    {
+        auto r = radius * std::sin(i * deltaLongitude);
+        auto y = radius * std::cos(i * deltaLongitude);
+
+        // 每一层上的每一个点（纬线上的每一个点）
+        for (size_t j = 0; j < latitude; ++j)
+        {
+            auto x = r * std::sin(j * deltaLatitude);
+            auto z = r * std::cos(j * deltaLatitude);
+
+            vertices.emplace_back(x);
+            vertices.emplace_back(y);
+            vertices.emplace_back(z);
+        }
+    }
+
+    // 最下面单独的一个点
+    vertices.emplace_back(0.f);
+    vertices.emplace_back(-radius);
+    vertices.emplace_back(0.f);
+
+    //---------------------------------------------------
+    // 北极圈
+    for (unsigned int j = 1; j < latitude; ++j)
+    {
+        indices.emplace_back(0);
+        indices.emplace_back(j);
+        indices.emplace_back(j + 1);
+    }
+    indices.emplace_back(0);
+    indices.emplace_back(latitude);
+    indices.emplace_back(1);
+
+    // 中间
+    for (unsigned int i = 1; i + 2 < longitude; ++i)
+    {
+        auto start = (1 + (i - 1) * latitude);
+
+        for (unsigned int j = 0; j + 1 < latitude; ++j)
+        {
+            indices.emplace_back(start + j);
+            indices.emplace_back(start + j + latitude);
+            indices.emplace_back(start + j + latitude + 1);
+
+            indices.emplace_back(start + j);
+            indices.emplace_back(start + j + latitude + 1);
+            indices.emplace_back(start + j + 1);
+        }
+
+        indices.emplace_back(start + latitude - 1);
+        indices.emplace_back(start + latitude - 1 + latitude);
+        indices.emplace_back(start + latitude);
+
+        indices.emplace_back(start + latitude - 1);
+        indices.emplace_back(start + latitude);
+        indices.emplace_back(start);
+    }
+
+    // 南极圈
+    auto south = (longitude - 2) * latitude + 1;
+    assert(south > latitude);
+    for (unsigned int i = 1; i < latitude; ++i)
+    {
+        indices.emplace_back(south);
+        indices.emplace_back(south - i);
+        indices.emplace_back(south - i - 1);
+    }
+    indices.emplace_back(south);
+    indices.emplace_back(south - latitude);
+    indices.emplace_back(south - 1);
+
+    return Renderer(vertices, indices, { 3 }, GL_TRIANGLES);
+}
+
+int main()
+{
+    InitOpenGL initOpenGL("Parallel Camera", 800, 600);
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("shaders/02_01_05_TEST9.vert", "shaders/02_01_05_TEST9.frag");
+
+    //---------------------------------------------------------------------------------
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+    ImGui::StyleColorsDark();
+
+    auto sphere = CreateSphere();
+
+    //---------------------------------------------------------------------
+    int indexCameraType { 0 };
+    const char* const strCameraType[] { "Ortho", "Perspective", "Frustum" };
+
+    float cameraPosZ { 50.f };
+
+    float clipNear { .1f }, clipFar { 100.f };
+    float viewAngle { 30.f };
+
+    glEnable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto aspect = 800.f / 600.f;
+        auto tmp    = std::tan(glm::radians(viewAngle / 2.f));
+        auto width  = cameraPosZ * tmp * aspect;
+        auto height = cameraPosZ * tmp;
+
+        // NearZ 和 FarZ 需要额外注意，太小可能会导致场景被裁剪
+        auto frustProj = glm::frustum(-width, width, -height, height, -cameraPosZ, cameraPosZ);
+        auto perspProj = glm::perspective(glm::radians(viewAngle), aspect, clipNear, clipFar);
+        auto orthoProj = glm::ortho(-width, width, -height, height, -cameraPosZ, cameraPosZ);
+
+        auto model = glm::mat4(1.f);
+        auto view  = glm::lookAt(glm::vec3(0.f, 0.f, cameraPosZ), glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto proj  = indexCameraType == 0 ? orthoProj : indexCameraType == 1 ? perspProj : frustProj;
+
+        program.Use();
+        program.SetUniformMat4("model", model);
+        program.SetUniformMat4("view", view);
+        program.SetUniformMat4("proj", proj);
+        sphere.Draw();
+
+        //---------------------------------------------------------------------------------
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        {
+            ImGui::Begin("Camera");
+            ImGui::Combo("Camera type", &indexCameraType, strCameraType, 3);
+            ImGui::End();
+        }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST9

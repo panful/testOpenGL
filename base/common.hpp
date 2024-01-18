@@ -60,6 +60,38 @@ public:
     constexpr Camera() noexcept = default;
     ~Camera() noexcept          = default;
 
+    Camera(const Camera& c)
+    {
+        this->m_position        = c.m_position;
+        this->m_viewUp          = c.m_viewUp;
+        this->m_focalPoint      = c.m_focalPoint;
+        this->m_resetPosition   = c.m_resetPosition;
+        this->m_resetFocalPoint = c.m_resetFocalPoint;
+        this->m_resetViewUp     = c.m_resetViewUp;
+        this->m_nearPlane       = c.m_nearPlane;
+        this->m_farPlane        = c.m_farPlane;
+        this->m_aspect          = c.m_aspect;
+        this->m_viewAngle       = c.m_viewAngle;
+        this->m_parallel        = c.m_parallel;
+    }
+
+    Camera& operator=(const Camera& c)
+    {
+        this->m_position        = c.m_position;
+        this->m_viewUp          = c.m_viewUp;
+        this->m_focalPoint      = c.m_focalPoint;
+        this->m_resetPosition   = c.m_resetPosition;
+        this->m_resetFocalPoint = c.m_resetFocalPoint;
+        this->m_resetViewUp     = c.m_resetViewUp;
+        this->m_nearPlane       = c.m_nearPlane;
+        this->m_farPlane        = c.m_farPlane;
+        this->m_aspect          = c.m_aspect;
+        this->m_viewAngle       = c.m_viewAngle;
+        this->m_parallel        = c.m_parallel;
+
+        return *this;
+    }
+
     Camera(const std::array<float, 3>& pos, const std::array<float, 3>& vp, const std::array<float, 3>& fp) noexcept
         : m_position({ pos[0], pos[1], pos[2] })
         , m_viewUp({ vp[0], vp[1], vp[2] })
@@ -180,10 +212,15 @@ public:
         m_aspect = aspect;
     }
 
+    void SetParallel(bool parallel)
+    {
+        m_parallel = parallel;
+    }
+
     glm::mat4 GetVPMatrix() const
     {
-        auto view       = glm::lookAt(m_position, m_focalPoint, m_viewUp);
-        auto projection = glm::perspective(glm::radians(m_viewAngle), m_aspect, m_nearPlane, m_farPlane);
+        auto view       = GetViewMatrix();
+        auto projection = GetProjectionMatrix();
 
         // std::cout << "---------------------------------------------\n"
         //           << "position:\t" << m_position.x << '\t' << m_position.x << '\t' << m_position.x << '\n'
@@ -203,6 +240,17 @@ public:
 
     glm::mat4 GetProjectionMatrix() const
     {
+        auto distance = glm::length(m_position - m_focalPoint);
+        auto tmp      = std::tan(glm::radians(m_viewAngle / 2.f));
+        auto width    = distance * tmp * m_aspect;
+        auto height   = distance * tmp;
+
+        if (m_parallel)
+        {
+            // 正交投影，NearZ FarZ之间的距离太小时，场景可能会被裁剪
+            return glm::ortho(-width, width, -height, height, -distance * 10, distance * 10);
+        }
+
         return glm::perspective(glm::radians(m_viewAngle), m_aspect, m_nearPlane, m_farPlane);
     }
 
@@ -219,6 +267,8 @@ private:
     float m_farPlane { 100.0f };
     float m_aspect { 1.f };
     float m_viewAngle { 30.f };
+
+    bool m_parallel { false };
 };
 
 class Interactor
@@ -389,7 +439,7 @@ protected:
         m_camera.SetAspect(static_cast<float>(size[0]) / static_cast<float>(size[1]));
     }
 
-    Camera GetCamera() const
+    Camera& GetCamera()
     {
         return m_camera;
     }
@@ -485,6 +535,11 @@ public:
     GLFWwindow* GetWindow() const
     {
         return m_window;
+    }
+
+    void SetParallel(bool parallel)
+    {
+        return m_interactor.GetCamera().SetParallel(parallel);
     }
 
     // 窗口缩放
