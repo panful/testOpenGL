@@ -10,9 +10,10 @@
  * 8. z-fighting z冲突
  * 9. 解决z-fighting
  * 10 绘制多边形的边框、边线
+ * 11. OpenGL的坐标系
  */
 
-#define TEST10
+#define TEST3
 
 #ifdef TEST1
 
@@ -306,22 +307,18 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 #include <array>
 #include <common.hpp>
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
-
 int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    initOpenGL.SetFramebufferSizeCB(framebuffer_size_callback);
     ShaderProgram program("shaders/02_01_04_TEST2.vs", "shaders/02_01_04_TEST2.fs");
 
     // clang-format off
     std::array<GLfloat, 4 * 6> vertices{
-        -0.5f, -0.5f,  0.0f,    1.0f, 0.0f, 0.0f,  // bottom left
-         0.5f, -0.5f,  0.0f,    0.0f, 1.0f, 0.0f,  // bottom right
-         0.5f,  0.5f,  0.0f,    0.0f, 0.0f, 1.0f,  // top right
-        -0.5f,  0.5f,  0.0f,    1.0f, 1.0f, 1.0f,  // top left
+        -2.5f, -2.5f,  1.5f,    1.0f, 0.0f, 0.0f,  // bottom left
+         2.5f, -2.5f,  1.5f,    0.0f, 1.0f, 0.0f,  // bottom right
+         2.5f,  2.5f,  1.5f,    0.0f, 0.0f, 1.0f,  // top right
+        -2.5f,  2.5f,  1.5f,    1.0f, 1.0f, 1.0f,  // top left
     };
 
     std::array<GLuint, 6> indices{
@@ -356,16 +353,14 @@ int main()
         std::cout << "---------------- " << name << '\n';
         for (size_t i = 0; i < 4; i++)
         {
-            auto result_vertices = mat * glm::vec4(vertices[i * 6 + 0], vertices[i * 6 + 1], vertices[i * 6 + 2], 1.0f);
-            auto w               = result_vertices.w;
-            std::cout << "w: " << w << "\t\t" << result_vertices.x / w << "\t\t" << result_vertices.y / w << "\t\t" << result_vertices.z / w << '\n';
+            auto p = mat * glm::vec4(vertices[i * 6 + 0], vertices[i * 6 + 1], vertices[i * 6 + 2], 1.f);
+            auto w = p.w;
+            std::cout << "w: " << w << "\t\t" << p.x / w << "\t\t" << p.y / w << "\t\t" << p.z / w << '\n';
         }
     };
 
     while (!glfwWindowShouldClose(window))
     {
-        processInput(window);
-
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -379,14 +374,17 @@ int main()
         // 透视除法  裁剪坐标->标准化设备坐标（NDC）
         // 视口变换  标准化设备坐标->屏幕坐标
 
-        // 模型矩阵，绕x轴顺时针旋转45°
-        auto model = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(-1, 0, 0));
-        // 观察矩阵，将场景向后移动3个单位，相当于将观察点向前移动3个单位
-        auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.f, 0.f, -3.f));
-        // 投影矩阵，透视投影，第二个参数是窗口的宽高比，第三四是近远裁剪截面
-        auto projection = glm::perspective(glm::radians(45.0f), 8 / 6.f, 0.1f, 1000.0f);
-        // 正交投影
-        // auto projection = glm::ortho(-1.f, 1.f, -1.f / (8 / 6.f), 1.f / (8 / 6.f), 2.f, 4.f);
+        // 模型矩阵
+        auto model = glm::mat4(1.f);
+
+        // 观察矩阵，相机坐标系的Z轴为观察方向的【反方向】，glm::lookAt是一个在右手坐标系下的矩阵，所以z是反的
+        auto view = glm::lookAt(glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+
+        // 透视投影，第二个参数是窗口的宽高比，第三四是近远裁剪截面
+        auto projection = glm::perspective(glm::radians(60.0f), 8 / 6.f, 4.f, 5.f);
+
+        // 正交投影，左手坐标系中的矩阵，注意和相机坐标系中的Z是反的
+        // auto projection = glm::ortho(-5.f, 5.f, -5.f / (8 / 6.f), 5.f / (8 / 6.f), 4.f, 5.f);
 
         // 透视除法是将整个向量（顶点坐标）除以w分量，使向量可以从4维降到3维
         // OpenGL内部自动做透视除法，不需要写代码
@@ -396,9 +394,8 @@ int main()
         print_vetices("modle + view", view * model);
         print_vetices("model + view + projection", projection * view * model);
 
-        auto resultMat = glm::mat4(1.0f);
-        resultMat      = projection * view * model;
-        program.SetUniformMat4("transform", resultMat);
+        auto transform = projection * view * model;
+        program.SetUniformMat4("transform", transform);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -413,17 +410,6 @@ int main()
 
     glfwTerminate();
     return 0;
-}
-
-void processInput(GLFWwindow* window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
 }
 
 #endif // TEST3
@@ -1376,3 +1362,62 @@ int main()
 }
 
 #endif // TEST10
+
+#ifdef TEST11
+
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL opengl;
+    auto window = opengl.GetWindow();
+
+    ShaderProgram program("shaders/02_01_04_TEST2.vs", "shaders/02_01_04_TEST2.fs");
+
+    // clang-format off
+    std::vector<float> vquad1 {
+        -0.7f,  0.7f,  0.0f,    1.f, 0.f, 0.f,
+        -0.7f, -0.7f,  0.0f,    1.f, 0.f, 0.f,
+         0.3f,  0.7f,  0.0f,    1.f, 0.f, 0.f,
+         0.3f, -0.7f,  0.0f,    1.f, 0.f, 0.f,
+    };
+
+    std::vector<float> vquad2 {
+        -0.3f,  0.7f,  0.1f,    0.f, 1.f, 0.f,
+        -0.3f, -0.7f,  0.1f,    0.f, 1.f, 0.f,
+         0.7f,  0.7f,  0.1f,    0.f, 1.f, 0.f,
+         0.7f, -0.7f,  0.1f,    0.f, 1.f, 0.f,
+    };
+    // clang-format on
+
+    Renderer quad1(vquad1, { 3, 3 }, GL_TRIANGLE_STRIP);
+    Renderer quad2(vquad2, { 3, 3 }, GL_TRIANGLE_STRIP);
+
+    // 在OpenGL立即渲染模式中，使用的是右手坐标系
+    // 在OpenGL可编程渲染管线下，NDC坐标系和裁剪坐标系使用的是左手坐标系
+    // 右手坐标系Z指向屏幕外边（从大拇指开始依次是xyz轴）
+    // 左手坐标系Z指向屏幕里边
+    // https://zhuanlan.zhihu.com/p/223033896
+
+    glEnable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+        program.SetUniformMat4("transform", glm::mat4(1.f));
+
+        quad1.Draw();
+        quad2.Draw();
+
+        glfwPollEvents();
+        glfwSwapBuffers(window);
+    }
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST11

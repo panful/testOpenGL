@@ -7,7 +7,9 @@
  * 6. glm::scale rotate translate ortho perspective lookAt frustum
  */
 
-#define TEST5
+// glm中的向量都是列向量
+
+#define TEST6
 
 #ifdef TEST1
 
@@ -79,7 +81,6 @@ int main()
 #include "print_glm.h"
 
 // 在glm中 * 既不是点乘也不是叉乘
-// glm中的向量都是列向量
 
 // 点乘
 //
@@ -409,6 +410,10 @@ int main()
     glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 cameraUp     = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 viewMat      = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+
+    // glm::lookAt()   返回的是一个在右手坐标系的矩阵，对一个坐标变换后Z值的符号是反的
+    // glm::lookAtLH();
+    // glm::lookAtRH();
 
     std::cout << "--------------- origin mat\n"
               << originMat << "--------------- scale mat\n"

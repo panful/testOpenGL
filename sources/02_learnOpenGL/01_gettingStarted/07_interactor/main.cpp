@@ -2,9 +2,10 @@
  * 1. 鼠标中键按下并拖动，绘制一个四边形
  * 2. 3D图元的拾取
  * 3. 拾取多边形的顶点
+ * 4. 屏幕坐标 世界坐标 互相转换
  */
 
-#define TEST3
+#define TEST4
 
 #ifdef TEST1
 
@@ -560,3 +561,143 @@ int main()
     return 0;
 }
 #endif // TEST3
+
+#ifdef TEST4
+
+#include <common.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
+constexpr float ww { 800.f };
+constexpr float wh { 600.f };
+
+int main()
+{
+    static InitOpenGL initOpenGL(Camera({ 0, 0, 3.f }, { 0, 1, 0 }, { 0, 0, 0 }));
+    initOpenGL.SetClipRange({ 2.f, 4.f });
+    initOpenGL.SetParallel(true);
+    auto window = initOpenGL.GetWindow();
+
+    static std::vector<float> pickPos;
+
+    initOpenGL.SetMiddleButtonCallback(
+        [](int x, int y)
+        {
+            // z使用-1，就是投影矩阵的近裁剪平面
+            auto NDCPos = glm::vec4((x * 2 - ww) / ww, (y * 2 - wh) / wh, -1.f, 1.f);
+            auto inView = glm::inverse(initOpenGL.GetViewMatrix());
+            auto inProj = glm::inverse(initOpenGL.GetProjectionMatrix());
+
+            auto projPos  = inProj * NDCPos;
+            auto worldPos = inView * projPos;
+
+            auto wx = worldPos.x / worldPos.w;
+            auto wy = worldPos.y / worldPos.w;
+            auto wz = worldPos.z / worldPos.w;
+
+            std::cout << worldPos.w << '\t' << wz << '\n';
+            pickPos.insert(pickPos.end(), { wx, wy, wz, 0.f, 0.f, 1.f });
+        });
+
+    ShaderProgram program("shaders/02_01_07_TEST3.vs", "shaders/02_01_07_TEST3.fs");
+
+    //---------------------------------------------------------------------------------
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+    ImGui::StyleColorsDark();
+
+    // clang-format off
+    // 8个顶点
+    std::vector<GLfloat> verticesCube{
+        // pos                  // color
+        -0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左下
+         0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前右下
+         0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前右上
+        -0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左上
+
+        -0.5f, -0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后左下
+         0.5f, -0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后右下
+         0.5f,  0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后右上
+        -0.5f,  0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后左上
+    };
+    // 6个面，12个三角形
+    std::vector<GLuint> indicesCube{
+        0, 1, 3,    1, 2, 3,    // 前
+        1, 5, 2,    5, 6, 2,    // 右
+        5, 4, 6,    4, 7, 6,    // 后
+        4, 0, 7,    0, 3, 7,    // 左
+        3, 2, 7,    2, 6, 7,    // 上
+        4, 1, 0,    4, 5, 1,    // 下
+    };
+
+    std::vector<float> verticesPoint{ -0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, }; // 前左下
+    // clang-format on
+
+    Renderer cube(verticesCube, indicesCube, { 3, 3 }, GL_TRIANGLES);
+    Renderer* line { nullptr };
+
+    // 程序启动后，按下鼠标中键拾取几个点，然后点击IMGUI的按钮，将拾取的点连成一条线，鼠标右键旋转即可看到拾取的点
+    glEnable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto model = glm::mat4(1.f);
+        auto view  = initOpenGL.GetViewMatrix();
+        auto proj  = initOpenGL.GetProjectionMatrix();
+
+        program.Use();
+        program.SetUniformMat4("model", model);
+        program.SetUniformMat4("view", view);
+        program.SetUniformMat4("projection", proj);
+        cube.Draw();
+
+        // 世界坐标转换为屏幕坐标
+        auto ndcPoint      = proj * view * model * glm::vec4(verticesPoint[0], verticesPoint[1], verticesPoint[2], 1.f);
+        auto viewportPoint = glm::vec2((ndcPoint.x / ndcPoint.w + 1.f) / 2.f, (ndcPoint.y / ndcPoint.w + 1.f) / 2.f);
+        auto displayPoint  = glm::vec2(ww, wh) * viewportPoint;
+
+        //---------------------------------------------------------------------------------
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        {
+            ImGui::Begin("Camera");
+            ImGui::Text(("display point: " + std::to_string(displayPoint.x) + ", " + std::to_string(displayPoint.y)).c_str());
+            if (ImGui::Button("Test Button"))
+            {
+                if (line == nullptr)
+                {
+                    line = new Renderer(pickPos, { 3, 3 }, GL_LINE_LOOP);
+                }
+                else
+                {
+                    pickPos.clear();
+                    delete line;
+                    line = nullptr;
+                }
+            }
+            ImGui::End();
+        }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        if (line != nullptr)
+        {
+            program.Use();
+            line->Draw();
+        }
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST4

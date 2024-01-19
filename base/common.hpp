@@ -217,6 +217,12 @@ public:
         m_parallel = parallel;
     }
 
+    void SetClipRange(const std::array<float, 2>& range)
+    {
+        m_nearPlane = range[0];
+        m_farPlane  = range[1];
+    }
+
     glm::mat4 GetVPMatrix() const
     {
         auto view       = GetViewMatrix();
@@ -248,7 +254,7 @@ public:
         if (m_parallel)
         {
             // 正交投影，NearZ FarZ之间的距离太小时，场景可能会被裁剪
-            return glm::ortho(-width, width, -height, height, -distance * 10, distance * 10);
+            return glm::ortho(-width, width, -height, height, m_nearPlane, m_farPlane);
         }
 
         return glm::perspective(glm::radians(m_viewAngle), m_aspect, m_nearPlane, m_farPlane);
@@ -539,7 +545,12 @@ public:
 
     void SetParallel(bool parallel)
     {
-        return m_interactor.GetCamera().SetParallel(parallel);
+        m_interactor.GetCamera().SetParallel(parallel);
+    }
+
+    void SetClipRange(const std::array<float, 2>& range)
+    {
+        m_interactor.GetCamera().SetClipRange(range);
     }
 
     // 窗口缩放
@@ -859,6 +870,7 @@ private:
                       << "file path is invalid\n"
                       << "current path: " << std::filesystem::current_path() << '\n'
                       << "file path: " << path << '\n';
+            throw std::runtime_error("file path is invalid");
         }
     }
 
