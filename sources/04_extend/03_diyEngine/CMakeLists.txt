@@ -75,8 +75,10 @@ set(SRCS
 add_executable(${target_name} "main.cpp" ${HEADERS} ${SRCS})
 target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Core/include)
 target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/OpenGL/include)
-target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/includes)
-target_link_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/libs/$<IF:$<CONFIG:Debug>,Debug,Release>/${CMAKE_SYSTEM_NAME}) 
-target_link_libraries(${target_name} PRIVATE glad glfw3)
-
-install(TARGETS ${target_name} RUNTIME DESTINATION .)
+target_include_directories(${target_name} PRIVATE 
+    ${PROJECT_SOURCE_DIR}/includes/glad 
+    ${PROJECT_SOURCE_DIR}/includes/glfw
+    ${PROJECT_SOURCE_DIR}/includes/glm
+)
+target_link_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/libs) 
+target_link_libraries(${target_name} PRIVATE glad glfw)

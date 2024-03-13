@@ -19,14 +19,14 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
-float windowWidth = 800;
+float windowWidth  = 800;
 float windowHeight = 600;
 
 int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("shaders/03_02_vs.glsl", "shaders/03_02_fs.glsl");
+    ShaderProgram program("shaders/04_04_TEST1.vert", "shaders/04_04_TEST1.frag");
 
     std::vector<float> vertices {
         -1.0f,
@@ -80,7 +80,6 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    
 
     glfwTerminate();
     return 0;
@@ -96,7 +95,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 
-    windowWidth = static_cast<float>(width);
+    windowWidth  = static_cast<float>(width);
     windowHeight = static_cast<float>(height);
 }
 
@@ -114,14 +113,14 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
-float windowWidth = 800.0f;
+float windowWidth  = 800.0f;
 float windowHeight = 600.0f;
 
 int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("shaders/03_02_vs.glsl", "shaders/03_02_fs.glsl");
+    ShaderProgram program("shaders/04_04_TEST1.vert", "shaders/04_04_TEST1.frag");
 
     std::vector<float> vertices {
         -1.0f,
@@ -204,7 +203,6 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    
 
     glfwTerminate();
     return 0;
@@ -220,7 +218,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 
-    windowWidth = static_cast<float>(width);
+    windowWidth  = static_cast<float>(width);
     windowHeight = static_cast<float>(height);
 }
 
@@ -236,16 +234,16 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double x, double y);
 
-float windowWidth = 800.0f;
+float windowWidth  = 800.0f;
 float windowHeight = 600.0f;
-float mousePosX = 0.0f;
-float mousePosY = 0.0f;
+float mousePosX    = 0.0f;
+float mousePosY    = 0.0f;
 
 int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("shaders/03_02_vs.glsl", "shaders/03_02_fs.glsl");
+    ShaderProgram program("shaders/04_04_TEST1.vert", "shaders/04_04_TEST1.frag");
 
     std::vector<float> vertices {
         -1.0f,
@@ -300,7 +298,6 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    
 
     glfwTerminate();
     return 0;
@@ -316,7 +313,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 
-    windowWidth = static_cast<float>(width);
+    windowWidth  = static_cast<float>(width);
     windowHeight = static_cast<float>(height);
 }
 
@@ -331,21 +328,21 @@ void mouse_callback(GLFWwindow* window, double x, double y)
 
 #ifdef TEST4
 
-#include "common.hpp"
+#include <common.hpp>
 #include <iostream>
 #include <vector>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
-float windowWidth = 800.0f;
+float windowWidth  = 800.0f;
 float windowHeight = 600.0f;
 
 int main()
 {
     InitOpenGL initOpenGL;
     auto window = initOpenGL.GetWindow();
-    ShaderProgram program("shaders/03_02_vs.glsl", "shaders/03_02_fs.glsl");
+    ShaderProgram program("shaders/04_04_TEST1.vert", "shaders/04_04_TEST1.frag");
 
     std::vector<float> vertices {
         -1.0f,
@@ -401,7 +398,6 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    
 
     glfwTerminate();
     return 0;
@@ -417,7 +413,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 
-    windowWidth = static_cast<float>(width);
+    windowWidth  = static_cast<float>(width);
     windowHeight = static_cast<float>(height);
 }
 
