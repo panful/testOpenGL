@@ -13,9 +13,10 @@
  * 12. PBO GL_PIXEL_PACK_BUFFER GL_PIXEL_UNPACK_BUFFER 的简单使用
  * 13. 使用ktx加载纹理并渲染
  * 14. 使用 GL_TEXTURE_2D_ARRAY
+ * 15. 使用颜色映射表时，指定超出映射表部分的颜色
  */
 
-#define TEST11
+#define TEST15
 
 #ifdef TEST1
 
@@ -1088,57 +1089,57 @@ void mouseCB(GLFWwindow* window, int button, int action, int mods)
 {
     switch (action)
     {
-    case GLFW_PRESS:
-        switch (button)
-        {
-        case GLFW_MOUSE_BUTTON_LEFT:
-        {
-            std::cout << "-------------------------------------\n" << mouse_x << '\t' << mouse_y << '\t';
+        case GLFW_PRESS:
+            switch (button)
+            {
+                case GLFW_MOUSE_BUTTON_LEFT:
+                {
+                    std::cout << "-------------------------------------\n" << mouse_x << '\t' << mouse_y << '\t';
 
-            GLint level { 0 };        // 细节级别。0是基本图像级别
-            GLint format { GL_RGBA }; // 像素数据的格式
+                    GLint level { 0 };        // 细节级别。0是基本图像级别
+                    GLint format { GL_RGBA }; // 像素数据的格式
 
-            // 获取纹理的宽度和高度
-            GLint width { 0 }, height { 0 };
-            glBindTexture(GL_TEXTURE_2D, texture);
-            glGetTexLevelParameteriv(GL_TEXTURE_2D, level, GL_TEXTURE_WIDTH, &width);
-            glGetTexLevelParameteriv(GL_TEXTURE_2D, level, GL_TEXTURE_HEIGHT, &height);
+                    // 获取纹理的宽度和高度
+                    GLint width { 0 }, height { 0 };
+                    glBindTexture(GL_TEXTURE_2D, texture);
+                    glGetTexLevelParameteriv(GL_TEXTURE_2D, level, GL_TEXTURE_WIDTH, &width);
+                    glGetTexLevelParameteriv(GL_TEXTURE_2D, level, GL_TEXTURE_HEIGHT, &height);
 
-            std::cout << width << '\t' << height << '\n';
+                    std::cout << width << '\t' << height << '\n';
 
-            // 为像素数据分配内存
-            auto pixels = new GLubyte[width * height * 4];
+                    // 为像素数据分配内存
+                    auto pixels = new GLubyte[width * height * 4];
 
-            // 获取像素数据
-            glGetTexImage(GL_TEXTURE_2D, level, format, GL_UNSIGNED_BYTE, pixels);
+                    // 获取像素数据
+                    glGetTexImage(GL_TEXTURE_2D, level, format, GL_UNSIGNED_BYTE, pixels);
 
-            // 像素的索引，注意最后的'*4'以及y轴需要翻转
-            int index = ((int)(height - mouse_y) * width + (int)mouse_x) * 4;
+                    // 像素的索引，注意最后的'*4'以及y轴需要翻转
+                    int index = ((int)(height - mouse_y) * width + (int)mouse_x) * 4;
 
-            // 纹理中的数据
-            auto r = (int)pixels[index + 0];
-            auto g = (int)pixels[index + 1];
-            auto b = (int)pixels[index + 2];
-            auto a = (int)pixels[index + 3];
+                    // 纹理中的数据
+                    auto r = (int)pixels[index + 0];
+                    auto g = (int)pixels[index + 1];
+                    auto b = (int)pixels[index + 2];
+                    auto a = (int)pixels[index + 3];
 
-            // 使用stb_image读上来的图片原始数据
-            auto r2 = (int)data[index + 0];
-            auto g2 = (int)data[index + 1];
-            auto b2 = (int)data[index + 2];
-            auto a2 = (int)data[index + 3];
+                    // 使用stb_image读上来的图片原始数据
+                    auto r2 = (int)data[index + 0];
+                    auto g2 = (int)data[index + 1];
+                    auto b2 = (int)data[index + 2];
+                    auto a2 = (int)data[index + 3];
 
-            std::cout << r << '\t' << g << '\t' << b << '\t' << a << '\n';
-            std::cout << r2 << '\t' << g2 << '\t' << b2 << '\t' << a2 << '\n';
+                    std::cout << r << '\t' << g << '\t' << b << '\t' << a << '\n';
+                    std::cout << r2 << '\t' << g2 << '\t' << b2 << '\t' << a2 << '\n';
 
-            // 删除像素数据
-            delete[] pixels;
+                    // 删除像素数据
+                    delete[] pixels;
 
-            glBindTexture(GL_TEXTURE_2D, 0);
-        }
-        break;
-        default:
-            break;
-        }
+                    glBindTexture(GL_TEXTURE_2D, 0);
+                }
+                break;
+                default:
+                    break;
+            }
     }
 }
 
@@ -1913,3 +1914,101 @@ int main()
 }
 
 #endif // TEST14
+
+#ifdef TEST15
+
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL opengl(Camera({ 0.f, 0.f, 3.f }));
+    auto window = opengl.GetWindow();
+    ShaderProgram program("shaders/02_01_03_TEST15.vs", "shaders/02_01_03_TEST15.fs");
+
+    // clang-format off
+    std::vector<float> vertices1 {
+        -.5f, -.5f, 0.f,    0.f, .5f,
+        -.2f,  .5f, 0.f,    .5f, .5f,
+         .1f, -.5f, 0.f,    2.f, .5f,
+    };
+
+    std::vector<float> vertices2 {
+        -.1f, -.5f, .1f,    0.f, .5f,
+         .2f,  .5f, .1f,    .5f, .5f,
+         .5f, -.5f, .1f,    1.f, .5f,
+    };
+
+    std::vector<uint8_t> image {
+        0, 255, 0, 255,
+        0, 255, 0, 255,
+        0, 255, 0, 255,
+        0, 255, 0, 255,
+
+        0, 255, 0, 255,
+        0, 255, 0, 255,
+        0, 255, 0, 255,
+        0, 255, 0, 255,
+
+        0, 255, 0, 255,
+        0, 255, 0, 255,
+        0, 255, 0, 255,
+        0, 255, 0, 255,
+
+        0, 255, 0, 255,
+        0, 255, 0, 255,
+        0, 255, 0, 255,
+        0, 255, 0, 255,
+    };
+    // clang-format on
+
+    Renderer triangle1(vertices1, { 3, 2 }, GL_TRIANGLES);
+    Renderer triangle2(vertices2, { 3, 2 }, GL_TRIANGLES);
+
+    unsigned int texture { 0 };
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    float borderColor[] = { 0.f, 0.f, 0.f, 0.f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor); // 当环绕方式设置为 GL_CLAMP_TO_BORDER 时，设置边缘颜色
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); // 超出的坐标为用户指定的边缘颜色
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+
+    // 纹理环绕方式设置为 GL_CLAMP_TO_EDGE GL_CLAMP_TO_BORDER 都可以实现超出映射表范围时指定颜色
+    // GL_CLAMP_TO_EDGE 将纹理最边缘的两个像素设置为指定值，正常的纹理坐标从第二个到倒数第二个像素之间计算
+    // GL_CLAMP_TO_BORDER 直接设置超出部分的颜色
+    // 当超出部分的颜色指定为透明色时，如果不在片段着色器中使用 discard 丢弃片段，需要使用混合 GL_BLEND
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        program.Use();
+        program.SetUniformMat4("model", glm::mat4(1.f));
+        program.SetUniformMat4("view", opengl.GetViewMatrix());
+        program.SetUniformMat4("proj", opengl.GetProjectionMatrix());
+
+        glBindTexture(GL_TEXTURE_2D, texture);
+        triangle1.Draw();
+        triangle2.Draw();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+
+    return 0;
+}
+
+#endif // TEST15
