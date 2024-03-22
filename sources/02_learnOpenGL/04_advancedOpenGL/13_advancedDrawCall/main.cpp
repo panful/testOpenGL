@@ -3,10 +3,10 @@
  * 2. glDrawElementsBaseVertex 设置顶点偏移
  * 3. glDrawRangeElements 指定顶点的范围，可能提高性能
  * 4. glMultiDrawElements 一次提交多个索引数组
- * 5. glDrawArraysIndirect
+ * 5. glDrawArraysIndirect glDrawElementsIndirect
  */
 
-#define TEST4
+#define TEST5
 
 #ifdef TEST1
 
@@ -336,3 +336,80 @@ int main()
 }
 
 #endif // TEST4
+
+#ifdef TEST5
+
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL opengl {};
+    auto window = opengl.GetWindow();
+    ShaderProgram program("shaders/02_04_13_TEST1.vs", "shaders/02_04_13_TEST1.fs");
+
+    // clang-format off
+    float vertices[] = {
+        -.5f, -.5f,  0.f,
+         0.f,  .5f,  0.f,
+         .5f, -.5f,  0.f,
+    };
+    // clang-format on
+
+    GLuint VAO { 0 }, VBO { 0 };
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    //---------------------------------------------------------------
+    // 定义绘制指令
+    struct DrawArraysIndirectCommand
+    {
+        GLuint count;         // 要绘制的顶点数量，这个值与 glDrawArrays 中的 count 参数相同
+        GLuint instanceCount; // 实例的个数，没有使用多实例绘制，则设置为1
+        GLuint first;         // 指定了从顶点数组中开始绘制的起始顶点的索引，这个值与 glDrawArrays 中的 first 参数相同
+        GLuint baseInstance;  // 实例化渲染中第一个实例的索引偏移量，就是 gl_InstanceID 的初始值
+    };
+
+    DrawArraysIndirectCommand cmd = { 3, 1, 0, 0 }; // 绘制一个三角形
+
+    // 创建间接绘制命令的缓冲区
+    GLuint indirectBuffer;
+    glGenBuffers(1, &indirectBuffer);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer);
+    glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(DrawArraysIndirectCommand), &cmd, GL_STATIC_DRAW);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+
+    // 通过间接方式指定绘制参数，而不是直接提供顶点数据。它允许应用程序在不从CPU到GPU传输数据的情况下发起绘制命令
+    // glDrawArraysIndirect 适用于需要大量绘制调用和动态更新的场景
+    // 当计算着色器生成了一批顶点数据后不需要回传到CPU创建VBO再绘制，而是直接使用计算着色器在GPU生成的顶点数据直接绘制
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        program.Use();
+
+        // 绑定VAO，接下来使用的 glDrawArraysIndirect 就会使用该VAO中的顶点属性和属性布局
+        // 不一定非得是VAO，可以是 GL_SHADER_STORAGE_BUFFER 等其他缓冲对象
+        glBindVertexArray(VAO);
+
+        // 绘制图形
+        glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer); // 绑定间接绘制命令缓冲区
+        glDrawArraysIndirect(GL_TRIANGLES, 0);                 // 绘制三角形
+        glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);              // 解绑缓冲区
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST5
