@@ -1,5 +1,6 @@
 #version 430 core
 
+// 三个参数表示本地工作组在每个维度上的单元数量
 layout (local_size_x = 10, local_size_y = 10, local_size_z = 1) in;
 
 // sampler2D只能在着色器中读数据，image2D可以读也可以写数据

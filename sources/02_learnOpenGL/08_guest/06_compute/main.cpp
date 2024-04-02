@@ -8,7 +8,7 @@
  * 7. 自由落体运动
  */
 
-#define TEST7
+#define TEST2
 
 #ifdef TEST1
 
@@ -161,9 +161,10 @@ int main()
         computeShader.SetUniform1f("t", (float)glfwGetTime());
         // 将纹理绑定到计算着色器，用来保存计算着色器的输出
         // 这个函数和着色器中image2D或image1D、image3D对应，不能是sampler2D等
-        // 第一个参数和着色器中的layout(rgba32f, binding = 0)的第二个参数binding对应
+        // 第一个参数和着色器中的layout(rgba32f, binding = 2)的第二个参数binding对应
         glBindImageTexture(2, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
-        // 启动计算着色器，参数表示每个维度上工作组的数量
+        // 启动计算着色器，三个参数表示全局工作组在每个维度上的单元数量
+        // 全局工作组的大小（由glDispatchCompute决定）乘以局部（本地）工作组的大小（由local_size_x、local_size_y、local_size_z决定）等于参与计算的总线程数量。
         glDispatchCompute((unsigned int)texWidth / 10, (unsigned int)texHeight / 10, 1);
         // 保证计算着色器已经将纹理的每一个像素填充完成
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
@@ -241,7 +242,7 @@ int main()
         compute.Use();
         glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
         compute.SetUniform1f("offset", offset);
-        glDispatchCompute(1, 1, 1);
+        glDispatchCompute(1, 1, 1); // 此处参数是1，因为有3个顶点，所以必须在计算着色器中指定本地工作组的大小不小于顶点个数
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
         //---------------------------------------------------------------------
@@ -358,7 +359,7 @@ int main()
         std::cout << "FPS:\t" << 1.f / deltaTime << '\n';
 
         compute.SetUniform1f("dt", deltaTime);
-        glDispatchCompute(PARTICLE_COUNT, 1, 1);
+        glDispatchCompute(PARTICLE_COUNT / 128, 1, 1);
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
         //---------------------------------------------------------------------

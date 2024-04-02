@@ -1,7 +1,7 @@
 #version 430 core
 
 // 本地工作组的大小，不能小于顶点的个数，如果小于则改变的顶点个数就会少于实际的顶点个数
-// 本例共3个顶点，所以此处填3
+// 本例共3个顶点，所以此处填3（全局工作组大小为{1,1,1}）
 layout(local_size_x = 3) in;
 
 layout(rgba32f, binding = 0) uniform imageBuffer position_buffer;
