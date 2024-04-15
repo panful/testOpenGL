@@ -1298,7 +1298,7 @@ public:
         }
         else
         {
-            std::clog << "Failed to load texture\n";
+            std::clog << "Failed to load texture: " << path << '\n';
         }
         Release();
     }

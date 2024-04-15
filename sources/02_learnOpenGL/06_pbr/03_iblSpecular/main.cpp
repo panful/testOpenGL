@@ -3,7 +3,7 @@
  * 2. 带纹理的镜面反射 IBL
  */
 
-#define TEST2
+#define TEST1
 
 #ifdef TEST1
 
@@ -254,7 +254,7 @@ int main()
     textureCubeMap.SetFilterParameter(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     fboCapture.AddAttachment(GL_DEPTH_ATTACHMENT, rboCapture);
 
-    Texture textureHdr(std::string_view("shaders/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
+    Texture textureHdr(std::string_view("textures/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
     textureHdr.Bind();
     textureHdr.SetWarpParameter(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
     textureHdr.SetFilterParameter(GL_LINEAR, GL_LINEAR);
@@ -582,43 +582,43 @@ int main()
 
     // rusted iron
     std::vector<std::shared_ptr<Texture>> iron;
-    iron.emplace_back(std::make_shared<Texture>(("shaders/textures/rusted_iron/albedo.png")));
-    iron.emplace_back(std::make_shared<Texture>(("shaders/textures/rusted_iron/normal.png")));
-    iron.emplace_back(std::make_shared<Texture>(("shaders/textures/rusted_iron/metallic.png")));
-    iron.emplace_back(std::make_shared<Texture>(("shaders/textures/rusted_iron/roughness.png")));
-    iron.emplace_back(std::make_shared<Texture>(("shaders/textures/rusted_iron/ao.png")));
+    iron.emplace_back(std::make_shared<Texture>(("textures/rusted_iron/albedo.png")));
+    iron.emplace_back(std::make_shared<Texture>(("textures/rusted_iron/normal.png")));
+    iron.emplace_back(std::make_shared<Texture>(("textures/rusted_iron/metallic.png")));
+    iron.emplace_back(std::make_shared<Texture>(("textures/rusted_iron/roughness.png")));
+    iron.emplace_back(std::make_shared<Texture>(("textures/rusted_iron/ao.png")));
 
-    // goldTexture(-
+    // gold
     std::vector<std::shared_ptr<Texture>> gold;
-    gold.emplace_back(std::make_shared<Texture>(("shaders/textures/gold/albedo.png")));
-    gold.emplace_back(std::make_shared<Texture>(("shaders/textures/gold/normal.png")));
-    gold.emplace_back(std::make_shared<Texture>(("shaders/textures/gold/metallic.png")));
-    gold.emplace_back(std::make_shared<Texture>(("shaders/textures/gold/roughness.png")));
-    gold.emplace_back(std::make_shared<Texture>(("shaders/textures/gold/ao.png")));
+    gold.emplace_back(std::make_shared<Texture>(("textures/ibl/gold/albedo.png")));
+    gold.emplace_back(std::make_shared<Texture>(("textures/ibl/gold/normal.png")));
+    gold.emplace_back(std::make_shared<Texture>(("textures/ibl/gold/metallic.png")));
+    gold.emplace_back(std::make_shared<Texture>(("textures/ibl/gold/roughness.png")));
+    gold.emplace_back(std::make_shared<Texture>(("textures/ibl/gold/ao.png")));
 
     // grass
     std::vector<std::shared_ptr<Texture>> grass;
-    grass.emplace_back(std::make_shared<Texture>(("shaders/textures/grass/albedo.png")));
-    grass.emplace_back(std::make_shared<Texture>(("shaders/textures/grass/normal.png")));
-    grass.emplace_back(std::make_shared<Texture>(("shaders/textures/grass/metallic.png")));
-    grass.emplace_back(std::make_shared<Texture>(("shaders/textures/grass/roughness.png")));
-    grass.emplace_back(std::make_shared<Texture>(("shaders/textures/grass/ao.png")));
+    grass.emplace_back(std::make_shared<Texture>(("textures/ibl/grass/albedo.png")));
+    grass.emplace_back(std::make_shared<Texture>(("textures/ibl/grass/normal.png")));
+    grass.emplace_back(std::make_shared<Texture>(("textures/ibl/grass/metallic.png")));
+    grass.emplace_back(std::make_shared<Texture>(("textures/ibl/grass/roughness.png")));
+    grass.emplace_back(std::make_shared<Texture>(("textures/ibl/grass/ao.png")));
 
     // plastic
     std::vector<std::shared_ptr<Texture>> plastic;
-    plastic.emplace_back(std::make_shared<Texture>(("shaders/textures/plastic/albedo.png")));
-    plastic.emplace_back(std::make_shared<Texture>(("shaders/textures/plastic/normal.png")));
-    plastic.emplace_back(std::make_shared<Texture>(("shaders/textures/plastic/metallic.png")));
-    plastic.emplace_back(std::make_shared<Texture>(("shaders/textures/plastic/roughness.png")));
-    plastic.emplace_back(std::make_shared<Texture>(("shaders/textures/plastic/ao.png")));
+    plastic.emplace_back(std::make_shared<Texture>(("textures/ibl/plastic/albedo.png")));
+    plastic.emplace_back(std::make_shared<Texture>(("textures/ibl/plastic/normal.png")));
+    plastic.emplace_back(std::make_shared<Texture>(("textures/ibl/plastic/metallic.png")));
+    plastic.emplace_back(std::make_shared<Texture>(("textures/ibl/plastic/roughness.png")));
+    plastic.emplace_back(std::make_shared<Texture>(("textures/ibl/plastic/ao.png")));
 
     // wall
     std::vector<std::shared_ptr<Texture>> wall;
-    wall.emplace_back(std::make_shared<Texture>(("shaders/textures/wall/albedo.png")));
-    wall.emplace_back(std::make_shared<Texture>(("shaders/textures/wall/normal.png")));
-    wall.emplace_back(std::make_shared<Texture>(("shaders/textures/wall/metallic.png")));
-    wall.emplace_back(std::make_shared<Texture>(("shaders/textures/wall/roughness.png")));
-    wall.emplace_back(std::make_shared<Texture>(("shaders/textures/wall/ao.png")));
+    wall.emplace_back(std::make_shared<Texture>(("textures/ibl/wall/albedo.png")));
+    wall.emplace_back(std::make_shared<Texture>(("textures/ibl/wall/normal.png")));
+    wall.emplace_back(std::make_shared<Texture>(("textures/ibl/wall/metallic.png")));
+    wall.emplace_back(std::make_shared<Texture>(("textures/ibl/wall/roughness.png")));
+    wall.emplace_back(std::make_shared<Texture>(("textures/ibl/wall/ao.png")));
 
     textures.emplace_back(iron);
     textures.emplace_back(gold);
@@ -687,7 +687,7 @@ int main()
     textureCubeMap.SetFilterParameter(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
     fboCapture.AddAttachment(GL_DEPTH_ATTACHMENT, rboCapture);
 
-    Texture textureHdr(std::string_view("shaders/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
+    Texture textureHdr(std::string_view("textures/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
     textureHdr.Bind();
     textureHdr.SetWarpParameter(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
     textureHdr.SetFilterParameter(GL_LINEAR, GL_LINEAR);

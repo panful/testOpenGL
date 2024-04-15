@@ -3,7 +3,7 @@
  * 2. 带贴图的PBR
  */
 
-#define TEST2
+#define TEST1
 
 #ifdef TEST1
 

@@ -230,7 +230,7 @@ int main()
     fboCapture.AddAttachment(GL_DEPTH_ATTACHMENT, rboCapture);
 
     // 创建HDR图片纹理
-    Texture textureHdr(std::string_view("shaders/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
+    Texture textureHdr(std::string_view("textures/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
 
     glViewport(0, 0, fboWidth, fboHeight);
     fboCapture.Bind();
@@ -534,7 +534,7 @@ int main()
     Texture textureCubeMap(fboWidth, fboHeight, GL_RGB16F, GL_RGB, GL_FLOAT, 0, true);
     fboCapture.AddAttachment(GL_DEPTH_ATTACHMENT, rboCapture);
 
-    Texture textureHdr(std::string_view("shaders/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
+    Texture textureHdr(std::string_view("textures/newport_loft.hdr"), 0, false, GL_RGB16F, GL_RGB, GL_FLOAT);
 
     glViewport(0, 0, fboWidth, fboHeight);
     fboCapture.Bind();
