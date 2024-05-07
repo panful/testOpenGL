@@ -1,4 +1,4 @@
-set(target_name "04_03_diyEngine")
+set(target_name "04_03_VTK")
 
 set(HEADERS
     Core/include/actor.h
