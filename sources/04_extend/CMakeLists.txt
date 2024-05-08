@@ -2,3 +2,4 @@
 add_subdirectory("02_producerConsumer")
 add_subdirectory("03_VTK")
 add_subdirectory("04_shadertoy")
+add_subdirectory("05_OSG")
