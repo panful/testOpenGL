@@ -16,6 +16,8 @@ public:
     void Bind() const noexcept;
     void UnBind() const noexcept;
 
+    uint32_t GetHandle() const noexcept;
+
 private:
     std::string m_vertCode {};
     std::string m_fragCode {};

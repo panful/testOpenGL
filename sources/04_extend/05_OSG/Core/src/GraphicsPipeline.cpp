@@ -82,3 +82,8 @@ void GraphicsPipeline::Compile()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 }
+
+uint32_t GraphicsPipeline::GetHandle() const noexcept
+{
+    return m_shaderProgramHandle;
+}

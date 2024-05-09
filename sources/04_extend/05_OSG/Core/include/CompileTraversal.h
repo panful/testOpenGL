@@ -9,4 +9,6 @@ public:
     void Apply(View&) override;
     void Apply(Geometry&) override;
     void Apply(GraphicsPipeline&) override;
+    void Apply(Transform&) override;
+    void Apply(Animation&) override;
 };

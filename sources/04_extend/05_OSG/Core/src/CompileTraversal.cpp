@@ -3,6 +3,8 @@
 #include "GraphicsPipeline.h"
 #include "Log.h"
 #include "View.h"
+#include "Transform.h"
+#include "Animation.h"
 
 void CompileTraversal::Apply(Window& window)
 {
@@ -26,4 +28,16 @@ void CompileTraversal::Apply(GraphicsPipeline& graphicsPipeline)
     Log::GetInstance()->Trace();
     graphicsPipeline.Compile();
     graphicsPipeline.Traverse(this);
+}
+
+void CompileTraversal::Apply(Transform& transform)
+{
+    Log::GetInstance()->Trace();
+    transform.Traverse(this);
+}
+
+void CompileTraversal::Apply(Animation& animation)
+{
+    Log::GetInstance()->Trace();
+    animation.Traverse(this);
 }

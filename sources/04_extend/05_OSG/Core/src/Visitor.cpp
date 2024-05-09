@@ -31,3 +31,7 @@ void Visitor::Apply(GraphicsPipeline&)
 void Visitor::Apply(Geometry&)
 {
 }
+
+void Visitor::Apply(Animation&)
+{
+}

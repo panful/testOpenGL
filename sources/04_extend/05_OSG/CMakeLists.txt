@@ -15,6 +15,7 @@ set(HEADERS
     Core/include/State.h
     Core/include/Transform.h
     Core/include/View.h
+    Core/include/Animation.h
 
     Utils/include/Log.h
 )
@@ -33,6 +34,7 @@ set(SRCS
     Core/src/State.cpp
     Core/src/Transform.cpp
     Core/src/View.cpp
+    Core/src/Animation.cpp
 
     Utils/src/Log.cpp
 )
