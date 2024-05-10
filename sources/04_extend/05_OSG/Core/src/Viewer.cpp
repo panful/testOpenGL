@@ -22,11 +22,6 @@ void Viewer::Compile() const noexcept
     }
 }
 
-void Viewer::AddEventHandler(Visitor* eventHandler)
-{
-    m_eventHandlers.emplace_back(eventHandler);
-}
-
 void Viewer::AddWindow(Window* window)
 {
     m_windows.emplace_back(window);

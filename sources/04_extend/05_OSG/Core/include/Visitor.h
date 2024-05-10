@@ -12,6 +12,15 @@ class GraphicsPipeline;
 class Geometry;
 class Animation;
 
+class Event;
+class KeyEvent;
+class MouseEvent;
+class KeyPressEvent;
+class KeyReleaseEvent;
+class MousePressEvent;
+class MouseReleaseEvent;
+class MouseMoveEvent;
+
 class Visitor : public Object
 {
 public:
@@ -24,4 +33,13 @@ public:
     virtual void Apply(GraphicsPipeline&);
     virtual void Apply(Geometry&);
     virtual void Apply(Animation&);
+
+    virtual void Apply(Event&);
+    virtual void Apply(KeyEvent&);
+    virtual void Apply(MouseEvent&);
+    virtual void Apply(KeyPressEvent&);
+    virtual void Apply(KeyReleaseEvent&);
+    virtual void Apply(MousePressEvent&);
+    virtual void Apply(MouseReleaseEvent&);
+    virtual void Apply(MouseMoveEvent&);
 };

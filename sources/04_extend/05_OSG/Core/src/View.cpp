@@ -9,6 +9,16 @@ void View::Accept(Visitor& visitor)
     visitor.Apply(*this);
 }
 
+void View::SetCamera(Camera* camera)
+{
+    m_camera = camera;
+}
+
+const Camera* View::GetCamera() const noexcept
+{
+    return m_camera;
+}
+
 void View::Clear() const noexcept
 {
     Log::GetInstance()->Trace();

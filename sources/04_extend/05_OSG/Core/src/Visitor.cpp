@@ -35,3 +35,35 @@ void Visitor::Apply(Geometry&)
 void Visitor::Apply(Animation&)
 {
 }
+
+void Visitor::Apply(Event&)
+{
+}
+
+void Visitor::Apply(KeyEvent&)
+{
+}
+
+void Visitor::Apply(MouseEvent&)
+{
+}
+
+void Visitor::Apply(KeyPressEvent&)
+{
+}
+
+void Visitor::Apply(KeyReleaseEvent&)
+{
+}
+
+void Visitor::Apply(MousePressEvent&)
+{
+}
+
+void Visitor::Apply(MouseReleaseEvent&)
+{
+}
+
+void Visitor::Apply(MouseMoveEvent&)
+{
+}

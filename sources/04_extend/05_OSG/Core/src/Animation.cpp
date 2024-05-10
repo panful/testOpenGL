@@ -1,6 +1,6 @@
 #include "Animation.h"
-#include "Visitor.h"
 #include "Log.h"
+#include "Visitor.h"
 
 void Animation::Accept(Visitor& visitor)
 {

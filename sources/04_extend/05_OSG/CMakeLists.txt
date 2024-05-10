@@ -16,6 +16,8 @@ set(HEADERS
     Core/include/Transform.h
     Core/include/View.h
     Core/include/Animation.h
+    Core/include/Trackball.h
+    Core/include/Event.h
 
     Utils/include/Log.h
 )
@@ -35,6 +37,8 @@ set(SRCS
     Core/src/Transform.cpp
     Core/src/View.cpp
     Core/src/Animation.cpp
+    Core/src/Trackball.cpp
+    Core/src/Event.cpp
 
     Utils/src/Log.cpp
 )

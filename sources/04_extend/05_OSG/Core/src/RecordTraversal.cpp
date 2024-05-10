@@ -1,5 +1,6 @@
 #include "RecordTraversal.h"
 #include "Animation.h"
+#include "Camera.h"
 #include "Geometry.h"
 #include "GraphicsPipeline.h"
 #include "Log.h"
@@ -17,6 +18,7 @@ void RecordTraversal::Apply(Window& window)
 void RecordTraversal::Apply(View& view)
 {
     Log::GetInstance()->Trace();
+    m_view = &view;
     view.Clear();
     view.Traverse(this);
 }
@@ -25,7 +27,7 @@ void RecordTraversal::Apply(Geometry& geometry)
 {
     Log::GetInstance()->Trace();
 
-    if (auto location = glGetUniformLocation(m_shaderProgramHandle, "transform"); location != -1)
+    if (auto location = glGetUniformLocation(m_shaderProgramHandle, "model"); location != -1)
     {
         glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m_matrix));
     }
@@ -38,6 +40,14 @@ void RecordTraversal::Apply(GraphicsPipeline& graphicsPipeline)
     Log::GetInstance()->Trace();
     m_shaderProgramHandle = graphicsPipeline.GetHandle();
     graphicsPipeline.Bind();
+
+    glm::mat4 view_proj = m_view->GetCamera()->GetProjectMatrix() * m_view->GetCamera()->GetViewMatrix();
+
+    if (auto location = glGetUniformLocation(m_shaderProgramHandle, "default_view_proj"); location != -1)
+    {
+        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(view_proj));
+    }
+
     graphicsPipeline.Traverse(this);
 }
 

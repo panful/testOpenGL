@@ -17,4 +17,5 @@ public:
 private:
     uint32_t m_shaderProgramHandle { 0 };
     glm::mat4 m_matrix { glm::mat4(1.f) };
+    View* m_view {};
 };
