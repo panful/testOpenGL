@@ -12,7 +12,7 @@ public:
     void Clear() const noexcept;
 
     void SetCamera(Camera* camera);
-    const Camera* GetCamera() const noexcept;
+    Camera* GetCamera() const noexcept;
 
 private:
     Camera* m_camera {};

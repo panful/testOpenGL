@@ -9,6 +9,21 @@ void Camera::Accept(Visitor& visitor)
     visitor.Apply(*this);
 }
 
+void Camera::SetLookAt(glm::vec3&& lookAt) noexcept
+{
+    m_lookAt = std::move(lookAt);
+}
+
+void Camera::SetViewUp(glm::vec3&& viewUp) noexcept
+{
+    m_viewUp = std::move(viewUp);
+}
+
+void Camera::SetPosition(glm::vec3&& position) noexcept
+{
+    m_position = std::move(position);
+}
+
 const glm::mat4 Camera::GetViewMatrix() const noexcept
 {
     return glm::lookAt(m_position, m_lookAt, m_viewUp);

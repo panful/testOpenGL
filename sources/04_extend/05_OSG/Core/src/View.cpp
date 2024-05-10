@@ -14,7 +14,7 @@ void View::SetCamera(Camera* camera)
     m_camera = camera;
 }
 
-const Camera* View::GetCamera() const noexcept
+Camera* View::GetCamera() const noexcept
 {
     return m_camera;
 }

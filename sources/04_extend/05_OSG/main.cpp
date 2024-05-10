@@ -2,7 +2,7 @@
  * 1. 多个着色器、多个图元
  * 2. 使用 Transform 节点
  * 3. 动画
- * 4.
+ * 4. 交互、相机
  */
 
 #define TEST4
@@ -402,7 +402,7 @@ int main()
     view.AddChild(&graphicsPipeline2);
 
     Trackball trackball {};
-    trackball.SetView(&view);
+    trackball.AddView(&view);
 
     Window window {};
     window.AddChild(&view);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Visitor.h"
+#include <list>
 
 class Camera;
 class View;
@@ -19,9 +20,9 @@ public:
     void Apply(MouseReleaseEvent& mouseReleaseEvent) override;
     void Apply(MouseMoveEvent& mouseMoveEvent) override;
 
-    void SetView(View* view);
+    void AddView(View* view);
 
 private:
-    Camera* m_camera {};
-    View* m_view {};
+    std::list<View*> m_views {};
+    View* m_pokedView {};
 };
