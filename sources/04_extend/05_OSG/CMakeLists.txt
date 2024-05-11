@@ -18,6 +18,7 @@ set(HEADERS
     Core/include/Animation.h
     Core/include/Trackball.h
     Core/include/Event.h
+    Core/include/SetPipelineStates.h
 
     Utils/include/Log.h
 )
@@ -39,6 +40,7 @@ set(SRCS
     Core/src/Animation.cpp
     Core/src/Trackball.cpp
     Core/src/Event.cpp
+    Core/src/SetPipelineStates.cpp
 
     Utils/src/Log.cpp
 )

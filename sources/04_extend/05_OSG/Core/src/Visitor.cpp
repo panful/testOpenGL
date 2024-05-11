@@ -20,10 +20,6 @@ void Visitor::Apply(Transform&)
 {
 }
 
-void Visitor::Apply(State&)
-{
-}
-
 void Visitor::Apply(GraphicsPipeline&)
 {
 }
@@ -65,5 +61,25 @@ void Visitor::Apply(MouseReleaseEvent&)
 }
 
 void Visitor::Apply(MouseMoveEvent&)
+{
+}
+
+void Visitor::Apply(State&)
+{
+}
+
+void Visitor::Apply(RasterizationState&)
+{
+}
+
+void Visitor::Apply(InputAssemblyState&)
+{
+}
+
+void Visitor::Apply(ColorBlendState&)
+{
+}
+
+void Visitor::Apply(DepthStencilState&)
 {
 }

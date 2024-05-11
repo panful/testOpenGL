@@ -1,5 +1,7 @@
 #include "GraphicsPipeline.h"
 #include "Log.h"
+#include "SetPipelineStates.h"
+#include "State.h"
 #include "Visitor.h"
 
 #include <glad/glad.h>
@@ -22,11 +24,22 @@ void GraphicsPipeline::SetShaderCode(const std::string_view vert, const std::str
     m_geomCode = geom;
 }
 
+void GraphicsPipeline::AddState(State* state)
+{
+    m_states.emplace_back(state);
+}
+
 void GraphicsPipeline::Bind() const noexcept
 {
     Log::GetInstance()->Trace();
 
     glUseProgram(m_shaderProgramHandle);
+
+    SetPipelineStates setPipelineStates {};
+    for (const auto& state : m_states)
+    {
+        state->Accept(setPipelineStates);
+    }
 }
 
 void GraphicsPipeline::UnBind() const noexcept

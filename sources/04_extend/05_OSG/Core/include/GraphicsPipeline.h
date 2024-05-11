@@ -3,6 +3,9 @@
 #include "Group.h"
 #include <string>
 #include <string_view>
+#include <vector>
+
+class State;
 
 class GraphicsPipeline : public Group
 {
@@ -11,6 +14,8 @@ public:
 
     void SetShaderCode(const std::string_view vert, const std::string_view frag);
     void SetShaderCode(const std::string_view vert, const std::string_view frag, const std::string_view geom);
+
+    void AddState(State* state);
 
     void Compile();
     void Bind() const noexcept;
@@ -23,4 +28,6 @@ private:
     std::string m_fragCode {};
     std::string m_geomCode {};
     uint32_t m_shaderProgramHandle { 0 };
+
+    std::vector<State*> m_states {};
 };
