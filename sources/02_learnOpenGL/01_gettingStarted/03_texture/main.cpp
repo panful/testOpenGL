@@ -16,7 +16,7 @@
  * 15. 使用颜色映射表时，指定超出映射表部分的颜色
  */
 
-#define TEST15
+#define TEST9
 
 #ifdef TEST1
 
@@ -1362,43 +1362,7 @@ int main()
     auto cube   = CreateCube();
     auto quad   = CreateQuad();
 
-    constexpr size_t numOfPixels { 10 };
-    std::array<GLubyte, numOfPixels * 4> imageData;
-    for (size_t i = 0; i < numOfPixels; i++)
-    {
-        GLubyte r, g, b;
-        // clang-format off
-        switch (i)
-        {
-        case 0:
-        case 1:
-            { r = 255; g = 0; b = 0; } break;
-        case 2:
-        case 3:
-            { r = 255; g = 255; b = 0; } break;
-        case 4:
-        case 5:
-            { r = 0; g = 255; b = 0; } break;
-        case 6:
-        case 7:
-            { r = 0; g = 255; b = 255; } break;
-        case 8:
-        case 9:
-            { r = 0; g = 0; b = 255; } break;
-        default:
-            break;
-        }
-        // clang-format on
-
-        imageData[i * 4 + 0] = r;
-        imageData[i * 4 + 1] = g;
-        imageData[i * 4 + 2] = b;
-        imageData[i * 4 + 3] = 255;
-
-        std::cout << (int)r << '\t' << (int)g << '\t' << (int)b << '\n';
-    }
-
-    Texture background(imageData.data(), 10, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+    Texture background("textures/wood.png");
     background.Bind();
     background.SetWarpParameter(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
