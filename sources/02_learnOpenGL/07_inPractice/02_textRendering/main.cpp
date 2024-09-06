@@ -56,7 +56,7 @@ int main()
 
     // 将字体信息保存到FT_Face
     FT_Face face;
-    if (FT_New_Face(ft, "shaders/arial.ttf", 0, &face))
+    if (FT_New_Face(ft, "../resources/fonts/arial.ttf", 0, &face))
     {
         std::cerr << "ERROR::FREETYPE: Failed to load font\n";
     }

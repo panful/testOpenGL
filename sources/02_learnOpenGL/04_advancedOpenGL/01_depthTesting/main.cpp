@@ -12,7 +12,83 @@
  * 11.读取指定位置的颜色和深度，glsl main()函数中的return和discard效果不一样
  */
 
-#define TEST11
+#define TEST0
+
+#ifdef TEST0
+
+#include <array>
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program("shaders/02_04_01_TEST1.vs", "shaders/02_04_01_TEST1.fs");
+
+    // clang-format off
+    const std::vector<float> vertices  {
+        -0.8f, -0.5f,  0.2f,     1.f, 0.f, 0.f,
+        -0.8f,  0.5f,  0.2f,     0.f, 1.f, 0.f,
+         0.2f,  0.5f,  0.2f,     0.f, 1.f, 0.f,
+         0.2f, -0.5f,  0.2f,     1.f, 0.f, 0.f,
+
+        -0.2f, -0.5f,  .1f,     1.f, 1.f, 0.f,
+        -0.2f,  0.5f,  .1f,     0.f, 0.f, 1.f,
+         0.8f,  0.5f,  .1f,     0.f, 0.f, 1.f,
+         0.8f, -0.5f,  .1f,     1.f, 1.f, 0.f,
+    };
+
+    const std::vector<uint32_t> indices{
+        0, 1, 2, 0, 2, 3,
+        4, 5, 6, 4, 6, 7,
+    };
+    // clang-format on
+
+    unsigned int VAO, VBO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    //----------------------------------------------------------------------------------
+    // 开启深度测试
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEFT);
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        program.Use();
+        program.SetUniformMat4("transform", glm::mat4(1.0f));
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // remember to delete the buffer
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST0
 
 #ifdef TEST1
 
