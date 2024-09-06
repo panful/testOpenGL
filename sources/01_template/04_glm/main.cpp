@@ -9,7 +9,7 @@
 
 // glm中的向量都是列向量
 
-#define TEST6
+#define TEST7
 
 #ifdef TEST1
 
@@ -429,3 +429,239 @@ int main()
 }
 
 #endif // TEST6
+
+#ifdef TEST7
+
+// #define GLM_FORCE_DEPTH_ZERO_TO_ONE 只是将深度值限制在[0,1]，并不会改变坐标系
+#include "print_glm.h"
+#include <array>
+#include <cmath>
+#include <iostream>
+
+using Mat3 = std::array<std::array<float, 3>, 3>;
+using Vec3 = std::array<float, 3>;
+
+Vec3 Cross(const Vec3& x, const Vec3& y)
+{
+    return { x[1] * y[2] - y[1] * x[2], x[2] * y[0] - y[2] * x[0], x[0] * y[1] - y[0] * x[1] };
+}
+
+float Dot(const Vec3& u, const Vec3& v)
+{
+    return u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+}
+
+Vec3 Normalize(const Vec3& v)
+{
+    const auto d = std::hypot(v[0], v[1], v[2]);
+    return { v[0] / d, v[1] / d, v[2] / d };
+}
+
+Mat3 rotate(float angle, const Vec3& v)
+{
+    const auto a = angle;
+    const auto c = cos(a);
+    const auto s = sin(a);
+
+    Vec3 axis { Normalize(v) };
+    Vec3 temp { (1.f - c) * axis[0], (1.f - c) * axis[1], (1.f - c) * axis[2] };
+
+    Mat3 Rotate {};
+    Rotate[0][0] = c + temp[0] * axis[0];
+    Rotate[0][1] = temp[0] * axis[1] + s * axis[2];
+    Rotate[0][2] = temp[0] * axis[2] - s * axis[1];
+
+    Rotate[1][0] = temp[1] * axis[0] - s * axis[2];
+    Rotate[1][1] = c + temp[1] * axis[1];
+    Rotate[1][2] = temp[1] * axis[2] + s * axis[0];
+
+    Rotate[2][0] = temp[2] * axis[0] + s * axis[1];
+    Rotate[2][1] = temp[2] * axis[1] - s * axis[0];
+    Rotate[2][2] = c + temp[2] * axis[2];
+
+    return Rotate;
+}
+
+Vec3 matrixVectorMultiply(const Mat3& matrix, const Vec3& vector)
+{
+    Vec3 result = { 0.0f, 0.0f, 0.0f };
+    for (size_t i = 0; i < 3; ++i)
+    {
+        for (size_t j = 0; j < 3; ++j)
+        {
+            result[i] += matrix[j][i] * vector[j];
+        }
+    }
+    return result;
+}
+
+int main()
+{
+    // 观察矩阵
+    if (0)
+    {
+        // 默认情况下 glm::lookAt <=> glm::lookAtRH
+        auto lookAt = glm::lookAt(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        std::cout << lookAt << '\n';
+
+        auto lookAtLH = glm::lookAtLH(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        std::cout << lookAtLH << '\n';
+
+        auto lookAtRH = glm::lookAtRH(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        std::cout << lookAtRH << '\n';
+    }
+
+    // 投影矩阵
+    if (0)
+    {
+        auto ortho = glm::ortho(-100.f, 100.f, -100.f, 100.f, -1.f, 1.f);
+        std::cout << ortho << '\n';
+
+        auto perspective = glm::perspective(glm::radians(45.f), 8.f / 6.f, .1f, 100.f);
+        std::cout << perspective << '\n';
+
+        auto frustum = glm::frustum(-100.f, 100.f, -100.f, 100.f, -1.f, 1.f);
+        std::cout << frustum << '\n';
+    }
+
+    // 向量的 distance length std::hypot 点与点之间的距离
+    if (0)
+    {
+        glm::vec3 p1 { 1.f, 2.f, 3.f };
+        glm::vec3 p2 { 3.f, 2.f, 1.f };
+
+        auto length   = glm::length(glm::vec3 { p2.x - p1.x, p2.y - p1.y, p2.z - p1.z });
+        auto distance = glm::distance(p2, p1);
+        auto hypot    = std::hypot(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z);
+        std::cout << length << '\t' << distance << '\t' << hypot << '\n';
+    }
+
+    // 旋转的方向
+    if (0)
+    {
+        // 眼睛看向的方向和旋转轴指向的方向一致，逆时针旋转
+        glm::vec3 axis { 0.f, 0.f, 1.f };
+        glm::vec4 pt { 1.f, 0.f, 0.f, 1.f };
+
+        glm::mat4 mat = glm::rotate(glm::mat4(1.f), glm::radians(-30.f), axis);
+        auto p        = mat * pt;
+        std::cout << p << '\n';
+    }
+
+    // 叉乘的交换律
+    if (0)
+    {
+        glm::vec3 x { 1.f, 0.f, 0.f };
+        glm::vec3 y { 0.f, -1.f, 0.f };
+        glm::vec3 z { 0.f, 0.f, 1.f };
+        auto r1 = glm::cross(x, y);
+        auto r2 = glm::cross(y, x);
+        auto r3 = glm::cross(y, z);
+        auto r4 = glm::cross(z, y);
+        auto r5 = glm::cross(x, z);
+        auto r6 = glm::cross(z, x);
+        std::cout << r1 << r2 << r3 << r4 << r5 << r6 << '\n';
+    }
+
+    // 向量归一化
+    if (0)
+    {
+        glm::vec3 p1 { 1.f, 2.f, 2.f };
+        glm::vec3 p2 { 3.f, 3.f, 2.f };
+
+        auto dir = glm::normalize(p2 - p1);
+        auto dis = glm::distance(p2, p1);
+
+        auto x = p2[0] - p1[0];
+        auto y = p2[1] - p1[1];
+        auto z = p2[2] - p1[2];
+        auto d = std::hypot(x, y, z);
+
+        x /= d;
+        y /= d;
+        z /= d;
+
+        std::cout << x << '\t' << y << '\t' << z << '\n' << dir << '\n' << dis << '\t' << d << '\n';
+
+        auto n = Normalize({ 2.f, 1.f, 0.f });
+        std::cout << n[0] << ' ' << n[1] << ' ' << n[2] << '\n';
+    }
+
+    // 矩阵乘法的顺序
+    if (0)
+    {
+        glm::mat4 m1(1.f, 2.f, 3.f, 4.f, 2.f, 2.f, 3.f, 4.f, 3.f, 2.f, 3.f, 4.f, 4.f, 2.f, 3.f, 4.f);
+        glm::mat4 m2(2.f, 2.f, 3.f, 5.f, 3.f, 2.f, 3.f, 5.f, 4.f, 2.f, 3.f, 5.f, 5.f, 2.f, 3.f, 5.f);
+        glm::vec4 v(1.f, 2.f, 3.f, 4.f);
+
+        auto x = m1 * v;
+        auto y = m2 * x;
+
+        std::cout << y;
+
+        auto z = m2 * m1 * v;
+        std::cout << z;
+    }
+
+    // 矩阵的乘法
+    if (0)
+    {
+        std::array<float, 16> matrix1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+        std::array<float, 16> matrix2 = { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+        std::array<float, 16> matrix3 = { 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
+
+        auto multi = [](const std::array<float, 16>& mat1, const std::array<float, 16>& mat2)
+        {
+            std::array<float, 16> result;
+            for (int i = 0; i < 4; ++i)
+            {
+                for (int j = 0; j < 4; ++j)
+                {
+                    result[i * 4 + j] = 0;
+                    for (int k = 0; k < 4; ++k)
+                    {
+                        result[i * 4 + j] += mat1[i * 4 + k] * mat2[k * 4 + j];
+                    }
+                }
+            }
+
+            return result;
+        };
+
+        // auto result = multi(multi(matrix1, matrix2), matrix3);
+        auto result = multi(matrix1, multi(matrix2, matrix3));
+
+        std::cout << "Result matrix:" << std::endl;
+        for (int i = 0; i < 4; ++i)
+        {
+            for (int j = 0; j < 4; ++j)
+            {
+                std::cout << result[i * 4 + j] << '\t';
+            }
+            std::cout << std::endl;
+        }
+
+        std::cout << "-------------------\n";
+
+        auto res = glm::make_mat4(matrix3.data()) * glm::make_mat4(matrix2.data()) * glm::make_mat4(matrix1.data());
+        std::cout << res;
+    }
+
+    // 计算一个方向旋转到另一个方向的矩阵
+    if (1)
+    {
+        std::array<float, 3> v1 = { 0.0f, 1.0f, 0.0f }; // 向量v1
+        std::array<float, 3> v2 = { 1.0f, 1.0f, 0.0f }; // 向量v2
+
+        auto axis   = Normalize(Cross(v1, v2));
+        auto ctheta = Dot(Normalize(v1), Normalize(v2));
+        auto theta  = std::acos(ctheta);
+
+        auto mat = rotate(theta, axis);
+
+        auto rv = matrixVectorMultiply(mat, v1);
+        std::cout << rv[0] << '\t' << rv[1] << '\t' << rv[2] << '\n';
+    }
+}
+
+#endif // TEST7
