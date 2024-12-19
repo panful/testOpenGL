@@ -57,14 +57,14 @@ int main()
     ShaderProgram hdrProgram("shaders/02_05_06_TEST1_hdr.vs", "shaders/02_05_06_TEST1_hdr.fs");
 
     // clang-format off
-    // 8个顶点
-    std::vector<GLfloat> verticesCube {
-            -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,     0.0f, 0.0f, // bottom-left
-             1.0f,  1.0f, -1.0f,    0.0f, 0.0f, 1.0f,     1.0f, 1.0f, // top-right
-             1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,     1.0f, 0.0f, // bottom-right         
-             1.0f,  1.0f, -1.0f,    0.0f, 0.0f, 1.0f,     1.0f, 1.0f, // top-right
-            -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,     0.0f, 0.0f, // bottom-left
-            -1.0f,  1.0f, -1.0f,    0.0f, 0.0f, 1.0f,     0.0f, 1.0f, // top-left 
+    // 四边形平面
+    std::vector<GLfloat> verticesPlane {
+            -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
+             1.0f,  1.0f, -1.0f,    0.0f, 0.0f, 1.0f,     1.0f, 1.0f,
+             1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,     1.0f, 0.0f,         
+             1.0f,  1.0f, -1.0f,    0.0f, 0.0f, 1.0f,     1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
+            -1.0f,  1.0f, -1.0f,    0.0f, 0.0f, 1.0f,     0.0f, 1.0f,
         };
 
     // 矩形，绘制到默认帧缓冲
@@ -80,10 +80,10 @@ int main()
     };
     // clang-format on
 
-    Renderer cube(verticesCube, { 3, 3, 2 });
+    Renderer plane(verticesPlane, { 3, 3, 2 });
     Renderer quad(vertices_quad, { 3, 2 });
 
-    Texture texture(std::string_view("shaders/wood.png"), 0, true);
+    Texture texture(std::string_view("textures/wood.png"), 0, true);
     Texture fboTexture(windowWidth, windowHeight, GL_RGBA16F, GL_RGBA, GL_FLOAT);
     RenderBufferObject rbo(GL_DEPTH_COMPONENT, windowWidth, windowHeight);
 
@@ -115,7 +115,7 @@ int main()
         lightProgram.SetUniform3fv("lights.Color", glm::vec3(100.f));
 
         texture.Bind();
-        cube.Draw(GL_TRIANGLES);
+        plane.Draw(GL_TRIANGLES);
         texture.Release();
 
         glDisable(GL_DEPTH_TEST);

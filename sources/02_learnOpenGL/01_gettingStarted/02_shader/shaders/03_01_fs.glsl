@@ -8,12 +8,12 @@
 * mix(x,y,a) 返回 x*(1-a)+y*a
 * fract(x)   返回x的小数部分
 * mod(x,y)   返回x除以y的余数
-* floor(x)   返回x向上取整
-* ceil(x)    返回x向下取整
-* step(x,y)  如果y小于x返回0，如果y大于x返回1
-* smoothstep(x,y,z) 当z<x返回0，当z>y返回1，介于x,y之间返回平滑的曲线
-* min(x,y)   返回x和y的较小值，可以求并集
-* max(x,y)   返回x和y的较大值，可以求交集
+* floor(x)   返回x向下取整
+* ceil(x)    返回x向上取整
+* step(x,y)  如果y小于x返回0，如果y大于等于x返回1
+* smoothstep(x,y,z) 当 z < x 返回0，当 z > y 返回1，介于 {x,y} 之间返回平滑的曲线
+* min(x,y)   返回 {x,y} 的较小值，可以求并集
+* max(x,y)   返回 {x,y} 的较大值，可以求交集
 * clamp(x, y, z) = min(max(x, y), z);
 * normalize  归一化
 * faceforward
