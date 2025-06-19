@@ -14,7 +14,7 @@ layout(points) in;
 // line_strip
 // triangle_strip
 // 第二个参数表示新生成的图元的顶点个数，如果超过了这个值，OpenGL将不会绘制多出的顶点
-// 公用的顶点算一个顶点，例如两个三角形4个顶点而不是6个
+// 公用的顶点算一个顶点，例如两个三角形4个顶点而不是6个，使用三角形带方式绘制
 layout(triangle_strip, max_vertices = 3) out;
 
 // gl_in可以看作是一个如下的接口块（glsl内部的变量），

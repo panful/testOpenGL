@@ -445,6 +445,11 @@ protected:
         m_camera.SetAspect(static_cast<float>(size[0]) / static_cast<float>(size[1]));
     }
 
+    std::array<int, 2> GetWindowSize() const
+    {
+        return m_windowSize;
+    }
+
     Camera& GetCamera()
     {
         return m_camera;
@@ -602,6 +607,11 @@ public:
     {
         return glm::vec3(
             m_interactor.GetCamera().GetPosition()[0], m_interactor.GetCamera().GetPosition()[1], m_interactor.GetCamera().GetPosition()[2]);
+    }
+
+    std::array<int, 2> GetWindowSize() const
+    {
+        return m_interactor.GetWindowSize();
     }
 
     // 临时用来测试交互
@@ -912,6 +922,11 @@ public:
 
     // GLfloat
     //----------------------------------------------------------------------
+    void SetUniform1fv(const std::string_view& name, GLsizei count, const GLfloat* v) const
+    {
+        glUniform1fv(Location(name), count, v);
+    }
+
     void SetUniform1f(const std::string_view& name, GLfloat v) const
     {
         glUniform1f(Location(name), v);
