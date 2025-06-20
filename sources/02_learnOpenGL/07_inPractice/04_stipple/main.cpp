@@ -2,6 +2,7 @@
  * 1. 通过在片段着色器中计算模长绘制虚线
  * 2. 通过将直线看作矩形绘制任意宽度的直线，使用几何着色器
  * 3. 绘制任意宽度的虚线
+ * 4. 连续多段线（GL_LINE_STRIP）绘制虚线
  */
 
 #define TEST1
@@ -120,11 +121,11 @@ int main()
 
 #ifdef TEST3
 
+#include <common.hpp>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
-
-#include <common.hpp>
+#include <numeric>
 
 int main()
 {
@@ -175,6 +176,12 @@ int main()
         { "ISO15W100", { 10.0f, 5.0f, 10.0f, 5.0f, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 5.0f } } // __ __ . . . __ __ . . .
     };
     // clang-format on
+
+    // 可以将片段着色器中 total_length 改为 uniform ，这样就不需要每个片段都计算一次
+    for (auto& pattern : line_patterns)
+    {
+        std::cout << std::reduce(pattern.segments.begin(), pattern.segments.end(), 0.f, std::plus<float>()) << std::endl;
+    }
 
     Renderer line(vertices, indices, { 3 }, GL_LINES);
 
@@ -232,3 +239,103 @@ int main()
 }
 
 #endif // TEST3
+
+#ifdef TEST4
+
+#include <common.hpp>
+
+int main()
+{
+    InitOpenGL opengl(Camera({ 2.f, 2.f, 8.f }));
+    auto window = opengl.GetWindow();
+
+    ShaderProgram program("shaders/02_07_04_TEST4.vert", "shaders/02_07_04_TEST4.frag");
+
+    constexpr size_t num_points = 10;
+
+    std::vector<float> vertices {};
+    vertices.reserve(num_points * 3);
+    for (size_t i = 0; i < num_points; ++i)
+    {
+        vertices.emplace_back(static_cast<float>(i));
+        vertices.emplace_back(0.f);
+        vertices.emplace_back(0.f);
+    }
+
+    // 从线段开始位置的累积距离（像素距离）
+    std::vector<float> pathLen {};
+    pathLen.resize(num_points, 0.f);
+
+    // 每个顶点的屏幕坐标
+    std::vector<glm::vec2> screenPos {};
+    screenPos.resize(num_points);
+
+    uint32_t VAO {}, VBO {};
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * num_points * 4, NULL, GL_STATIC_DRAW); // xyz + 累计距离 = 4
+
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 3 * num_points, vertices.data());
+    glBufferSubData(GL_ARRAY_BUFFER, sizeof(float) * 3 * num_points, sizeof(float) * 1 * num_points, pathLen.data());
+
+    // 顶点位置数据
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // 累计距离数据
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(sizeof(float) * 3 * num_points));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+    glEnable(GL_DEPTH_TEST);
+    glLineWidth(3.f);
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(.1f, .2f, .3f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto view_matrix = opengl.GetViewMatrix();
+        auto proj_matrix = opengl.GetProjectionMatrix();
+        auto window_size = opengl.GetWindowSize();
+        auto resolution  = glm::vec2 { static_cast<float>(window_size[0]), static_cast<float>(window_size[1]) };
+
+        for (size_t i = 0; i < num_points; ++i)
+        {
+            glm::vec3 worldPos = { vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2] };
+            glm::vec4 clipPos  = proj_matrix * view_matrix * glm::vec4(worldPos, 1.f);
+            screenPos[i]       = (glm::vec2(clipPos) / clipPos.w + glm::vec2(1.f)) * 0.5f * resolution;
+        }
+
+        float totalLength { 0.f };
+        for (size_t i = 1; i < num_points; ++i)
+        {
+            totalLength += glm::length(screenPos[i] - screenPos[i - 1]);
+            pathLen[i] = totalLength;
+        }
+
+        program.Use();
+        program.SetUniformMat4("uModel", glm::mat4(1.f));
+        program.SetUniformMat4("uView", view_matrix);
+        program.SetUniformMat4("uProj", proj_matrix);
+
+        glBindVertexArray(VAO);
+        glBufferSubData(GL_ARRAY_BUFFER, sizeof(float) * 3 * num_points, sizeof(float) * 1 * num_points, pathLen.data());
+        glDrawArrays(GL_LINE_STRIP, 0, static_cast<GLsizei>(num_points));
+        glBindVertexArray(0);
+
+        glfwPollEvents();
+        glfwSwapBuffers(window);
+    }
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+
+    return 0;
+}
+
+#endif // TEST4
