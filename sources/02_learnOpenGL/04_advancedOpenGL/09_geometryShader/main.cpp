@@ -9,6 +9,7 @@
  * 8. 使用几何着色器实现广告牌效果（物体始终朝向相机）
  * 9. 在片段着色器中利用gl_PrimitiveID给每一个单元设置不同的颜色
  * 10.利用几何着色器生成三角形的边缘方程，给实体多边形图元添加边框
+ * 11.任意大小、样式的顶点
  */
 
 #define TEST10
@@ -900,3 +901,68 @@ int main()
     return 0;
 }
 #endif // TEST10
+
+#ifdef TEST11
+
+#include <common2.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
+int main()
+{
+    Window window("Test Window", 800, 600);
+
+    ShaderProgram program("shaders/02_04_09_TEST11.vert", "shaders/02_04_09_TEST11.frag", "shaders/02_04_09_TEST11.geom");
+
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplGlfw_InitForOpenGL(window.window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+    ImGui::StyleColorsDark();
+
+    std::vector<float> points { 0.f, 0.f, 0.f, 10.f, 10.f, 0.f, 0.f, 10.f, 0.f, 10.f, 0.f, 0.f };
+
+    Texture texture("textures/star.png");
+    Renderer drawable(points, { 3 }, GL_POINTS);
+
+    auto aabb = AABBTool::ComputeAABB(points, 3);
+    window.interactor.camera.Reset(aabb);
+
+    glDisable(GL_DEPTH_TEST);
+    float point_size{5.f};
+    while (!glfwWindowShouldClose(window.window))
+    {
+        glfwPollEvents();
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        window.interactor.camera.ResetClipRange(aabb);
+
+        auto proj = window.interactor.camera.projMat;
+        auto view = window.interactor.camera.viewMat;
+
+        program.Use();
+        texture.Bind();
+        program.SetUniformMat4("transform", proj * view);
+        program.SetUniform1f("uPointSize", point_size);
+        program.SetUniform2f("uResolution", 800.f, 600.f);
+        drawable.Draw();
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        {
+            ImGui::Begin("Window");
+            ImGui::SliderFloat("Point Size", &point_size, 1.f, 20.f);
+            ImGui::End();
+        }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window.window);
+    }
+}
+
+#endif // TEST11
