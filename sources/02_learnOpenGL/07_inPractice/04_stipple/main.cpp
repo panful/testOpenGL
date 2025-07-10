@@ -3,9 +3,10 @@
  * 2. 通过将直线看作矩形绘制任意宽度的直线，使用几何着色器
  * 3. 绘制任意宽度的虚线
  * 4. 连续多段线（GL_LINE_STRIP）绘制虚线
+ * 5. CAD 虚线（模型长度）
  */
 
-#define TEST1
+#define TEST5
 
 #ifdef TEST1
 
@@ -159,7 +160,6 @@ int main()
     // clang-format off
     std::vector<LinePattern> line_patterns = {
         { "CONTINUOUS", {} },
-        { "ISO02W100", { 10.0f, 5.0f } },                                                 // __ __ __
         { "ISO02W100", { 10.0f, 5.0f } },                                                 // __ __ __
         { "ISO03W100", { 10.0f, 10.0f } },                                                // __    __
         { "ISO04W100", { 15.0f, 5.0f, 1.0f, 5.0f } },                                     // ____ . ____ .
@@ -339,3 +339,180 @@ int main()
 }
 
 #endif // TEST4
+
+#ifdef TEST5
+
+#include <common2.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
+using Vec3 = std::array<float, 3>;
+
+struct DashedResult
+{
+    std::vector<Vec3> line_vertices; // 每两个为一段实线 GL_LINES
+    std::vector<Vec3> dot_points;    // 点
+
+    static std::vector<float> Vec3ToFloat3(const std::vector<Vec3>& input)
+    {
+        std::vector<float> result {};
+        result.reserve(input.size());
+        result.assign(reinterpret_cast<const float*>(input.data()), reinterpret_cast<const float*>(input.data()) + 3 * input.size());
+        return result;
+    }
+};
+
+inline float distance(const Vec3& a, const Vec3& b)
+{
+    return std::sqrt((a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1]) + (a[2] - b[2]) * (a[2] - b[2]));
+}
+
+inline Vec3 lerp(const Vec3& a, const Vec3& b, float t)
+{
+    return { a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1]), a[2] + t * (b[2] - a[2]) };
+}
+
+DashedResult generate_dashed_polyline(const std::vector<Vec3>& points, const std::vector<float>& pattern, float ltscale)
+{
+    DashedResult result;
+    if (points.size() < 2 || pattern.empty())
+        return result;
+
+    // expand pattern with scale
+    std::vector<float> scaled_pattern;
+    for (float v : pattern)
+        scaled_pattern.push_back(v * ltscale);
+
+    size_t pattern_index      = 0;
+    float pattern_pos         = 0.0;
+    float current_pattern_len = std::abs(scaled_pattern[pattern_index]);
+    bool drawing              = scaled_pattern[pattern_index] >= 0;
+
+    size_t last_point_index = 0;
+
+    for (size_t i = 1; i < points.size(); ++i)
+    {
+        Vec3 p0       = points[last_point_index];
+        Vec3 p1       = points[i];
+        float seg_len = distance(p0, p1);
+        float seg_pos = 0.0;
+
+        while (seg_pos < seg_len)
+        {
+            float remaining_seg = seg_len - seg_pos;
+            float remaining_pat = current_pattern_len - pattern_pos;
+            float step          = std::min(remaining_seg, remaining_pat);
+
+            float t0 = seg_pos / seg_len;
+            float t1 = (seg_pos + step) / seg_len;
+            Vec3 q0  = lerp(p0, p1, t0);
+            Vec3 q1  = lerp(p0, p1, t1);
+
+            if (drawing)
+            {
+                if (std::abs(scaled_pattern[pattern_index]) < 1e-6)
+                {
+                    // 点
+                    result.dot_points.push_back(q0);
+                }
+                else
+                {
+                    // 实线段
+                    result.line_vertices.push_back(q0);
+                    result.line_vertices.push_back(q1);
+                }
+            }
+
+            seg_pos += step;
+            pattern_pos += step;
+
+            if (std::abs(pattern_pos - current_pattern_len) < 1e-6 || pattern_pos > current_pattern_len)
+            {
+                // 前进到下一个 pattern
+                pattern_index       = (pattern_index + 1) % scaled_pattern.size();
+                current_pattern_len = std::abs(scaled_pattern[pattern_index]);
+                drawing             = scaled_pattern[pattern_index] >= 0;
+                pattern_pos         = 0.0;
+            }
+        }
+
+        last_point_index = i;
+    }
+
+    return result;
+}
+
+int main()
+{
+    Window window("Test Window", 800, 600);
+
+    ShaderProgram program("shaders/02_07_04_TEST5.vert", "shaders/02_07_04_TEST5.frag");
+
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplGlfw_InitForOpenGL(window.window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+    ImGui::StyleColorsDark();
+
+    std::vector<Vec3> sample_points { { 0., 0., 0. }, { 10., 10., 0. }, { 20., 10., 0. } };
+    std::vector<float> pattern { 1.f, -.5f, 0.f, -.5f }; // 正数表示实线，0表示点，负数表示空
+    float ltscale { 1.f };
+    auto segments = generate_dashed_polyline(sample_points, pattern, ltscale);
+
+    auto solid_lines = DashedResult::Vec3ToFloat3(sample_points);
+    auto lines       = DashedResult::Vec3ToFloat3(segments.line_vertices);
+    auto points      = DashedResult::Vec3ToFloat3(segments.dot_points);
+
+    Renderer drawable_solid_lines(solid_lines, { 3 }, GL_LINE_STRIP);
+    Renderer drawable_lines(lines, { 3 }, GL_LINES);
+    Renderer drawable_points(points, { 3 }, GL_POINTS);
+
+    auto aabb = AABBTool::ComputeAABB(solid_lines, 3);
+    window.interactor.camera.Reset(aabb);
+
+    glDisable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window.window))
+    {
+        glfwPollEvents();
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        window.interactor.camera.ResetClipRange(aabb);
+
+        auto proj = window.interactor.camera.projMat;
+        auto view = window.interactor.camera.viewMat;
+
+        program.Use();
+        program.SetUniformMat4("transform", proj * view);
+
+        glLineWidth(3.f);
+        glPointSize(5.f);
+        program.SetUniform3f("uColor", 1.f, 0.f, 0.f);
+        drawable_lines.Draw();
+        drawable_points.Draw();
+
+        glLineWidth(1.f);
+        program.SetUniform3f("uColor", 0.f, 1.f, 0.f);
+        drawable_solid_lines.Draw();
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        {
+            ImGui::Begin("Camera");
+            if (ImGui::Button("Print"))
+            {
+                window.interactor.camera.Print();
+            }
+            ImGui::End();
+        }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window.window);
+    }
+}
+
+#endif // TEST5
