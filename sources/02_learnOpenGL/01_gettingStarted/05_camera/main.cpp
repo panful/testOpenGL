@@ -8,11 +8,13 @@
  * 7. 鼠标控制相机观察的方向，俯仰角，偏航角
  * 8. 测试自定义相机
  * 9. 正交投影 透视投影互相转换
+ * 10. Camera2 测试轨道相机
+ * 11. Camera2 测试 FPS 相机
  */
 
 // 万向节死锁 https://zhuanlan.zhihu.com/p/344050856
 
-#define TEST9
+#define TEST11
 
 #ifdef TEST1
 
@@ -1216,3 +1218,201 @@ int main()
 }
 
 #endif // TEST9
+
+#ifdef TEST10
+
+#include <common2.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
+int main()
+{
+    Window window("Test Window", 800, 600);
+    window.interactor.camera.type = Camera2::Type::Orthographic;
+
+    ShaderProgram program("shaders/02_01_05_TEST1.vs", "shaders/02_01_05_TEST1.fs");
+
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplGlfw_InitForOpenGL(window.window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+    ImGui::StyleColorsDark();
+
+    // clang-format off
+    std::vector<GLfloat> vertices {
+        // pos                  // color
+        -0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左下
+         0.5f, -0.5f, 0.5f,     0.0f, 1.0f, 0.0f, // 前右下
+         0.5f,  0.5f, 0.5f,     0.0f, 0.0f, 1.0f, // 前右上
+        -0.5f,  0.5f, 0.5f,     1.0f, 1.0f, 1.0f, // 前左上
+
+        -0.5f, -0.5f, -.5f,     1.0f, 1.0f, 0.0f, // 后左下
+         0.5f, -0.5f, -.5f,     0.0f, 1.0f, 1.0f, // 后右下
+         0.5f,  0.5f, -.5f,     1.0f, 0.0f, 1.0f, // 后右上
+        -0.5f,  0.5f, -.5f,     0.0f, 0.0f, 0.0f, // 后左上
+    };
+
+    std::vector<GLuint> indices {
+        0, 1, 3,    1, 2, 3,    // 前
+        1, 5, 2,    5, 6, 2,    // 右
+        5, 4, 6,    4, 7, 6,    // 后
+        4, 0, 7,    0, 3, 7,    // 左
+        3, 2, 7,    2, 6, 7,    // 上
+        4, 1, 0,    4, 5, 1,    // 下
+    };
+    // clang-format on
+
+    Renderer drawable(vertices, indices, { 3, 3 }, GL_TRIANGLES);
+
+    auto aabb = AABBTool::ComputeAABB(vertices, 6);
+    window.interactor.camera.Reset(aabb);
+
+    glEnable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window.window))
+    {
+        glfwPollEvents();
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        window.interactor.camera.ResetClipRange(aabb);
+
+        auto proj = window.interactor.camera.projMat;
+        auto view = window.interactor.camera.viewMat;
+        
+        program.Use();
+        program.SetUniformMat4("transform", proj * view);
+
+        drawable.Draw();
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        {
+            ImGui::Begin("Camera");
+            if (ImGui::Button("Print"))
+            {
+                window.interactor.camera.Print();
+            }
+            ImGui::End();
+        }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window.window);
+    }
+}
+
+#endif // TEST10
+
+#ifdef TEST11
+
+#include <common2.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
+int main()
+{
+    Window window("Test Window", 800, 600);
+    window.interactor.camera.eyePos    = glm::vec3(0.f);
+    window.interactor.camera.focalPos  = glm::vec3(0.f, 0.f, 1.f);
+    window.interactor.camera.viewUp    = glm::vec3(0.f, 1.f, 0.f);
+    window.interactor.camera.clipRange = glm::vec2(.01f, 1.f);
+    window.interactor.camera.type      = Camera2::Type::Perspective;
+    window.interactor.camera.behavior  = Camera2::Behavior::FPS;
+    window.interactor.camera.Update();
+    
+    ShaderProgram program("shaders/02_01_05_TEST1.vs", "shaders/02_01_05_TEST1.fs");
+
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplGlfw_InitForOpenGL(window.window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+    ImGui::StyleColorsDark();
+
+    // clang-format off
+    std::vector<GLfloat> vertices {
+        // pos                // color
+        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+         
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,
+    };
+    // clang-format on
+
+    Renderer drawable(vertices, { 3, 3 }, GL_TRIANGLES);
+    
+    glEnable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window.window))
+    {
+        glfwPollEvents();
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        auto proj = window.interactor.camera.projMat;
+        auto view = window.interactor.camera.viewMat;
+
+        program.Use();
+        program.SetUniformMat4("transform", proj * view);
+
+        drawable.Draw();
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        {
+            ImGui::Begin("Camera");
+            if (ImGui::Button("Print"))
+            {
+                window.interactor.camera.Print();
+            }
+            ImGui::End();
+        }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window.window);
+    }
+}
+
+#endif // TEST11
