@@ -2,9 +2,10 @@
  * 1. 实例化，一组顶点绘制多个同样的图形 gl_InstanceID
  * 2. 使用多个VBO的方式给每个实例设置不同的属性 glVertexAttribDivisor
  * 3. 对 GL_TRIANGLE_STRIP 类型的图元进行实例化
+ * 4. 给每个实例设置多种属性（位置和方向）
  */
 
-#define TEST3
+#define TEST4
 
 #ifdef TEST1
 
@@ -303,3 +304,140 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 #endif // TEST3
+
+#ifdef TEST4
+
+#include <common2.hpp>
+
+struct CameraInstance
+{
+    glm::vec3 pos {}; // 位置
+    glm::quat rot {}; // 观察方向
+};
+
+// 四棱锥 Wireframe
+std::vector<float> pyramid_positions  = { -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.5f };
+std::vector<uint32_t> pyramid_indices = { 0, 1, 1, 2, 2, 3, 3, 0, 0, 4, 1, 4, 2, 4, 3, 4 };
+
+// 立方体 Triangles
+std::vector<float> cube_positions  = { -0.25f, -0.25f, 1.25f, 0.25f, -0.25f, 1.25f, 0.25f, 0.25f, 1.25f, -0.25f, 0.25f, 1.25f, -0.25f, -0.25f, 1.75f,
+     0.25f, -0.25f, 1.75f, 0.25f, 0.25f, 1.75f, -0.25f, 0.25f, 1.75f };
+std::vector<uint32_t> cube_indices = { 0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 0, 4, 5, 0, 5, 1, 1, 5, 6, 1, 6, 2, 2, 6, 7, 2, 7, 3, 3, 7, 4, 3, 4, 0 };
+
+int main()
+{
+    Window window("Test Window", 800, 600);
+
+    ShaderProgram program("shaders/02_04_10_TEST4.vert", "shaders/02_04_10_TEST4.frag");
+
+    std::vector<CameraInstance> instances;
+    for (int i = 0; i < 100; i++)
+    {
+        CameraInstance c { .pos = glm::vec3((i % 10) * 5.0f, (i / 10) * 5.0f, 0.0f), .rot = glm::angleAxis((i % 10) * 0.3f, glm::vec3(0, 1, 0)) };
+        instances.push_back(c);
+    }
+
+    // instance
+    uint32_t InstanceVBO {};
+    glGenBuffers(1, &InstanceVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, InstanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, instances.size() * sizeof(CameraInstance), instances.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // cube
+    uint32_t VAO_cube {}, VBO_cube {}, EBO_cube {};
+    glGenVertexArrays(1, &VAO_cube);
+    glGenBuffers(1, &VBO_cube);
+    glGenBuffers(1, &EBO_cube);
+
+    glBindVertexArray(VAO_cube);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_cube);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * cube_positions.size(), cube_positions.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_cube);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * cube_indices.size(), cube_indices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, InstanceVBO);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(CameraInstance), (void*)0);
+    glVertexAttribDivisor(1, 1);
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(CameraInstance), (void*)offsetof(CameraInstance, rot));
+    glVertexAttribDivisor(2, 1);
+
+    glBindVertexArray(0);
+
+    // pyramid
+    uint32_t VAO_pyramid {}, VBO_pyramid {}, EBO_pyramid {};
+    glGenVertexArrays(1, &VAO_pyramid);
+    glGenBuffers(1, &VBO_pyramid);
+    glGenBuffers(1, &EBO_pyramid);
+
+    glBindVertexArray(VAO_pyramid);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_pyramid);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * pyramid_positions.size(), pyramid_positions.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_pyramid);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * pyramid_indices.size(), pyramid_indices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, InstanceVBO);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(CameraInstance), (void*)0);
+    glVertexAttribDivisor(1, 1);
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(CameraInstance), (void*)offsetof(CameraInstance, rot));
+    glVertexAttribDivisor(2, 1);
+
+    glBindVertexArray(0);
+
+    auto aabb1 = AABBTool::ComputeAABB(cube_positions, 3);
+    auto aabb2 = AABBTool::ComputeAABB(pyramid_positions, 3);
+    auto aabb3 = AABBTool::MergeAABB({ aabb1, aabb2 });
+    AABB aabb { .min_x = aabb3.min_x,
+        .min_y         = aabb3.min_y,
+        .min_z         = aabb3.min_z,
+        .max_x         = aabb3.max_x + 50.f,
+        .max_y         = aabb3.max_y + 50.f,
+        .max_z         = aabb3.max_z };
+
+    window.interactor.camera.Reset(aabb);
+
+    glEnable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window.window))
+    {
+        glfwPollEvents();
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        window.interactor.camera.ResetClipRange(aabb);
+
+        auto proj = window.interactor.camera.projMat;
+        auto view = window.interactor.camera.viewMat;
+
+        program.Use();
+        program.SetUniformMat4("viewProj", proj * view);
+
+        glBindVertexArray(VAO_cube);
+        glDrawElementsInstanced(GL_TRIANGLES, (int)cube_indices.size(), GL_UNSIGNED_INT, 0, (int)instances.size());
+
+        glBindVertexArray(VAO_pyramid);
+        glDrawElementsInstanced(GL_LINES, (int)pyramid_indices.size(), GL_UNSIGNED_INT, 0, (int)instances.size());
+
+        glfwSwapBuffers(window.window);
+    }
+}
+
+#endif // TEST4

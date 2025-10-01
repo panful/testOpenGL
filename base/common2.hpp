@@ -620,7 +620,6 @@ private:
     {
         if (auto ptr = static_cast<Interactor2*>(glfwGetWindowUserPointer(window)))
         {
-        {
         }
     }
 };
