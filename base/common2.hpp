@@ -309,6 +309,8 @@ public:
                 auto near   = clipRange[0];
                 auto far    = clipRange[1];
 
+                // 当 viewRange = { -1., 1., -1., 1. }; 时，它们两个相同
+                // projMat = glm::perspective(viewAngle, aspectRatio, near, far);
                 projMat = glm::frustum(left, right, bottom, top, near, far);
                 break;
             }
@@ -335,6 +337,7 @@ public:
     glm::vec2 mousePosition {};
     glm::vec2 lastMousePosition {};
     std::function<void(const glm::vec2&)> windowResizeCallback {};
+    std::function<void(const glm::vec2&)> middleButtonPressCallback {};
 
 public:
     glm::vec3 DisplayToWorld(const glm::vec2& displayPoint)
@@ -437,6 +440,8 @@ public:
 
     void MiddleButtonPressEvent()
     {
+        if (middleButtonPressCallback)
+            middleButtonPressCallback(mousePosition);
     }
 
     void MiddleButtonReleaseEvent()

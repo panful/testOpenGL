@@ -2,7 +2,8 @@
  * 1. 鼠标中键按下并拖动，绘制一个四边形
  * 2. 3D图元的拾取
  * 3. 拾取多边形的顶点
- * 4. 屏幕坐标 世界坐标 互相转换
+ * 4. 屏幕坐标 世界坐标 互相转换，绘制拾取的顶点，使用 Camera
+ * 5. 将屏幕坐标转换为世界坐标，绘制拾取的顶点，使用 Camera2
  */
 
 #define TEST4
@@ -701,3 +702,129 @@ int main()
 }
 
 #endif // TEST4
+
+#ifdef TEST5
+
+#include <common2.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
+static constexpr int win_w { 800 };
+static constexpr int win_h { 600 };
+
+static std::vector<float> picked_pos {};
+
+int main()
+{
+    Window window("Test Window", win_w, win_h);
+    window.interactor.camera.type = Camera2::Type::Perspective;
+
+    window.interactor.middleButtonPressCallback = [&window](const glm::vec2& pos)
+    {
+        float x = pos.x;
+        float y = pos.y + win_h;                                    // 转换为窗口左下角为原点
+
+        auto w = window.interactor.DisplayToWorld(glm::vec2(x, y)); // NDC 的 z 值是 0
+
+        std::cout << "Mouse pos: " << x << ", " << y << std::endl;
+        std::cout << "World pos: " << w.x << ", " << w.y << ", " << w.z << std::endl;
+        picked_pos.insert(picked_pos.cend(), { w.x, w.y, w.z, 0.f, 0.f, 1.f });
+    };
+
+    ShaderProgram program("shaders/02_01_07_TEST3.vs", "shaders/02_01_07_TEST3.fs");
+
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplGlfw_InitForOpenGL(window.window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+    ImGui::StyleColorsDark();
+
+    // clang-format off
+    std::vector<GLfloat> verticesCube{
+        // pos                  // color
+        -0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左下
+         0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前右下
+         0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前右上
+        -0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左上
+
+        -0.5f, -0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后左下
+         0.5f, -0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后右下
+         0.5f,  0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后右上
+        -0.5f,  0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后左上
+    };
+
+    std::vector<GLuint> indicesCube{
+        0, 1, 3,    1, 2, 3,    // 前
+        1, 5, 2,    5, 6, 2,    // 右
+        5, 4, 6,    4, 7, 6,    // 后
+        4, 0, 7,    0, 3, 7,    // 左
+        3, 2, 7,    2, 6, 7,    // 上
+        4, 1, 0,    4, 5, 1,    // 下
+    };
+    // clang-format on
+
+    Renderer drawable(vertices, indices, { 3, 3 }, GL_TRIANGLES);
+    Renderer* picked_line_drawable {};
+
+    auto aabb = AABBTool::ComputeAABB(vertices, 6);
+    window.interactor.camera.Reset(aabb);
+
+    bool draw_cube = true;
+
+    glEnable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window.window))
+    {
+        glfwPollEvents();
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if (picked_pos.size() > 1 && picked_line_drawable != nullptr)
+        {
+            auto line_aabb = AABBTool::ComputeAABB(picked_pos, 6);
+            aabb           = AABBTool::MergeAABB({ line_aabb, aabb });
+        }
+
+        window.interactor.camera.ResetClipRange(aabb);
+
+        auto proj = window.interactor.camera.projMat;
+        auto view = window.interactor.camera.viewMat;
+
+        program.Use();
+        program.SetUniformMat4("model", glm::mat4(1.f));
+        program.SetUniformMat4("view", view);
+        program.SetUniformMat4("projection", proj);
+
+        if (draw_cube)
+            drawable.Draw();
+        if (picked_line_drawable)
+            picked_line_drawable->Draw();
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        {
+            ImGui::Begin("Camera");
+            if (ImGui::Button("Generator line"))
+            {
+                if (picked_pos.size() > 1 && picked_line_drawable == nullptr)
+                {
+                    picked_line_drawable = new Renderer(picked_pos, { 3, 3 }, GL_LINE_LOOP);
+                }
+            }
+
+            if (ImGui::Button("Change cube visible"))
+            {
+                draw_cube = !draw_cube;
+            }
+            ImGui::End();
+        }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window.window);
+    }
+}
+
+#endif // TEST5
