@@ -338,6 +338,7 @@ public:
     glm::vec2 lastMousePosition {};
     std::function<void(const glm::vec2&)> windowResizeCallback {};
     std::function<void(const glm::vec2&)> middleButtonPressCallback {};
+    std::function<void(const glm::vec2&)> middleButtonReleaseCallback {};
 
 public:
     glm::vec3 DisplayToWorld(const glm::vec2& displayPoint)
@@ -446,6 +447,8 @@ public:
 
     void MiddleButtonReleaseEvent()
     {
+        if (middleButtonReleaseCallback)
+            middleButtonReleaseCallback(mousePosition);
     }
 
     void MouseWheelForwardEvent()

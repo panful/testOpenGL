@@ -4,9 +4,10 @@
  * 3. 拾取多边形的顶点
  * 4. 屏幕坐标 世界坐标 互相转换，绘制拾取的顶点，使用 Camera
  * 5. 将屏幕坐标转换为世界坐标，绘制拾取的顶点，使用 Camera2
+ * 6. 将屏幕坐标转换为世界坐标，绘制鼠标中键选择的框
  */
 
-#define TEST4
+#define TEST6
 
 #ifdef TEST1
 
@@ -828,3 +829,201 @@ int main()
 }
 
 #endif // TEST5
+
+#ifdef TEST6
+
+#include <common2.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
+static constexpr int win_w { 800 };
+static constexpr int win_h { 600 };
+
+static glm::vec3 press_pos {};
+static glm::vec3 release_pos {};
+static bool middle_release { false };
+
+std::vector<float> GeneratorCube()
+{
+    glm::vec3 min { std::min(press_pos.x, release_pos.x), std::min(press_pos.y, release_pos.y), std::min(press_pos.z, release_pos.z) };
+    glm::vec3 max { std::max(press_pos.x, release_pos.x), std::max(press_pos.y, release_pos.y), std::max(press_pos.z, release_pos.z) };
+
+    std::vector<float> cube {};
+    cube.insert(cube.cend(), { min.x, min.y, min.z, 1.f, 0.f, 0.f });
+    cube.insert(cube.cend(), { max.x, min.y, min.z, 1.f, 0.f, 0.f });
+    cube.insert(cube.cend(), { max.x, max.y, min.z, 1.f, 0.f, 0.f });
+    cube.insert(cube.cend(), { min.x, max.y, min.z, 1.f, 0.f, 0.f });
+    cube.insert(cube.cend(), { min.x, min.y, max.z, 0.f, 1.f, 0.f });
+    cube.insert(cube.cend(), { max.x, min.y, max.z, 0.f, 1.f, 0.f });
+    cube.insert(cube.cend(), { max.x, max.y, max.z, 0.f, 1.f, 0.f });
+    cube.insert(cube.cend(), { min.x, max.y, max.z, 0.f, 1.f, 0.f });
+    return cube;
+}
+
+std::vector<float> GeneratorCube2(const Camera2& camera)
+{
+    glm::vec3 dir   = glm::normalize((camera.focalPos - camera.eyePos));
+    glm::vec3 up    = glm::normalize(camera.viewUp);
+    glm::vec3 right = glm::cross(dir, up);
+
+    float vDis = glm::dot((release_pos - press_pos), -up);
+    float hDis = glm::dot((release_pos - press_pos), right);
+    float zN   = camera.clipRange[0];
+    float zF   = camera.clipRange[1];
+
+    auto p1 = press_pos - up * vDis;
+    auto p2 = release_pos;
+    auto p3 = release_pos + up * vDis;
+    auto p4 = press_pos;
+
+    auto p5 = press_pos - up * vDis + dir * zF;
+    auto p6 = release_pos + dir * zF;
+    auto p7 = release_pos + up * vDis + dir * zF;
+    auto p8 = press_pos + dir * zF;
+
+    std::vector<float> cube {};
+    cube.insert(cube.cend(), { p1.x, p1.y, p1.z, 1.f, 0.f, 0.f });
+    cube.insert(cube.cend(), { p2.x, p2.y, p2.z, 1.f, 0.f, 0.f });
+    cube.insert(cube.cend(), { p3.x, p3.y, p3.z, 1.f, 0.f, 0.f });
+    cube.insert(cube.cend(), { p4.x, p4.y, p4.z, 1.f, 0.f, 0.f });
+    cube.insert(cube.cend(), { p5.x, p5.y, p5.z, 0.f, 1.f, 0.f });
+    cube.insert(cube.cend(), { p6.x, p6.y, p6.z, 0.f, 1.f, 0.f });
+    cube.insert(cube.cend(), { p7.x, p7.y, p7.z, 0.f, 1.f, 0.f });
+    cube.insert(cube.cend(), { p8.x, p8.y, p8.z, 0.f, 1.f, 0.f });
+    return cube;
+}
+
+int main()
+{
+    Window window("Test Window", win_w, win_h);
+    window.interactor.camera.type = Camera2::Type::Perspective;
+
+    window.interactor.middleButtonPressCallback = [&window](const glm::vec2& pos)
+    {
+        float x = pos.x;
+        float y = pos.y + win_h;                                    // 转换为窗口左下角为原点
+
+        auto w = window.interactor.DisplayToWorld(glm::vec2(x, y)); // NDC 的 z 值是 0
+
+        std::cout << "Mouse pos: " << x << ", " << y << std::endl;
+        std::cout << "World pos: " << w.x << ", " << w.y << ", " << w.z << std::endl;
+        press_pos = w;
+    };
+
+    window.interactor.middleButtonReleaseCallback = [&window](const glm::vec2& pos)
+    {
+        float x = pos.x;
+        float y = pos.y + win_h;
+
+        auto w = window.interactor.DisplayToWorld(glm::vec2(x, y));
+
+        std::cout << "Mouse pos: " << x << ", " << y << std::endl;
+        std::cout << "World pos: " << w.x << ", " << w.y << ", " << w.z << std::endl;
+        release_pos = w;
+
+        middle_release = true;
+    };
+
+    ShaderProgram program("shaders/02_01_07_TEST3.vs", "shaders/02_01_07_TEST3.fs");
+
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplGlfw_InitForOpenGL(window.window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+    ImGui::StyleColorsDark();
+
+    // clang-format off
+    std::vector<GLfloat> verticesCube{
+        // pos                  // color
+        -0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左下
+         0.5f, -0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前右下
+         0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前右上
+        -0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, // 前左上
+
+        -0.5f, -0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后左下
+         0.5f, -0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后右下
+         0.5f,  0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后右上
+        -0.5f,  0.5f, -.5f,     0.0f, 1.0f, 0.0f, // 后左上
+    };
+
+    std::vector<GLuint> indicesCube{
+        0, 1, 3,    1, 2, 3,    // 前
+        1, 5, 2,    5, 6, 2,    // 右
+        5, 4, 6,    4, 7, 6,    // 后
+        4, 0, 7,    0, 3, 7,    // 左
+        3, 2, 7,    2, 6, 7,    // 上
+        4, 1, 0,    4, 5, 1,    // 下
+    };
+    // clang-format on
+
+    Renderer drawable(vertices, indices, { 3, 3 }, GL_TRIANGLES);
+    Renderer* picked_cube_drawable {};
+
+    auto aabb = AABBTool::ComputeAABB(vertices, 6);
+    window.interactor.camera.Reset(aabb);
+
+    bool draw_cube     = true;
+    bool draw_pick_box = true;
+
+    glEnable(GL_DEPTH_TEST);
+    while (!glfwWindowShouldClose(window.window))
+    {
+        glfwPollEvents();
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        window.interactor.camera.ResetClipRange(aabb);
+
+        auto proj = window.interactor.camera.projMat;
+        auto view = window.interactor.camera.viewMat;
+
+        program.Use();
+        program.SetUniformMat4("model", glm::mat4(1.f));
+        program.SetUniformMat4("view", view);
+        program.SetUniformMat4("projection", proj);
+
+        if (draw_cube)
+            drawable.Draw();
+        if (picked_cube_drawable)
+            picked_cube_drawable->Draw();
+
+        if (middle_release)
+        {
+            if (picked_cube_drawable)
+                delete picked_cube_drawable;
+
+            std::vector<float> cube_vertices = draw_pick_box ? GeneratorCube() : GeneratorCub2(window.interactor.camera);
+
+            picked_cube_drawable = new Renderer(cube_vertices, indices, { 3, 3 }, GL_TRIANGLES);
+
+            auto cube_aabb = AABBTool::ComputeAABB(cube_vertices, 6);
+            aabb           = AABBTool::MergeAABB({ cube_aabb, aabb });
+
+            middle_release = false;
+        }
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        {
+            ImGui::Begin("Camera");
+            if (ImGui::Button("Change cube visible"))
+            {
+                draw_cube = !draw_cube;
+            }
+            if (ImGui::Button("Switch draw type"))
+            {
+                draw_pick_box = !draw_pick_box;
+            }
+            ImGui::End();
+        }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window.window);
+    }
+}
+
+#endif // TEST6
