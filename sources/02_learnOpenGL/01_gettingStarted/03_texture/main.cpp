@@ -14,9 +14,10 @@
  * 13. 使用ktx加载纹理并渲染
  * 14. 使用 GL_TEXTURE_2D_ARRAY
  * 15. 使用颜色映射表时，指定超出映射表部分的颜色
+ * 16. 颜色映射 纹理 重心坐标，四边形转换为两个三角形绘制
  */
 
-#define TEST9
+#define TEST16
 
 #ifdef TEST1
 
@@ -1290,52 +1291,232 @@ Renderer CreateCube()
 {
     std::vector<float> vertices {
         // back face
-        -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // bottom-left
-        1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,   // top-right
-        1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,  // bottom-right
-        1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,   // top-right
-        -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // bottom-left
-        -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,  // top-left
+        -1.0f,
+        -1.0f,
+        -1.0f,
+        0.0f,
+        0.0f,
+        1.0f, // bottom-left
+        1.0f,
+        1.0f,
+        -1.0f,
+        0.0f,
+        0.0f,
+        1.0f, // top-right
+        1.0f,
+        -1.0f,
+        -1.0f,
+        0.0f,
+        0.0f,
+        1.0f, // bottom-right
+        1.0f,
+        1.0f,
+        -1.0f,
+        0.0f,
+        0.0f,
+        1.0f, // top-right
+        -1.0f,
+        -1.0f,
+        -1.0f,
+        0.0f,
+        0.0f,
+        1.0f, // bottom-left
+        -1.0f,
+        1.0f,
+        -1.0f,
+        0.0f,
+        0.0f,
+        1.0f, // top-left
 
         // front face
-        -1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
-        1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // bottom-right
-        1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // top-right
-        1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // top-right
-        -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // top-left
-        -1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom-left
+        -1.0f,
+        -1.0f,
+        1.0f,
+        0.0f,
+        1.0f,
+        0.0f, // bottom-left
+        1.0f,
+        -1.0f,
+        1.0f,
+        0.0f,
+        1.0f,
+        0.0f, // bottom-right
+        1.0f,
+        1.0f,
+        1.0f,
+        0.0f,
+        1.0f,
+        0.0f, // top-right
+        1.0f,
+        1.0f,
+        1.0f,
+        0.0f,
+        1.0f,
+        0.0f, // top-right
+        -1.0f,
+        1.0f,
+        1.0f,
+        0.0f,
+        1.0f,
+        0.0f, // top-left
+        -1.0f,
+        -1.0f,
+        1.0f,
+        0.0f,
+        1.0f,
+        0.0f, // bottom-left
 
         // left face
-        -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,   // top-right
-        -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f,  // top-left
-        -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // bottom-left
-        -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // bottom-left
-        -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,  // bottom-right
-        -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,   // top-right
+        -1.0f,
+        1.0f,
+        1.0f,
+        0.0f,
+        0.0f,
+        1.0f, // top-right
+        -1.0f,
+        1.0f,
+        -1.0f,
+        0.0f,
+        0.0f,
+        1.0f, // top-left
+        -1.0f,
+        -1.0f,
+        -1.0f,
+        0.0f,
+        0.0f,
+        1.0f, // bottom-left
+        -1.0f,
+        -1.0f,
+        -1.0f,
+        0.0f,
+        0.0f,
+        1.0f, // bottom-left
+        -1.0f,
+        -1.0f,
+        1.0f,
+        0.0f,
+        0.0f,
+        1.0f, // bottom-right
+        -1.0f,
+        1.0f,
+        1.0f,
+        0.0f,
+        0.0f,
+        1.0f, // top-right
 
         // right face
-        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,   // top-left
-        1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 0.0f, // bottom-right
-        1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 0.0f,  // top-right
-        1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 0.0f, // bottom-right
-        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,   // top-left
-        1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 0.0f,  // bottom-left
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        0.0f, // top-left
+        1.0f,
+        -1.0f,
+        -1.0f,
+        1.0f,
+        1.0f,
+        0.0f, // bottom-right
+        1.0f,
+        1.0f,
+        -1.0f,
+        1.0f,
+        1.0f,
+        0.0f, // top-right
+        1.0f,
+        -1.0f,
+        -1.0f,
+        1.0f,
+        1.0f,
+        0.0f, // bottom-right
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        0.0f, // top-left
+        1.0f,
+        -1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        0.0f, // bottom-left
 
         // bottom face
-        -1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top-right
-        1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f,  // top-left
-        1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,   // bottom-left
-        1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,   // bottom-left
-        -1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  // bottom-right
-        -1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top-right
+        -1.0f,
+        -1.0f,
+        -1.0f,
+        0.0f,
+        1.0f,
+        1.0f, // top-right
+        1.0f,
+        -1.0f,
+        -1.0f,
+        0.0f,
+        1.0f,
+        1.0f, // top-left
+        1.0f,
+        -1.0f,
+        1.0f,
+        0.0f,
+        1.0f,
+        1.0f, // bottom-left
+        1.0f,
+        -1.0f,
+        1.0f,
+        0.0f,
+        1.0f,
+        1.0f, // bottom-left
+        -1.0f,
+        -1.0f,
+        1.0f,
+        0.0f,
+        1.0f,
+        1.0f, // bottom-right
+        -1.0f,
+        -1.0f,
+        -1.0f,
+        0.0f,
+        1.0f,
+        1.0f, // top-right
 
         // top face
-        -1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, // top-left
-        1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,   // bottom-right
-        1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f,  // top-right
-        1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,   // bottom-right
-        -1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, // top-left
-        -1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,  // bottom-left
+        -1.0f,
+        1.0f,
+        -1.0f,
+        1.0f,
+        0.0f,
+        1.0f, // top-left
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        0.0f,
+        1.0f, // bottom-right
+        1.0f,
+        1.0f,
+        -1.0f,
+        1.0f,
+        0.0f,
+        1.0f, // top-right
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        0.0f,
+        1.0f, // bottom-right
+        -1.0f,
+        1.0f,
+        -1.0f,
+        1.0f,
+        0.0f,
+        1.0f, // top-left
+        -1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        0.0f,
+        1.0f, // bottom-left
     };
 
     return Renderer(vertices, { 3, 3 });
@@ -1976,3 +2157,140 @@ int main()
 }
 
 #endif // TEST15
+
+#ifdef TEST16
+
+#include "common.hpp"
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
+int main()
+{
+    InitOpenGL initOpenGL;
+    auto window = initOpenGL.GetWindow();
+    ShaderProgram program_color("shaders/02_01_03_TEST16.vert", "shaders/02_01_03_TEST16.frag");
+    ShaderProgram program_texture("shaders/02_01_03_TEST4.vs", "shaders/02_01_03_TEST4.fs");
+
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+    ImGui::StyleColorsDark();
+
+    // clang-format off
+    std::vector<GLfloat> vertices1 {
+        -.5f,  -.5f,      1.f, 0.f, 0.f,
+         .5f,  -.5f,      0.f, 1.f, 0.f,
+         .5f,   .5f,      1.f, 0.f, 0.f,
+        -.5f,   .5f,      0.f, 1.f, 0.f,
+    };
+    std::vector<GLfloat> vertices2 {
+        -.5f, -.5f,  0.f,      0.f, 0.f,
+         .5f, -.5f,  0.f,      .5f, .5f,
+         .5f,  .5f,  0.f,      0.f, 0.f,
+        -.5f,  .5f,  0.f,      .5f, .5f,
+    };
+    std::vector<GLfloat> vertices3 {
+        -.5f, -.5f,  0.f,      .125f, .25f,
+         .5f, -.5f,  0.f,      .375f, .25f,
+         .5f,  .5f,  0.f,      .125f, .25f,
+        -.5f,  .5f,  0.f,      .375f, .25f,
+    };
+    std::vector<GLfloat> vertices4 {
+        -.5f, -.5f,  0.f,      .01f, .01f,
+         .5f, -.5f,  0.f,      .26f, .01f,
+         .5f,  .5f,  0.f,      .24f, .49f,
+        -.5f,  .5f,  0.f,      .49f, .49f,
+    };
+    // clang-format on
+
+    std::vector<GLuint> indices1 { 0, 1, 2, 0, 2, 3 };
+    std::vector<GLuint> indices2 { 0, 1, 3, 1, 2, 3 };
+
+    Texture texture("./textures/alpha.png");
+
+    Renderer quad1(vertices1, indices1, { 2, 3 }, GL_TRIANGLES);
+    Renderer quad2(vertices1, indices2, { 2, 3 }, GL_TRIANGLES);
+    Renderer quad3(vertices2, indices1, { 3, 2 }, GL_TRIANGLES);
+    Renderer quad4(vertices2, indices2, { 3, 2 }, GL_TRIANGLES);
+    Renderer quad5(vertices3, indices1, { 3, 2 }, GL_TRIANGLES);
+    Renderer quad6(vertices3, indices2, { 3, 2 }, GL_TRIANGLES);
+    Renderer quad7(vertices4, indices1, { 3, 2 }, GL_TRIANGLES);
+    Renderer quad8(vertices4, indices2, { 3, 2 }, GL_TRIANGLES);
+
+    std::vector<const char*> draw_type_str { "quad1", "quad2", "quad3", "quad4", "quad5", "quad6", "quad7", "quad8" };
+
+    int draw_type {};
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        if (draw_type == 0)
+        {
+            program_color.Use();
+            quad1.Draw();
+        }
+        else if (draw_type == 1)
+        {
+            program_color.Use();
+            quad2.Draw();
+        }
+        else if (draw_type == 2)
+        {
+            program_texture.Use();
+            texture.Bind();
+            quad3.Draw();
+        }
+        else if (draw_type == 3)
+        {
+            program_texture.Use();
+            texture.Bind();
+            quad4.Draw();
+        }
+        else if (draw_type == 4)
+        {
+            program_texture.Use();
+            texture.Bind();
+            quad5.Draw();
+        }
+        else if (draw_type == 5)
+        {
+            program_texture.Use();
+            texture.Bind();
+            quad6.Draw();
+        }
+        else if (draw_type == 6)
+        {
+            program_texture.Use();
+            texture.Bind();
+            quad7.Draw();
+        }
+        else if (draw_type == 7)
+        {
+            program_texture.Use();
+            texture.Bind();
+            quad8.Draw();
+        }
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        {
+            ImGui::Begin("Barycentric");
+            ImGui::Combo("Drawable", &draw_type, draw_type_str.data(), static_cast<int>(draw_type_str.size()));
+            ImGui::End();
+        }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
+}
+
+#endif // TEST16
