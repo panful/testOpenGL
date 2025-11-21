@@ -15,6 +15,7 @@ endmacro()
 macro(TargetInclude)
     target_include_directories(${target_name} PRIVATE
         ${PROJECT_SOURCE_DIR}/base
+        ${3rdPartyHeadersOutputDir}
         ${3rdPartyHeadersOutputDir}/glad
         ${3rdPartyHeadersOutputDir}/glfw
         ${3rdPartyHeadersOutputDir}/glm
