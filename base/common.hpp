@@ -1528,6 +1528,11 @@ public:
         glBindVertexArray(0);
     }
 
+    GLuint VAO() const noexcept
+    {
+        return m_vao;
+    }
+
 private:
     GLuint m_vao;
     GLuint m_vbo;
